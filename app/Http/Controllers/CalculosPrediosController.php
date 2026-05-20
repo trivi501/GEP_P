@@ -316,7 +316,6 @@ class CalculosPrediosController extends Controller
                 'actualizacion'       => $actualizacion,
                 'recargos'            => $recargos,
                 'descuento'           => $descuento,
-                'factor_actualizacion' => $factorActualizacion,
             ];
 
             $anhoInicio++;
