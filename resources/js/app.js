@@ -13,6 +13,8 @@ Alpine.data('dataTable', (initialData) => ({
     debounceTimer: null,
     sortColumn: 'Clave_predial',
     sortDirection: 'asc',
+    currentPage: 1,
+    lastPage: 1,
 
     f_Clave_predial: '',
     f_cuenta: '',
@@ -55,12 +57,39 @@ Alpine.data('dataTable', (initialData) => ({
         return this.hasFilters ? this.serverTotal : this.data.length;
     },
 
+    get paginationHtml() {
+        const total = this.lastPage;
+        const cur = this.currentPage;
+        const cls = (p) =>
+            p === cur
+                ? 'px-3 py-1 rounded text-sm bg-indigo-600 text-white'
+                : 'px-3 py-1 rounded text-sm border border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700';
+        const btn = (p) => `<button class="${cls(p)}" onclick="window.__goToPage(${p})">${p}</button>`;
+        let html = '';
+        if (total <= 7) {
+            for (let i = 1; i <= total; i++) html += btn(i);
+            return html;
+        }
+        html += btn(1);
+        if (cur > 3) html += '<span class="px-2 py-1 text-sm text-gray-500">...</span>';
+        const start = Math.max(2, cur - 1);
+        const end = Math.min(total - 1, cur + 1);
+        for (let i = start; i <= end; i++) html += btn(i);
+        if (cur < total - 2) html += '<span class="px-2 py-1 text-sm text-gray-500">...</span>';
+        html += btn(total);
+        return html;
+    },
+
     sort(col) {
         if (this.sortColumn === col) {
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             this.sortColumn = col;
             this.sortDirection = 'asc';
+        }
+        if (this.hasFilters) {
+            this.loading = true;
+            this.fetchData(this.currentPage);
         }
     },
 
@@ -70,14 +99,53 @@ Alpine.data('dataTable', (initialData) => ({
     },
 
     handleSearch() {
+        this.currentPage = 1;
         clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
             this.loading = true;
-            this.fetchData();
+            this.fetchData(1);
         }, 400);
     },
 
-    async fetchData() {
+    goToPage(page) {
+        if (page < 1 || page > this.lastPage || page === this.currentPage) return;
+        this.loading = true;
+        this.fetchData(page);
+    },
+
+    init() {
+        window.__goToPage = (page) => this.goToPage(page);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('search_global')) this.query = urlParams.get('search_global');
+
+        const filterMap = {
+            Clave_predial: 'f_Clave_predial',
+            cuenta: 'f_cuenta',
+            contribuyente: 'f_contribuyente',
+            colonia: 'f_colonia',
+            tipo_predio: 'f_tipo_predio',
+            estado: 'f_estado',
+            ubicacion: 'f_ubicacion',
+            año_ultimo_pago: 'f_año_ultimo_pago',
+            ultimo_bimestre_pago: 'f_ultimo_bimestre_pago',
+            superficie: 'f_superficie',
+        };
+
+        for (const [param, prop] of Object.entries(filterMap)) {
+            if (urlParams.has(param)) this[prop] = urlParams.get(param);
+        }
+        if (urlParams.has('sort_column')) this.sortColumn = urlParams.get('sort_column');
+        if (urlParams.has('sort_direction')) this.sortDirection = urlParams.get('sort_direction');
+        if (urlParams.has('page')) this.currentPage = parseInt(urlParams.get('page'), 10) || 1;
+
+        if (this.hasFilters) {
+            this.loading = true;
+            this.fetchData(this.currentPage);
+        }
+    },
+
+    async fetchData(page) {
         this.results = [];
         this.serverTotal = 0;
 
@@ -87,6 +155,9 @@ Alpine.data('dataTable', (initialData) => ({
         }
 
         const params = new URLSearchParams();
+        params.set('page', page);
+        params.set('sort_column', this.sortColumn);
+        params.set('sort_direction', this.sortDirection);
         if (this.query.trim()) params.set('search_global', this.query.trim());
 
         const colMap = {
@@ -114,6 +185,9 @@ Alpine.data('dataTable', (initialData) => ({
             const json = await response.json();
             this.results = json.data;
             this.serverTotal = json.total;
+            this.currentPage = json.current_page;
+            this.lastPage = json.last_page;
+            window.history.replaceState({}, '', `/predios?${params}`);
         } catch (e) {
             console.error('Error en búsqueda:', e);
         } finally {

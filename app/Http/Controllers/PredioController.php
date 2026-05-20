@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Predio;
+use App\Models\Contribuyente;
 use App\Models\TipoPredio;
 use App\Models\RegimenPropiedad;
 use App\Models\EstadoRenta;
@@ -97,8 +98,34 @@ class PredioController extends Controller
                     ->orWhereHas('colonia', fn($q) => $q->where('COLONIA', 'like', "%{$s}%"))
                     ->orWhereHas('tipoPredio', fn($q) => $q->where('Tipo_predio', 'like', "%{$s}%"))
                     ->orWhereHas('estadoImpuesto', fn($q) => $q->where('DESCRIPCION', 'like', "%{$s}%"));
-            }))
-            ->orderBy('Clave_predial');
+            }));
+
+        $sortColumn = $request->get('sort_column', 'Clave_predial');
+        $sortDirection = strtolower($request->get('sort_direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        $directColumns = ['Clave_predial', 'ubicacion', 'año_ultimo_pago', 'ultimo_bimestre_pago', 'superficie'];
+
+        if (in_array($sortColumn, $directColumns)) {
+            $query->orderBy($sortColumn, $sortDirection);
+        } else {
+            $subQueryMap = [
+                'contribuyente' => [Contribuyente::class, 'nombre_completo', 'id_contribuyente'],
+                'cuenta' => [Contribuyente::class, 'cuenta', 'id_contribuyente'],
+                'colonia' => [CatColonia::class, 'COLONIA', 'id_colonia'],
+                'tipo_predio' => [TipoPredio::class, 'Tipo_predio', 'id_tipo_predio'],
+                'estado' => [EstadoImpuesto::class, 'DESCRIPCION', 'id_estaus_cobro_predial'],
+            ];
+
+            if (isset($subQueryMap[$sortColumn])) {
+                [$model, $column, $localKey] = $subQueryMap[$sortColumn];
+                $query->orderBy(
+                    $model::select($column)->whereColumn($localKey, 'tb_predio.' . $localKey),
+                    $sortDirection
+                );
+            } else {
+                $query->orderBy('Clave_predial', 'asc');
+            }
+        }
 
         if ($request->wantsJson()) {
             $predios = $query->paginate(10);

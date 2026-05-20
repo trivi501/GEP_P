@@ -101,8 +101,39 @@ class Predio extends Model
         return $this->hasOne(DatosPredioUrbano::class, 'id_predio', 'id_predio');
     }
 
+    public function datosRustico()
+    {
+        return $this->hasOne(DatosPredioRustico::class, 'id_predio', 'id_predio');
+    }
+
     public function historico()
     {
         return $this->hasMany(HistoricoPredio::class, 'id_predio', 'id_predio');
+    }
+
+    public function nivelesConstruidos()
+    {
+        return $this->hasMany(NivelConstruidoPredioUrbano::class, 'id_predio', 'id_predio');
+    }
+
+    public function getUbicacionCompletaAttribute()
+    {
+        $parts = [];
+        if ($this->calle) {
+            $parts[] = $this->calle->CALLE;
+        }
+        if ($this->Numero_exterior) {
+            $parts[] = '#' . $this->Numero_exterior;
+        }
+        if ($this->Numero_interior) {
+            $parts[] = 'Int. ' . $this->Numero_interior;
+        }
+        if ($this->colonia) {
+            $parts[] = $this->colonia->COLONIA;
+        }
+        if ($this->codigo_postal) {
+            $parts[] = 'C.P. ' . $this->codigo_postal;
+        }
+        return implode(', ', $parts) ?: $this->ubicacion ?? '—';
     }
 }

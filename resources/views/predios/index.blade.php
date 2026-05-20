@@ -76,6 +76,9 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-center" x-text="p.ultimo_bimestre_pago"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right" x-text="p.superficie.toLocaleString('es-MX', {minimumFractionDigits: 2}) + ' m²'"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a x-bind:href="p.tipo_predio && (p.tipo_predio.includes('Rústico') || p.tipo_predio.includes('MINA')) ? `/calculos-predios/pdf-rustico?id_predio=${p.id}` : `/calculos-predios/pdf?id_predio=${p.id}`" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-2" title="Cálculo Predial">
+                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                            </a>
                                             <a x-bind:href="`/predios/${p.id}/pdf`" target="_blank" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 mr-2" title="ESTADO DE CUENTA">
                                                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4a1 1 0 001 1h4"/></svg>
                                             </a>
@@ -100,8 +103,20 @@
                         </table>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-4" x-show="!hasFilters">
                         {{ $predios->links() }}
+                    </div>
+                    <div class="mt-4" x-show="hasFilters">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Mostrando <span x-text="(currentPage - 1) * 10 + 1"></span>-<span x-text="Math.min(currentPage * 10, serverTotal)"></span> de <span x-text="serverTotal"></span> registros
+                            </div>
+                            <div class="flex items-center gap-1 flex-nowrap">
+                                <button @click="goToPage(currentPage - 1)" x-show="currentPage > 1" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">&laquo; Anterior</button>
+                                <div class="flex items-center gap-1 flex-nowrap" x-html="paginationHtml"></div>
+                                <button @click="goToPage(currentPage + 1)" x-show="currentPage < lastPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">Siguiente &raquo;</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
