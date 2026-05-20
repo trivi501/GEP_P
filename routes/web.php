@@ -5,7 +5,6 @@ use App\Http\Controllers\ContribuyenteController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PredioController;
 use App\Http\Controllers\CalculosPrediosController;
-use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -41,14 +40,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('calculos-predios/pdf', [CalculosPrediosController::class, 'pdf'])->name('calculos-predios.pdf');
     Route::get('calculos-predios/pdf-rustico', [CalculosPrediosController::class, 'pdfRustico'])->name('calculos-predios.pdf-rustico');
     Route::post('calculos-predios/calculo-predial-urbano', [CalculosPrediosController::class, 'calculoPredialUrbano'])->name('calculos-predios.calculo-predial-urbano');
-    Route::get('caja', [CajaController::class, 'index'])->name('caja.index');
-    Route::get('caja/create', [CajaController::class, 'create'])->name('caja.create');
-    Route::post('caja', [CajaController::class, 'store'])->name('caja.store');
-    Route::get('caja/search-contribuyente', [CajaController::class, 'searchContribuyente'])->name('caja.search-contribuyente');
-    Route::get('caja/search-clave-catastral', [CajaController::class, 'searchClaveCatastral'])->name('caja.search-clave-catastral');
-    Route::get('caja/get-contribuyente', [CajaController::class, 'getContribuyente'])->name('caja.get-contribuyente');
-    Route::get('caja/calcular-urbano', [CajaController::class, 'calcularUrbano'])->name('caja.calcular-urbano');
-    Route::get('caja/calcular-rustico', [CajaController::class, 'calcularRustico'])->name('caja.calcular-rustico');
 });
 
 require __DIR__.'/auth.php';
