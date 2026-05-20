@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('permissions', PermissionController::class);
     Route::resource('roles', RoleController::class);
-    Route::resource('users', UserController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     Route::get('contribuyentes/search', [ContribuyenteController::class, 'search'])->name('contribuyentes.search');
     Route::resource('contribuyentes', ContribuyenteController::class);
     Route::post('clave-predial/store', [ClavePredialController::class, 'store'])->name('clave-predial.store');

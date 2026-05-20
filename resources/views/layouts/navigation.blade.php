@@ -62,7 +62,10 @@
 
                         <x-slot name="content">
                             <x-dropdown-link :href="route('users.index')">
-                                {{ __('Usuarios') }}
+                                {{ __('Listado de Usuarios') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('users.create')">
+                                {{ __('Nuevo Usuario') }}
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('roles.index')">
                                 {{ __('Roles') }}
