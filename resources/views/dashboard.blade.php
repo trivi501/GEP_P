@@ -36,6 +36,7 @@
                     </div>
                 </a>
 
+                @can('view-users')
                 <a href="{{ route('users.index') }}" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition group">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="flex items-center">
@@ -49,7 +50,9 @@
                         </div>
                     </div>
                 </a>
+                @endcan
 
+                @can('view-roles')
                 <a href="{{ route('roles.index') }}" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition group">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="flex items-center">
@@ -63,6 +66,7 @@
                         </div>
                     </div>
                 </a>
+                @endcan
 
             </div>
 
