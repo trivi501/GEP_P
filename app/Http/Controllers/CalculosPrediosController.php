@@ -330,7 +330,7 @@ class CalculosPrediosController extends Controller
                 'anho'                => $anhoInicio,
                 'uma'                 => $valorUma,
                 'superficie'          => $superficie,
-                'imp_baldio'              => $imp_baldio,
+                'baldio'          => $imp_baldio,
                 'imp_terreno'         => $superficie * $factorZona * $valorUma,
                 'imp_terreno_baldio'  => $impTerreno,
                 'zona'                => $zona,
