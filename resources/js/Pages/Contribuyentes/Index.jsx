@@ -25,7 +25,8 @@ export default function Index({ contribuyentes }) {
                                     href={route('contribuyentes.create')}
                                     className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-500 focus:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-700"
                                 >
-                                    + Crear Contribuyente
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                                    Crear Contribuyente
                                 </Link>
                             </div>
 
@@ -81,18 +82,22 @@ export default function Index({ contribuyentes }) {
                                                         )}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                                        <Link
-                                                            href={route('contribuyentes.show', contribuyente.id_contribuyente)}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            Ver
-                                                        </Link>
-                                                        <Link
-                                                            href={route('contribuyentes.edit', contribuyente.id_contribuyente)}
-                                                            className="ml-3 text-yellow-600 hover:text-yellow-900"
-                                                        >
-                                                            Editar
-                                                        </Link>
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <Link
+                                                                href={route('contribuyentes.show', contribuyente.id_contribuyente)}
+                                                                className="text-indigo-600 hover:text-indigo-900"
+                                                                title="Ver"
+                                                            >
+                                                                <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                            </Link>
+                                                            <Link
+                                                                href={route('contribuyentes.edit', contribuyente.id_contribuyente)}
+                                                                className="text-yellow-600 hover:text-yellow-900"
+                                                                title="Editar"
+                                                            >
+                                                                <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                            </Link>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))
