@@ -129,7 +129,7 @@
                     <td>{{ $c['anho'] }}</td>
                     <td>${{ number_format($c['imp_terreno'], 2) }}</td>
                     <td>${{ number_format($c['imp_construccion'], 2) }}</td>
-                    <td>${{ $c['baldio'] ? number_format($c['imp_construccion'], 2) : '0.00' }}</td>
+                    <td>${{ $c['imp_baldio'] ? number_format($c['imp_baldio'], 2) : '0.00' }}</td>
                     <td>${{ number_format($c['cm'], 2) }}</td>
                     <td>${{ number_format($c['entero'], 2) }}</td>
                     <td>${{ number_format($c['aseo_publico'], 2) }}</td>
@@ -152,7 +152,7 @@
                     <td><b>Total</b></td>
                     <td><b>${{ number_format($c->sum('imp_terreno'), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('imp_construccion'), 2) }}</b></td>
-                    <td><b>${{ number_format($c->sum(fn($r) => $r['baldio'] ? $r['imp_construccion'] : 0), 2) }}</b></td>
+                    <td><b>${{ number_format($c->sum(fn($r) => $r['imp_baldio'] ? $r['imp_baldio'] : 0), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('cm'), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('entero'), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('aseo_publico'), 2) }}</b></td>

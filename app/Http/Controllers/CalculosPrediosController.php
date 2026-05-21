@@ -201,6 +201,19 @@ class CalculosPrediosController extends Controller
             'ZONA Urbano-Rural'   => 0.0013,
             'ZONA Industrial'     => 0.0622,
         ];
+
+        $zonas_2016 = [
+            'ZONA I'              => 0.0013,
+            'ZONA II'             => 0.0026,
+            'ZONA III'            => 0.0054,
+            'ZONA IV'             => 0.0079,
+            'ZONA V'              => 0.0166,
+            'ZONA VI'             => 0.0254,
+            'ZONA VII'            => 0.0399,
+            'ZONA VIII'           => 0.0399,
+            'ZONA Urbano-Rural'   => 0.0399,
+            'ZONA Industrial'     => 0.0399,
+        ];
         $productos = [
             'A' => 0.0522,
             'B' => 0.0384,
@@ -215,8 +228,21 @@ class CalculosPrediosController extends Controller
             'D' => 0.0072,
         ];
 
+        $factor_baldio = [
+            'ZONA I'              => 0,
+            'ZONA II'             => 1,
+            'ZONA III'            => 1,
+            'ZONA IV'             => 1.5,
+            'ZONA V'              => 1.5,
+            'ZONA VI'             => 2,
+            'ZONA VII'            => 2,
+            'ZONA VIII'           => 2,
+            'ZONA Urbano-Rural'   => 0,
+            'ZONA Industrial'     => 2,
+        ];
+
         $zona = $predio->datosUrbano->zonaUrbana->descripcion ?? null;
-        $factorZona = $zonas[$zona] ?? 0;
+        $factorZona= null;
         $baldio = $predio->datosUrbano->Baldio ?? 0;
         $nivel = $predio->nivelesConstruidos->first();
         $producto = $nivel?->tipoConstruccion?->tipo ?? null;
@@ -228,7 +254,13 @@ class CalculosPrediosController extends Controller
 
         $resultados = [];
 
+        $anhoInicio = $anhoInicio + 1;
         while ($anhoInicio <= $anhoActual) {
+            if($anhoInicio <= 2018){
+                $factorZona = $zonas_2016[$zona] ?? 0;
+            } else {
+                $factorZona = $zonas[$zona] ?? 0;
+            }
             $inpc_in = null;
             $inpc_fin = null;
             $factorActualizacion = 0;
@@ -247,14 +279,9 @@ class CalculosPrediosController extends Controller
 
             $impTerreno = $superficie * $factorZona * $valorUma;
 
+            $imp_baldio = 0;
             if ($baldio == 1) {
-                $factorBaldio = match (true) {
-                    in_array($zona, ['ZONA I', 'ZONA II'])   => 2,
-                    in_array($zona, ['ZONA III', 'ZONA IV'])  => 2.5,
-                    in_array($zona, ['ZONA V', 'ZONA VI'])   => 3,
-                    default                                   => 1,
-                };
-                $impTerreno *= $factorBaldio;
+                $imp_baldio = $impTerreno * ($factor_baldio[$zona] ?? 0);
             }
 
             $impuestoConstruccion = 0;
@@ -265,7 +292,7 @@ class CalculosPrediosController extends Controller
             }
 
             $cuotaMinima = 2 * $valorUma;
-            $entero = $impTerreno + $impuestoConstruccion + $cuotaMinima;
+            $entero = $impTerreno + $imp_baldio + $impuestoConstruccion + $cuotaMinima;
 
             $aseoPublico = match (true) {
                 in_array($zona, ['ZONA I', 'ZONA II', 'ZONA III', 'ZONA IV']) => $entero * 0.105,
@@ -303,7 +330,7 @@ class CalculosPrediosController extends Controller
                 'anho'                => $anhoInicio,
                 'uma'                 => $valorUma,
                 'superficie'          => $superficie,
-                'baldio'              => $baldio,
+                'imp_baldio'              => $imp_baldio,
                 'imp_terreno'         => $superficie * $factorZona * $valorUma,
                 'imp_terreno_baldio'  => $impTerreno,
                 'zona'                => $zona,
