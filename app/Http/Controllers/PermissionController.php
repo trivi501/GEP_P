@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 
@@ -10,12 +11,12 @@ class PermissionController extends Controller
     public function index()
     {
         $permissions = Permission::orderBy('name')->paginate(10);
-        return view('permissions.index', compact('permissions'));
+        return Inertia::render('Permissions/Index', compact('permissions'));
     }
 
     public function create()
     {
-        return view('permissions.create');
+        return Inertia::render('Permissions/Create');
     }
 
     public function store(Request $request)
@@ -36,12 +37,12 @@ class PermissionController extends Controller
 
     public function show(Permission $permission)
     {
-        return view('permissions.show', compact('permission'));
+        return Inertia::render('Permissions/Show', compact('permission'));
     }
 
     public function edit(Permission $permission)
     {
-        return view('permissions.edit', compact('permission'));
+        return Inertia::render('Permissions/Edit', compact('permission'));
     }
 
     public function update(Request $request, Permission $permission)

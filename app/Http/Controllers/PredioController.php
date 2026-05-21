@@ -23,6 +23,7 @@ use App\Models\CatUsoPredioUrbano;
 use App\Models\CatEstadoFisicoPredio;
 use App\Models\CatPavimento;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -78,8 +79,8 @@ class PredioController extends Controller
 
     public function index(Request $request)
     {
-        $query = Predio::with('contribuyente', 'tipoPredio', 'colonia', 'estadoImpuesto')
-            ->select(['id_predio', 'Clave_predial', 'id_contribuyente', 'id_tipo_predio', 'id_colonia', 'id_calle', 'ubicacion', 'codigo_postal', 'Numero_exterior', 'Numero_interior', 'superficie', 'construccion', 'año_ultimo_pago', 'ultimo_bimestre_pago', 'id_estaus_cobro_predial'])
+        $query = Predio::with('contribuyente', 'tipoPredio', 'colonia', 'estadoImpuesto', 'calle', 'datosUrbano')
+            ->select(['id_predio', 'Clave_predial', 'id_contribuyente', 'id_tipo_predio', 'id_colonia', 'id_calle', 'ubicacion', 'codigo_postal', 'Numero_exterior', 'Numero_interior', 'superficie', 'construccion', 'valor_catastral', 'año_ultimo_pago', 'ultimo_bimestre_pago', 'id_estaus_cobro_predial'])
             ->when($request->filled('Clave_predial'), fn($q) => $q->where('Clave_predial', 'like', '%' . $request->Clave_predial . '%'))
             ->when($request->filled('ubicacion'), fn($q) => $q->where('ubicacion', 'like', '%' . $request->ubicacion . '%'))
             ->when($request->filled('contribuyente'), fn($q) => $q->whereHas('contribuyente', fn($q) => $q->where('nombre_completo', 'like', '%' . $request->contribuyente . '%')))
@@ -141,6 +142,9 @@ class PredioController extends Controller
                 'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
                 'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
                 'superficie' => (float) $p->superficie,
+                'ubicacionPredio' => trim(($p->calle?->nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia?->COLONIA ?? '')),
+                'terreno' => (float) ($p->datosUrbano?->valor_catastral_terreno ?? $p->valor_catastral ?? 0),
+                'construccion' => (float) ($p->construccion ?? 0),
             ]);
             return response()->json([
                 'data' => $data,
@@ -163,9 +167,16 @@ class PredioController extends Controller
             'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
             'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
             'superficie' => (float) $p->superficie,
+            'ubicacionPredio' => trim(($p->calle?->nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia?->COLONIA ?? '')),
+            'terreno' => (float) ($p->datosUrbano?->valor_catastral_terreno ?? $p->valor_catastral ?? 0),
+            'construccion' => (float) ($p->construccion ?? 0),
         ])->values();
 
-        return view('predios.index', compact('predios', 'prediosData'));
+        return Inertia::render('Predios/Index', [
+            'predios' => $predios,
+            'prediosData' => $prediosData,
+            'search_global' => $request->search_global ?? '',
+        ]);
     }
 
     public function create()
@@ -183,7 +194,7 @@ class PredioController extends Controller
         $usosPredioUrbano = CatUsoPredioUrbano::where('activo', 1)->orderBy('descripcion')->get();
         $estadosFisicos = CatEstadoFisicoPredio::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $pavimentos = CatPavimento::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        return view('predios.create', compact('tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
+        return Inertia::render('Predios/Create', compact('tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
     }
 
     public function store(Request $request)
@@ -296,7 +307,7 @@ class PredioController extends Controller
     public function show(Predio $predio)
     {
         $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'calculosGenerales', 'medidasYColindancias.orientacion', 'anotaciones', 'historico.usuarioModifica', 'observaciones', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
-        return view('predios.show', compact('predio'));
+        return Inertia::render('Predios/Show', compact('predio'));
     }
 
     public function edit(Predio $predio)
@@ -315,7 +326,7 @@ class PredioController extends Controller
         $usosPredioUrbano = CatUsoPredioUrbano::where('activo', 1)->orderBy('descripcion')->get();
         $estadosFisicos = CatEstadoFisicoPredio::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $pavimentos = CatPavimento::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        return view('predios.edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
+        return Inertia::render('Predios/Edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
     }
 
     public function update(Request $request, Predio $predio)
@@ -530,6 +541,16 @@ class PredioController extends Controller
         $pdf->setPaper('letter');
 
         return $pdf->stream("predio_{$predio->Clave_predial}.pdf");
+    }
+
+    public function cedula(Predio $predio)
+    {
+        $predio->load('contribuyente', 'tipoPredio', 'calle', 'colonia', 'clavePredial', 'datosUrbano');
+
+        $pdf = Pdf::loadView('predios.cedula', compact('predio'));
+        $pdf->setPaper('letter');
+
+        return $pdf->stream("cedula_{$predio->Clave_predial}.pdf");
     }
 
     public function destroy(Predio $predio)

@@ -6,6 +6,7 @@ use App\Models\PredioCalculoGeneral;
 use App\Models\{CatZonaPredio, CatUma, CatTasaXBaldioUrbano, Inpc };
 use App\Services\CalculoPredialUrbanoService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 
 class CalculosPrediosController extends Controller
@@ -164,7 +165,7 @@ class CalculosPrediosController extends Controller
 
         DD('zona '.$zona, 'tasa: '.$tasa,'habitacional: '. $habitacional,'producto: '.$producto, 'factor zona: '.$factorZona, 'Terreno: '.$predio->construccion, 'año: '.$predio->año_ultimo_pago, 'baldio: '.$baldio);
 
-        return view('calculos-predios.index', compact('calculos', 'predio'));
+        return Inertia::render('CalculosPredios/Index', compact('calculos', 'predio'));
     }
 
     public function pdf(Request $request)

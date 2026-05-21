@@ -41,12 +41,14 @@
                                     <th @click="sort('contribuyente')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Contribuyente <span x-text="sortIndicator('contribuyente')" class="text-indigo-500"></span></th>
                                     <th @click="sort('colonia')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Colonia <span x-text="sortIndicator('colonia')" class="text-indigo-500"></span></th>
                                     <th @click="sort('tipo_predio')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Tipo <span x-text="sortIndicator('tipo_predio')" class="text-indigo-500"></span></th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ubicación Predio</th>
                                     <th @click="sort('estado')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Estado <span x-text="sortIndicator('estado')" class="text-indigo-500"></span></th>
-                                    <th @click="sort('ubicacion')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Ubicación <span x-text="sortIndicator('ubicacion')" class="text-indigo-500"></span></th>
                                     <th @click="sort('año_ultimo_pago')" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Año Pago <span x-text="sortIndicator('año_ultimo_pago')" class="text-indigo-500"></span></th>
                                     <th @click="sort('ultimo_bimestre_pago')" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Bimestre <span x-text="sortIndicator('ultimo_bimestre_pago')" class="text-indigo-500"></span></th>
                                     <th @click="sort('superficie')" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Superficie <span x-text="sortIndicator('superficie')" class="text-indigo-500"></span></th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                    <th @click="sort('terreno')" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Terreno <span x-text="sortIndicator('terreno')" class="text-indigo-500"></span></th>
+                                    <th @click="sort('construccion')" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100">Construcción <span x-text="sortIndicator('construccion')" class="text-indigo-500"></span></th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                                 </tr>
                                 <tr>
                                     <td class="px-1 py-1"><input type="text" x-model="f_Clave_predial" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
@@ -54,11 +56,13 @@
                                     <td class="px-1 py-1"><input type="text" x-model="f_contribuyente" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_colonia" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_tipo_predio" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
+                                    <td class="px-1 py-1"><input type="text" x-model="f_ubicacionPredio" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_estado" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
-                                    <td class="px-1 py-1"><input type="text" x-model="f_ubicacion" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_año_ultimo_pago" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1 text-center"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_ultimo_bimestre_pago" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1 text-center"></td>
                                     <td class="px-1 py-1"><input type="text" x-model="f_superficie" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1 text-right"></td>
+                                    <td class="px-1 py-1"><input type="text" x-model="f_terreno" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1 text-right"></td>
+                                    <td class="px-1 py-1"><input type="text" x-model="f_construccion" @input="handleSearch" placeholder="Filtrar..." class="w-full text-xs rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 px-1.5 py-1 text-right"></td>
                                     <td class="px-1 py-1"></td>
                                 </tr>
                             </thead>
@@ -70,33 +74,37 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.contribuyente"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.colonia"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.tipo_predio"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.ubicacionPredio"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.estado"></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm" x-text="p.ubicacion"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-center" x-text="p.año_ultimo_pago"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-center" x-text="p.ultimo_bimestre_pago"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right" x-text="p.superficie.toLocaleString('es-MX', {minimumFractionDigits: 2}) + ' m²'"></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a x-bind:href="p.tipo_predio && (p.tipo_predio.includes('Rústico') || p.tipo_predio.includes('MINA')) ? `/calculos-predios/pdf-rustico?id_predio=${p.id}` : `/calculos-predios/pdf?id_predio=${p.id}`" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-2" title="Cálculo Predial">
-                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                                            </a>
-                                            <a x-bind:href="`/predios/${p.id}/pdf`" target="_blank" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 mr-2" title="ESTADO DE CUENTA">
-                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v4a1 1 0 001 1h4"/></svg>
-                                            </a>
-                                            <a x-bind:href="`/predios/${p.id}`" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-2" title="Ver">
-                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                            </a>
-                                            <a x-bind:href="`/predios/${p.id}/edit`" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-2" title="Editar">
-                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            </a>
-                                            <button @click="deletePredio(p.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Eliminar">
-                                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right" x-text="'$' + Number(p.terreno).toLocaleString('es-MX', {minimumFractionDigits: 2})"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right" x-text="'$' + Number(p.construccion).toLocaleString('es-MX', {minimumFractionDigits: 2})"></td>
+                                        <td class="px-2 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <a x-bind:href="`/calculos-predios/pdf?id_predio=${p.id}`" target="_blank" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Estado de Cuenta">
+                                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                </a>
+                                                <a x-bind:href="`/predios/${p.id}/pdf`" target="_blank" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Cédula">
+                                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                                                </a>
+                                                <a x-bind:href="`/predios/${p.id}`" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300" title="Ver">
+                                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </a>
+                                                <a x-bind:href="`/predios/${p.id}/edit`" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300" title="Editar">
+                                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </a>
+                                                <button @click="deletePredio(p.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Eliminar">
+                                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </template>
                                 <template x-if="filtered.length === 0">
                                     <tr>
-                                        <td colspan="11" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No hay predios registrados.</td>
+                                        <td colspan="13" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No hay predios registrados.</td>
                                     </tr>
                                 </template>
                             </tbody>

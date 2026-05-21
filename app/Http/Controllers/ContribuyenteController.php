@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Contribuyente;
 use App\Models\TipoContribuyente;
 use App\Models\Domicilio;
@@ -52,131 +53,13 @@ class ContribuyenteController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('contribuyentes.index', compact('contribuyentes'));
-    }
+return Inertia::render('Contribuyentes/Index', compact('contribuyentes'));
 
-    public function create()
-    {
-        $tiposContribuyente = TipoContribuyente::where('activo', 1)->orderBy('area_contribuyente')->get();
-        $paises = CatPais::where('activo', 1)->orderBy('nombre_pais')->get();
-        $estados = CatEstado::where('activo', 1)->orderBy('nombre_estado')->get();
-        $municipios = CatMunicipio::where('activo', 1)->orderBy('nombre_municipio')->get();
-        $colonias = CatColonia::where('Activo', 1)->orderBy('COLONIA')->get();
-        $regimenesFiscales = RegimenFiscal::where('activo', 1)->orderBy('c_RegimenFiscal')->get();
-        return view('contribuyentes.create', compact('tiposContribuyente', 'paises', 'estados', 'municipios', 'colonias', 'regimenesFiscales'));
-    }
+return Inertia::render('Contribuyentes/Create', compact('tiposContribuyente', 'paises', 'estados', 'municipios', 'colonias', 'regimenesFiscales'));
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nombre' => 'nullable|string|max:200',
-            'primer_apellido' => 'nullable|string|max:150',
-            'segundo_apellido' => 'nullable|string|max:150',
-            'curp_contribuyente' => 'nullable|string|max:20',
-            'telefono' => 'nullable|string|max:13',
-            'correo_electronico' => 'nullable|email|max:100',
-            'id_tipo_contribuyente' => 'required|exists:cat_tipo_contribuyente,id_tipo_contribuyente',
-            'rfc' => 'nullable|string|max:15',
-            'id_tipo_persona' => 'nullable|integer',
-            'nombre_moral' => 'nullable|string|max:300',
-            'cuenta' => 'required|string|max:25|unique:tb_contribuyentes,cuenta',
-            'exento' => 'nullable|boolean',
-            'nombre_completo' => 'nullable|string|max:500',
-            'nivel_gobierno' => 'nullable|string|max:50',
-            'id_cat_persona_genero' => 'nullable|integer',
-            'id_pais' => 'nullable|exists:cat_pais,id_pais',
-            'id_estado' => 'nullable|exists:cat_estado,id_estado',
-            'id_municipio' => 'nullable|exists:cat_municipio,id_municipio',
-            'colonia' => 'nullable|string|max:200',
-            'nombre_vialidad' => 'nullable|string|max:200',
-            'num_interior' => 'nullable|string|max:10',
-            'num_exterior' => 'nullable|string|max:10',
-            'codigo_postal' => 'nullable|string|max:7',
-            'domicilio_completo' => 'nullable|string|max:1500',
-            'fact_rfc' => 'nullable|string|max:15',
-            'fact_razon_social' => 'nullable|string|max:500',
-            'fact_correo' => 'nullable|email|max:250',
-            'fact_cp_domicilio_fiscal' => 'nullable|string|max:10',
-            'fact_id_regimen_fiscal' => 'nullable|exists:f4_c_regimenfiscal,id',
-            'fact_domicilio_fiscal' => 'nullable|string|max:1500',
-        ]);
+return Inertia::render('Contribuyentes/Show', compact('contribuyente'));
 
-        $domicilioId = null;
-        if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad')) {
-            $domicilioId = (string) Str::uuid();
-            Domicilio::create([
-                'id_domicilio' => $domicilioId,
-                'id_pais' => $validated['id_pais'] ?? 1,
-                'id_estado' => $validated['id_estado'] ?? 1,
-                'id_municipio' => $validated['id_municipio'] ?? 1,
-                'colonia' => $validated['colonia'] ?? null,
-                'nombre_vialidad' => $validated['nombre_vialidad'] ?? null,
-                'num_interior' => $validated['num_interior'] ?? null,
-                'num_exterior' => $validated['num_exterior'] ?? null,
-                'codigo_postal' => $validated['codigo_postal'] ?? null,
-                'domicilio_completo' => $validated['domicilio_completo'] ?? null,
-                'activo' => 1,
-            ]);
-        }
-
-        $contribuyenteId = (string) Str::uuid();
-        Contribuyente::create([
-            'id_contribuyente' => $contribuyenteId,
-            'nombre' => $validated['nombre'] ?? null,
-            'primer_apellido' => $validated['primer_apellido'] ?? null,
-            'segundo_apellido' => $validated['segundo_apellido'] ?? null,
-            'curp_contribuyente' => $validated['curp_contribuyente'] ?? null,
-            'telefono' => $validated['telefono'] ?? null,
-            'correo_electronico' => $validated['correo_electronico'] ?? null,
-            'fecha_alta' => now(),
-            'id_user_registra' => auth()->user()->id ?? null,
-            'id_domicilio' => $domicilioId,
-            'id_tipo_contribuyente' => $validated['id_tipo_contribuyente'],
-            'rfc' => $validated['rfc'] ?? null,
-            'activo' => 1,
-            'id_tipo_persona' => $validated['id_tipo_persona'] ?? null,
-            'nombre_moral' => $validated['nombre_moral'] ?? null,
-            'cuenta' => $validated['cuenta'],
-            'exento' => $validated['exento'] ?? 0,
-            'nombre_completo' => $validated['nombre_completo'] ?? null,
-            'nivel_gobierno' => $validated['nivel_gobierno'] ?? null,
-            'id_cat_persona_genero' => $validated['id_cat_persona_genero'] ?? null,
-        ]);
-
-        if ($request->filled('fact_rfc') || $request->filled('fact_razon_social')) {
-            DatosFacturacionContribuyente::create([
-                'id_datos_facturacion' => (string) Str::uuid(),
-                'id_contribuyente' => $contribuyenteId,
-                'rfc_facturacion' => $validated['fact_rfc'] ?? null,
-                'razon_social' => $validated['fact_razon_social'] ?? null,
-                'correo' => $validated['fact_correo'] ?? null,
-                'CP_DomicilioFiscal_contribuyente' => $validated['fact_cp_domicilio_fiscal'] ?? null,
-                'id_f4_c_regimenfiscal' => $validated['fact_id_regimen_fiscal'] ?? null,
-                'id_domicilio_facturacion' => $domicilioId,
-                'fecha_alta' => now(),
-            ]);
-        }
-
-        return redirect()->route('contribuyentes.index')
-            ->with('success', 'Contribuyente creado exitosamente.');
-    }
-
-    public function show(Contribuyente $contribuyente)
-    {
-        $contribuyente->load('tipoContribuyente', 'domicilio.pais', 'domicilio.estado', 'domicilio.municipio', 'datosFacturacion');
-        return view('contribuyentes.show', compact('contribuyente'));
-    }
-
-    public function edit(Contribuyente $contribuyente)
-    {
-        $contribuyente->load('domicilio', 'datosFacturacion');
-        $tiposContribuyente = TipoContribuyente::where('activo', 1)->orderBy('area_contribuyente')->get();
-        $paises = CatPais::where('activo', 1)->orderBy('nombre_pais')->get();
-        $estados = CatEstado::where('activo', 1)->orderBy('nombre_estado')->get();
-        $municipios = CatMunicipio::where('activo', 1)->orderBy('nombre_municipio')->get();
-        $colonias = CatColonia::where('Activo', 1)->orderBy('COLONIA')->get();
-        $regimenesFiscales = RegimenFiscal::where('activo', 1)->orderBy('c_RegimenFiscal')->get();
-        return view('contribuyentes.edit', compact('contribuyente', 'tiposContribuyente', 'paises', 'estados', 'municipios', 'colonias', 'regimenesFiscales'));
+return Inertia::render('Contribuyentes/Edit', compact('contribuyente', 'tiposContribuyente', 'paises', 'estados', 'municipios', 'colonias', 'regimenesFiscales'));
     }
 
     public function update(Request $request, Contribuyente $contribuyente)

@@ -12,14 +12,21 @@ use App\Http\Controllers\PagosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -29,7 +36,6 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // --- Administracion / RBAC routes (solo Super Admin) ---
     Route::middleware('superadmin')->group(function () {
         Route::resource('permissions', PermissionController::class);
         Route::resource('roles', RoleController::class);
@@ -42,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('predios/calle-search', [PredioController::class, 'searchCalle'])->name('predios.calle-search');
     Route::get('predios/colonia-search', [PredioController::class, 'searchColonia'])->name('predios.colonia-search');
     Route::get('predios/{predio}/pdf', [PredioController::class, 'pdf'])->name('predios.pdf');
+    Route::get('predios/{predio}/cedula', [PredioController::class, 'cedula'])->name('predios.cedula');
     Route::resource('predios', PredioController::class);
     Route::resource('cajas', CajasController::class);
     Route::resource('cajeros', CajeroController::class);

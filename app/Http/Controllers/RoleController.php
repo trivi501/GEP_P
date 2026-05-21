@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
@@ -11,48 +12,13 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::with('permissions')->orderBy('name')->paginate(10);
-        return view('roles.index', compact('roles'));
-    }
+        return Inertia::render('Roles/Index', compact('roles'));
 
-    public function create()
-    {
-        $permissions = Permission::orderBy('name')->get();
-        return view('roles.create', compact('permissions'));
-    }
+        return Inertia::render('Roles/Create', compact('permissions'));
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'guard_name' => 'nullable|string|in:web,api',
-            'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
-        ]);
+        return Inertia::render('Roles/Show', compact('role'));
 
-        $role = Role::create([
-            'name' => $validated['name'],
-            'guard_name' => $validated['guard_name'] ?? 'web',
-        ]);
-
-        if ($request->has('permissions')) {
-            $role->syncPermissions(Permission::whereIn('id', $validated['permissions'])->get());
-        }
-
-        return redirect()->route('roles.index')
-            ->with('success', 'Rol creado exitosamente.');
-    }
-
-    public function show(Role $role)
-    {
-        $role->load('permissions');
-        return view('roles.show', compact('role'));
-    }
-
-    public function edit(Role $role)
-    {
-        $permissions = Permission::orderBy('name')->get();
-        $role->load('permissions');
-        return view('roles.edit', compact('role', 'permissions'));
+        return Inertia::render('Roles/Edit', compact('role', 'permissions'));
     }
 
     public function update(Request $request, Role $role)

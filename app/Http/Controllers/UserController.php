@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
@@ -11,43 +12,11 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('roles')->orderBy('name')->paginate(10);
-        return view('users.index', compact('users'));
-    }
+        return Inertia::render('Users/Index', compact('users'));
 
-    public function create()
-    {
-        $roles = Role::orderBy('name')->get();
-        return view('users.create', compact('roles'));
-    }
+        return Inertia::render('Users/Create', compact('roles'));
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'roles' => 'nullable|integer|exists:roles,id',
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-        ]);
-
-        if ($validated['roles']) {
-            $user->syncRoles(Role::findById($validated['roles']));
-        }
-
-        return redirect()->route('users.index')
-            ->with('success', 'Usuario creado exitosamente.');
-    }
-
-    public function edit(User $user)
-    {
-        $roles = Role::orderBy('name')->get();
-        $user->load('roles');
-        return view('users.edit', compact('user', 'roles'));
+        return Inertia::render('Users/Edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)

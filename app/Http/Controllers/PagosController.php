@@ -12,6 +12,7 @@ use App\Services\CalculoPredialUrbanoService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PagosController extends Controller
 {
@@ -33,7 +34,7 @@ class PagosController extends Controller
                 ->paginate(10);
         }
 
-        return view('pagos.index', compact('historial', 'cajero', 'cajaAbierta'));
+        return Inertia::render('Pagos/Index', compact('historial', 'cajero', 'cajaAbierta'));
     }
 
     public function historial()
@@ -57,7 +58,7 @@ class PagosController extends Controller
                 ->paginate(15);
         }
 
-        return view('pagos.historial', compact('pagos', 'cajero', 'cajaAbierta'));
+        return Inertia::render('Pagos/Historial', compact('pagos', 'cajero', 'cajaAbierta'));
     }
 
     public function store(Request $request)
@@ -106,7 +107,7 @@ class PagosController extends Controller
 
         $formasPago = FormaPago::where('activo', 1)->orderBy('Descripción')->get();
 
-        return view('pagos.cobrar', compact('cajaAbierta', 'formasPago'));
+        return Inertia::render('Pagos/Cobrar', compact('cajaAbierta', 'formasPago'));
     }
 
     public function searchPredio(Request $request)
@@ -118,30 +119,36 @@ class PagosController extends Controller
         }
 
         $like = '%' . $q . '%';
-        $fulltextTerms = '+' . implode('* +', explode(' ', $q)) . '*';
+        $terms = array_filter(explode(' ', $q), fn($t) => preg_match('/[a-zA-Z0-9]/', $t));
 
-        $ids = DB::table('tb_predio')
-            ->whereIn('id_tipo_predio', [5, 6])
-            ->where(function ($query) use ($fulltextTerms, $like) {
-                $query->whereRaw('MATCH (Clave_predial) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
-                    ->orWhereExists(function ($sub) use ($fulltextTerms, $like) {
-                        $sub->select(DB::raw(1))
-                            ->from('tb_contribuyentes')
-                            ->whereColumn('tb_predio.id_contribuyente', 'tb_contribuyentes.id_contribuyente')
-                            ->where(function ($w) use ($fulltextTerms, $like) {
-                                $w->whereRaw('MATCH (cuenta) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
-                                    ->orWhereRaw('MATCH (nombre_completo, nombre_moral) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
-                            });
-                    })
-                    ->orWhereExists(function ($sub) use ($fulltextTerms) {
-                        $sub->select(DB::raw(1))
-                            ->from('tb_clave_predial')
-                            ->whereColumn('tb_predio.id_clave_predial', 'tb_clave_predial.id_clave_predial')
-                            ->whereRaw('MATCH (clave_predial_completa) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
-                    });
-            })
-            ->take(10)
-            ->pluck('id_predio');
+        if (!empty($terms)) {
+            $fulltextTerms = '+' . implode('* +', $terms) . '*';
+
+            $ids = DB::table('tb_predio')
+                ->whereIn('id_tipo_predio', [5, 6])
+                ->where(function ($query) use ($fulltextTerms) {
+                    $query->whereRaw('MATCH (Clave_predial) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
+                        ->orWhereExists(function ($sub) use ($fulltextTerms) {
+                            $sub->select(DB::raw(1))
+                                ->from('tb_contribuyentes')
+                                ->whereColumn('tb_predio.id_contribuyente', 'tb_contribuyentes.id_contribuyente')
+                                ->where(function ($w) use ($fulltextTerms) {
+                                    $w->whereRaw('MATCH (cuenta) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
+                                        ->orWhereRaw('MATCH (nombre_completo, nombre_moral) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
+                                });
+                        })
+                        ->orWhereExists(function ($sub) use ($fulltextTerms) {
+                            $sub->select(DB::raw(1))
+                                ->from('tb_clave_predial')
+                                ->whereColumn('tb_predio.id_clave_predial', 'tb_clave_predial.id_clave_predial')
+                                ->whereRaw('MATCH (clave_predial_completa) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
+                        });
+                })
+                ->take(10)
+                ->pluck('id_predio');
+        } else {
+            $ids = collect();
+        }
 
         if ($ids->isEmpty()) {
             $ids = DB::table('tb_predio')
