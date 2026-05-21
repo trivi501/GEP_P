@@ -41,6 +41,7 @@
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Folio</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Clave Catastral</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contribuyente</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">RFC</th>
@@ -49,12 +50,14 @@
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descuento</th>
                                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estatus</th>
                                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Caja</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Recibo</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach ($pagos as $pago)
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $pago->folio }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $pago->fecha ?? '—' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm max-w-[200px] truncate">{{ $pago->nombre }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $pago->rfc }}</td>
@@ -71,6 +74,15 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">{{ $pago->historialCaja?->caja?->nombre ?? '—' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                @if ($pago->url_file)
+                                                    <a href="{{ route('pagos.recibo', $pago->id) }}" target="_blank" class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 border border-blue-300 dark:border-blue-600 rounded">
+                                                        Ver PDF
+                                                    </a>
+                                                @else
+                                                    <span class="text-xs text-gray-400">—</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

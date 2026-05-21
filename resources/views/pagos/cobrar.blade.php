@@ -271,7 +271,8 @@
                 })
                 .then(result => {
                     if (result.success) {
-                        alert('Pago registrado exitosamente. Folio: ' + result.folio);
+                        const reciboUrl = '{{ route('pagos.recibo', ['id' => '__ID__']) }}'.replace('__ID__', result.pago_id);
+                        window.open(reciboUrl, '_blank');
                         location.reload();
                     } else {
                         alert('Error: ' + (result.error || 'Error desconocido'));

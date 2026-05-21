@@ -359,7 +359,7 @@ class CalculosPrediosController extends Controller
 
         $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
         $valorUma = $uma?->valor ?? 0;
-        $hectareas = ($predio->superficie ?? 0) / 100;
+        $hectareas = ($predio->superficie ?? 0) ;
         $tipoPredio = $predio->tipoPredio?->Tipo_predio ?? '';
         $esMina = str_contains($tipoPredio, 'MINA');
 
@@ -380,7 +380,7 @@ class CalculosPrediosController extends Controller
                 $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
             } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
                 $tipoCalculo = 'Riego por gravedad';
-                $subtotal = $hectareas * (1.1390 * $valorUmaAnual);
+                $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $umaAnual);
             } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
                 if ($hectareas < 20) {
                     $tipoCalculo = 'Temporal menor a 20 ha';
@@ -391,7 +391,11 @@ class CalculosPrediosController extends Controller
                 }
             } else {
                 $tipoCalculo = 'Riego por bombeo';
-                $subtotal = $hectareas * (0.8342 * $valorUmaAnual);
+                if($hectareas < 20) {
+                    $subtotal = ($hectareas * 3) + (3 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                } else {
+                    $subtotal = ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                }
             }
 
             $calculos[] = [

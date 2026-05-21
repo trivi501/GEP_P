@@ -38,4 +38,9 @@ class Pago extends Model
     {
         return $this->belongsTo(HistorialCaja::class, 'id_historial_caja', 'id');
     }
+
+    public function predio()
+    {
+        return $this->belongsTo(Predio::class, 'id_predio', 'id_predio');
+    }
 }

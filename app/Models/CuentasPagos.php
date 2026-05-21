@@ -12,6 +12,7 @@ class CuentasPagos extends Model
     protected $fillable = [
         'pago_id',
         'cuenta_id',
+        'concepto',
         'fecha_registro',
         'cantidad',
         'monto',
