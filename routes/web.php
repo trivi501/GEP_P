@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pagos/guardar', [PagosController::class, 'guardar'])->name('pagos.guardar');
     Route::get('pagos/historial', [PagosController::class, 'historial'])->name('pagos.historial');
     Route::get('pagos/recibo/{id}', [PagosController::class, 'recibo'])->name('pagos.recibo');
+    Route::post('pagos/{pago}/cancelar', [PagosController::class, 'cancelar'])->name('pagos.cancelar');
     Route::get('calculos-predios', [CalculosPrediosController::class, 'index'])->name('calculos-predios.index');
     Route::get('calculos-predios/pdf', [CalculosPrediosController::class, 'pdf'])->name('calculos-predios.pdf');
     Route::get('calculos-predios/pdf-rustico', [CalculosPrediosController::class, 'pdfRustico'])->name('calculos-predios.pdf-rustico');

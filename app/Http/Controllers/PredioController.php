@@ -88,6 +88,9 @@ class PredioController extends Controller
             ->when($request->filled('tipo_predio'), fn($q) => $q->whereHas('tipoPredio', fn($q) => $q->where('Tipo_predio', 'like', '%' . $request->tipo_predio . '%')))
             ->when($request->filled('estado'), fn($q) => $q->whereHas('estadoImpuesto', fn($q) => $q->where('DESCRIPCION', 'like', '%' . $request->estado . '%')))
             ->when($request->filled('colonia'), fn($q) => $q->whereHas('colonia', fn($q) => $q->where('COLONIA', 'like', '%' . $request->colonia . '%')))
+            ->when($request->filled('año_ultimo_pago'), fn($q) => $q->where('año_ultimo_pago', 'like', '%' . $request->año_ultimo_pago . '%'))
+            ->when($request->filled('superficie'), fn($q) => $q->where('superficie', 'like', '%' . $request->superficie . '%'))
+            ->when($request->filled('construccion'), fn($q) => $q->where('construccion', 'like', '%' . $request->construccion . '%'))
             ->when($request->filled('search_global'), fn($q) => $q->where(function($sub) use ($request) {
                 $s = $request->search_global;
                 $sub->where('Clave_predial', 'like', "%{$s}%")
@@ -176,6 +179,7 @@ class PredioController extends Controller
             'predios' => $predios,
             'prediosData' => $prediosData,
             'search_global' => $request->search_global ?? '',
+            'filters' => $request->only(['Clave_predial', 'ubicacion', 'contribuyente', 'cuenta', 'tipo_predio', 'estado', 'colonia', 'año_ultimo_pago', 'superficie', 'construccion']),
         ]);
     }
 
@@ -306,13 +310,14 @@ class PredioController extends Controller
 
     public function show(Predio $predio)
     {
-        $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'calculosGenerales', 'medidasYColindancias.orientacion', 'anotaciones', 'historico.usuarioModifica', 'observaciones', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
+        $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'calculosGenerales', 'medidasYColindancias.orientacion', 'anotaciones', 'observaciones', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
+        $predio->load(['historico' => fn($q) => $q->orderBy('fecha_modificacion', 'desc'), 'historico.usuarioModifica']);
         return Inertia::render('Predios/Show', compact('predio'));
     }
 
     public function edit(Predio $predio)
     {
-        $predio->load('clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano');
+        $predio->load('contribuyente', 'clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano');
         $tiposPredio = TipoPredio::where('activo', 1)->orderBy('Tipo_predio')->get();
         $regimenesPropiedad = RegimenPropiedad::where('activo', 1)->orderBy('REGIMEN')->get();
         $estadosRenta = EstadoRenta::where('activo', 1)->orderBy('DESCRIPCION')->get();
@@ -382,6 +387,7 @@ class PredioController extends Controller
         $urbanoFields = ['id_zona_urbana', 'numero_de_pisos_construidos', 'superficie_terreno_metros_cuadrados', 'Frente_metros', 'Fondo_metros', 'Baldio', 'id_forma_predio', 'id_uso_predio', 'id_estado_fisico', 'servicio_agua', 'servicio_drenaje', 'servicio_energia_electrica', 'servicio_alumbrado', 'id_pavimientacion', 'cuenta_con_banqueta', 'valor_catastral_terreno', 'valor_catastral_construido'];
         $booleanos = ['Baldio', 'servicio_agua', 'servicio_drenaje', 'servicio_energia_electrica', 'servicio_alumbrado', 'cuenta_con_banqueta'];
         $oldUrbano = $predio->datosUrbano;
+        $oldUrbanoArray = $oldUrbano?->toArray() ?? [];
         $urbanoData = [];
         foreach ($urbanoFields as $f) {
             if ($request->has($f) && !is_null($request->$f) && $request->$f !== '') {
@@ -395,7 +401,7 @@ class PredioController extends Controller
                 $urbanoData['id_predio'] = $predio->id_predio;
                 DatosPredioUrbano::create($urbanoData);
             }
-            $this->compararUrbano($predio, $oldUrbano?->toArray() ?? [], $urbanoData);
+            $this->compararUrbano($predio, $oldUrbanoArray, $urbanoData);
         }
 
         if (!empty($validated['observacion'])) {
@@ -474,6 +480,7 @@ class PredioController extends Controller
 
     private function compararUrbano(Predio $predio, array $old, array $new)
     {
+        $booleanos = ['Baldio', 'servicio_agua', 'servicio_drenaje', 'servicio_energia_electrica', 'servicio_alumbrado', 'cuenta_con_banqueta'];
         $tracked = [
             'id_zona_urbana', 'numero_de_pisos_construidos', 'superficie_terreno_metros_cuadrados',
             'Frente_metros', 'Fondo_metros', 'Baldio', 'id_forma_predio', 'id_uso_predio',
@@ -483,16 +490,25 @@ class PredioController extends Controller
         ];
 
         foreach ($tracked as $campo) {
-            $oldVal = $old[$campo] ?? null;
-            $newVal = $new[$campo] ?? null;
+            if (!array_key_exists($campo, $new)) {
+                continue;
+            }
 
-            if ($oldVal != $newVal) {
+            $oldVal = $old[$campo] ?? null;
+            $newVal = $new[$campo];
+
+            if (in_array($campo, $booleanos)) {
+                $oldVal = $oldVal ? true : false;
+                $newVal = $newVal ? true : false;
+            }
+
+            if ((string) $oldVal !== (string) $newVal) {
                 HistoricoPredio::create([
                     'id_historico' => (string) Str::uuid(),
                     'id_predio' => $predio->id_predio,
                     'campo_modificado' => $campo,
-                    'valor_anterior' => !is_null($oldVal) ? (string) $oldVal : null,
-                    'valor_nuevo' => !is_null($newVal) ? (string) $newVal : null,
+                    'valor_anterior' => !is_null($old[$campo] ?? null) ? (string) $old[$campo] : null,
+                    'valor_nuevo' => !is_null($new[$campo]) ? (string) $new[$campo] : null,
                     'id_usuario_modifica' => auth()->user()->id ?? null,
                     'fecha_modificacion' => now(),
                     'tipo_operacion' => 'UPDATE',
@@ -515,10 +531,14 @@ class PredioController extends Controller
         ];
 
         foreach ($tracked as $campo) {
-            $oldVal = $old[$campo] ?? null;
-            $newVal = $new[$campo] ?? null;
+            if (!array_key_exists($campo, $new)) {
+                continue;
+            }
 
-            if ($oldVal != $newVal) {
+            $oldVal = $old[$campo] ?? null;
+            $newVal = $new[$campo];
+
+            if ((string) $oldVal !== (string) $newVal) {
                 HistoricoPredio::create([
                     'id_historico' => (string) Str::uuid(),
                     'id_predio' => $predio->id_predio,

@@ -14,11 +14,56 @@ class CajasController extends Controller
     {
         $cajas = Cajas::with('cajeros.usuario')->orderBy('nombre')->paginate(10);
         return Inertia::render('Cajas/Index', compact('cajas'));
+    }
 
+    public function create()
+    {
+        $usuarios = User::orderBy('name')->get();
         return Inertia::render('Cajas/Create', compact('usuarios'));
+    }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'ubicacion' => 'required|string|max:255',
+            'folio' => 'required|string|max:255',
+            'status' => 'nullable|integer',
+            'cajeros' => 'nullable|array',
+            'cajeros.*' => 'exists:users,id',
+        ]);
+
+        $caja = Cajas::create([
+            'nombre' => $validated['nombre'],
+            'ubicacion' => $validated['ubicacion'],
+            'folio' => $validated['folio'],
+            'status' => $validated['status'] ?? 1,
+        ]);
+
+        if (!empty($validated['cajeros'])) {
+            foreach ($validated['cajeros'] as $usuarioId) {
+                Cajero::create([
+                    'usuario_id' => $usuarioId,
+                    'caja_id' => $caja->id,
+                    'status' => 1,
+                    'created' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->route('cajas.index')->with('success', 'Caja creada exitosamente.');
+    }
+
+    public function show(Cajas $caja)
+    {
+        $caja->load('cajeros.usuario');
         return Inertia::render('Cajas/Show', compact('caja'));
+    }
 
+    public function edit(Cajas $caja)
+    {
+        $caja->load('cajeros.usuario');
+        $usuarios = User::orderBy('name')->get();
         return Inertia::render('Cajas/Edit', compact('caja', 'usuarios'));
     }
 

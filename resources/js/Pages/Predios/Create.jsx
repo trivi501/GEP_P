@@ -43,6 +43,8 @@ export default function Create({
         id_titulo_propiedad: '',
         numero_de_escritura: '',
         año_ultimo_pago: '',
+        latitud: '',
+        longitud: '',
         observacion: '',
         id_zona_urbana: '',
         numero_de_pisos_construidos: '',
@@ -281,38 +283,39 @@ export default function Create({
                                         <InputError message={errors.codigo_postal} className="mt-2" />
                                     </div>
 
-                                    <div>
-                                        <InputLabel htmlFor="superficie" value="Superficie" />
-                                        <TextInput
-                                            id="superficie"
-                                            type="number"
-                                            name="superficie"
-                                            value={data.superficie}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) => setData('superficie', e.target.value)}
-                                            step="0.0001"
-                                        />
-                                        <InputError message={errors.superficie} className="mt-2" />
-                                    </div>
-
-                                    <div>
-                                        <InputLabel htmlFor="construccion" value="Construcción" />
-                                        <TextInput
-                                            id="construccion"
-                                            type="number"
-                                            name="construccion"
-                                            value={data.construccion}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) => setData('construccion', e.target.value)}
-                                            step="0.0001"
-                                        />
-                                        <InputError message={errors.construccion} className="mt-2" />
-                                    </div>
                                 </div>
 
                                 <div className="border-t pt-4">
                                     <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Datos Catastrales</h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                        <div>
+                                            <InputLabel htmlFor="superficie" value="Superficie" />
+                                            <TextInput
+                                                id="superficie"
+                                                type="number"
+                                                name="superficie"
+                                                value={data.superficie}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('superficie', e.target.value)}
+                                                step="0.0001"
+                                            />
+                                            <InputError message={errors.superficie} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="construccion" value="Construcción" />
+                                            <TextInput
+                                                id="construccion"
+                                                type="number"
+                                                name="construccion"
+                                                value={data.construccion}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('construccion', e.target.value)}
+                                                step="0.0001"
+                                            />
+                                            <InputError message={errors.construccion} className="mt-2" />
+                                        </div>
+
                                         <div>
                                             <InputLabel htmlFor="valor_catastral" value="Valor Catastral" />
                                             <TextInput
@@ -352,6 +355,47 @@ export default function Create({
                                                 onChange={(e) => setData('numero_de_escritura', e.target.value)}
                                             />
                                             <InputError message={errors.numero_de_escritura} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="año_ultimo_pago" value="Año Último Pago" />
+                                            <TextInput
+                                                id="año_ultimo_pago"
+                                                type="number"
+                                                name="año_ultimo_pago"
+                                                value={data.año_ultimo_pago}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('año_ultimo_pago', e.target.value)}
+                                            />
+                                            <InputError message={errors.año_ultimo_pago} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="latitud" value="Latitud" />
+                                            <TextInput
+                                                id="latitud"
+                                                type="number"
+                                                name="latitud"
+                                                value={data.latitud}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('latitud', e.target.value)}
+                                                step="any"
+                                            />
+                                            <InputError message={errors.latitud} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="longitud" value="Longitud" />
+                                            <TextInput
+                                                id="longitud"
+                                                type="number"
+                                                name="longitud"
+                                                value={data.longitud}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('longitud', e.target.value)}
+                                                step="any"
+                                            />
+                                            <InputError message={errors.longitud} className="mt-2" />
                                         </div>
                                     </div>
                                 </div>

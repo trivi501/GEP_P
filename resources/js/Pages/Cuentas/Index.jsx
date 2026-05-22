@@ -1,8 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ cuentas }) {
+    const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+
+    const confirmDelete = (id) => setDeleteModal({ show: true, id });
+    const handleDelete = () => {
+        router.delete(route('cuentas.destroy', deleteModal.id));
+        setDeleteModal({ show: false, id: null });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -34,6 +43,9 @@ export default function Index({ cuentas }) {
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Indetec
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Cuenta
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -54,6 +66,9 @@ export default function Index({ cuentas }) {
                                         {cuentas.data?.length > 0 ? (
                                             cuentas.data.map((cuenta) => (
                                                 <tr key={cuenta.id} className="hover:bg-gray-50 dark:bg-gray-700">
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {cuenta.indetec ?? '—'}
+                                                    </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                                         {cuenta.cuenta}
                                                     </td>
@@ -79,13 +94,19 @@ export default function Index({ cuentas }) {
                                                         >
                                                             Editar
                                                         </Link>
+                                                        <button
+                                                            onClick={() => confirmDelete(cuenta.id)}
+                                                            className="ml-3 text-red-600 hover:text-red-900"
+                                                        >
+                                                            Eliminar
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan="5"
+                                                    colSpan="6"
                                                     className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                                                 >
                                                     No hay cuentas registradas.
@@ -101,6 +122,31 @@ export default function Index({ cuentas }) {
                     </div>
                 </div>
             </div>
+
+            {deleteModal.show && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="mx-4 w-full max-w-sm rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Confirmar eliminación</h3>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            ¿Está seguro de eliminar esta cuenta? Esta acción no se puede deshacer.
+                        </p>
+                        <div className="mt-4 flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteModal({ show: false, id: null })}
+                                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500"
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

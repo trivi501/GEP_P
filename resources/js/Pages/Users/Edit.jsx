@@ -11,7 +11,7 @@ export default function Edit({ user, roles }) {
         email: user.email,
         password: '',
         password_confirmation: '',
-        roles: user.roles?.map((role) => role.name) ?? [],
+        roles: user.roles?.map((role) => role.id) ?? [],
     });
 
     const submit = (e) => {
@@ -124,7 +124,7 @@ export default function Edit({ user, roles }) {
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                         {roles.map((role) => (
-                                            <option key={role.id} value={role.name}>
+                                            <option key={role.id} value={role.id}>
                                                 {role.name}
                                             </option>
                                         ))}

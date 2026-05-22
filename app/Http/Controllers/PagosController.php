@@ -118,80 +118,59 @@ class PagosController extends Controller
             return response()->json([]);
         }
 
+        $prefix = $q . '%';
         $like = '%' . $q . '%';
         $terms = array_filter(explode(' ', $q), fn($t) => preg_match('/[a-zA-Z0-9]/', $t));
 
-        if (!empty($terms)) {
+        $ids = collect();
+
+        if (!empty($terms) && strlen($q) >= 2) {
             $fulltextTerms = '+' . implode('* +', $terms) . '*';
 
             $ids = DB::table('tb_predio')
-                ->whereIn('id_tipo_predio', [5, 6])
+                ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
+                ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
+                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
                 ->where(function ($query) use ($fulltextTerms) {
-                    $query->whereRaw('MATCH (Clave_predial) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
-                        ->orWhereExists(function ($sub) use ($fulltextTerms) {
-                            $sub->select(DB::raw(1))
-                                ->from('tb_contribuyentes')
-                                ->whereColumn('tb_predio.id_contribuyente', 'tb_contribuyentes.id_contribuyente')
-                                ->where(function ($w) use ($fulltextTerms) {
-                                    $w->whereRaw('MATCH (cuenta) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
-                                        ->orWhereRaw('MATCH (nombre_completo, nombre_moral) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
-                                });
-                        })
-                        ->orWhereExists(function ($sub) use ($fulltextTerms) {
-                            $sub->select(DB::raw(1))
-                                ->from('tb_clave_predial')
-                                ->whereColumn('tb_predio.id_clave_predial', 'tb_clave_predial.id_clave_predial')
-                                ->whereRaw('MATCH (clave_predial_completa) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
-                        });
+                    $query->whereRaw('MATCH (tb_predio.Clave_predial) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
+                        ->orWhereRaw('MATCH (tb_contribuyentes.cuenta) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
+                        ->orWhereRaw('MATCH (tb_contribuyentes.nombre_completo, tb_contribuyentes.nombre_moral) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
+                        ->orWhereRaw('MATCH (tb_clave_predial.clave_predial_completa) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms]);
                 })
                 ->take(10)
-                ->pluck('id_predio');
-        } else {
-            $ids = collect();
+                ->pluck('tb_predio.id_predio');
         }
 
         if ($ids->isEmpty()) {
             $ids = DB::table('tb_predio')
-                ->whereIn('id_tipo_predio', [5, 6])
-                ->where(function ($query) use ($like) {
-                    $query->where('Clave_predial', 'like', $like);
+                ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
+                ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
+                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
+                ->where(function ($query) use ($prefix) {
+                    $query->where('tb_predio.Clave_predial', 'like', $prefix)
+                        ->orWhere('tb_contribuyentes.cuenta', 'like', $prefix)
+                        ->orWhere('tb_contribuyentes.nombre_completo', 'like', $prefix)
+                        ->orWhere('tb_contribuyentes.nombre_moral', 'like', $prefix)
+                        ->orWhere('tb_clave_predial.clave_predial_completa', 'like', $prefix);
                 })
                 ->take(10)
-                ->pluck('id_predio');
+                ->pluck('tb_predio.id_predio');
+        }
 
-            if ($ids->count() < 10) {
-                $moreIds = DB::table('tb_predio')
-                    ->whereIn('id_tipo_predio', [5, 6])
-                    ->whereNotIn('id_predio', $ids)
-                    ->whereExists(function ($sub) use ($like) {
-                        $sub->select(DB::raw(1))
-                            ->from('tb_contribuyentes')
-                            ->whereColumn('tb_predio.id_contribuyente', 'tb_contribuyentes.id_contribuyente')
-                            ->where(function ($w) use ($like) {
-                                $w->where('cuenta', 'like', $like)
-                                    ->orWhere('nombre_completo', 'like', $like)
-                                    ->orWhere('nombre_moral', 'like', $like);
-                            });
-                    })
-                    ->take(10 - $ids->count())
-                    ->pluck('id_predio');
-                $ids = $ids->merge($moreIds);
-            }
-
-            if ($ids->count() < 10) {
-                $moreIds = DB::table('tb_predio')
-                    ->whereIn('id_tipo_predio', [5, 6])
-                    ->whereNotIn('id_predio', $ids)
-                    ->whereExists(function ($sub) use ($like) {
-                        $sub->select(DB::raw(1))
-                            ->from('tb_clave_predial')
-                            ->whereColumn('tb_predio.id_clave_predial', 'tb_clave_predial.id_clave_predial')
-                            ->where('clave_predial_completa', 'like', $like);
-                    })
-                    ->take(10 - $ids->count())
-                    ->pluck('id_predio');
-                $ids = $ids->merge($moreIds);
-            }
+        if ($ids->isEmpty() && strlen($q) >= 3) {
+            $ids = DB::table('tb_predio')
+                ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
+                ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
+                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
+                ->where(function ($query) use ($like) {
+                    $query->where('tb_predio.Clave_predial', 'like', $like)
+                        ->orWhere('tb_contribuyentes.cuenta', 'like', $like)
+                        ->orWhere('tb_contribuyentes.nombre_completo', 'like', $like)
+                        ->orWhere('tb_contribuyentes.nombre_moral', 'like', $like)
+                        ->orWhere('tb_clave_predial.clave_predial_completa', 'like', $like);
+                })
+                ->take(10)
+                ->pluck('tb_predio.id_predio');
         }
 
         if ($ids->isEmpty()) {
@@ -257,9 +236,12 @@ class PagosController extends Controller
         $total = 0;
         $conceptos = [];
         $predial_ant = 0;
-        $aseoPublico = 0;
-        $recargos = 0;
-        $actualizacion = 0;
+        $aseoPublico_ant = 0;
+        $aseoPublico_act = 0;
+        $recargos_ant = 0;
+        $recargos_act = 0;
+        $actualizacion_ant = 0;
+        $actualizacion_act = 0;
         $total_ant = 0; 
 
         if ($predio->datosUrbano) {
@@ -270,14 +252,14 @@ class PagosController extends Controller
                 foreach ($calculosAnuales as $calculo) {
                     if($calculo['anho'] < date('Y')) {
                         $predial_ant += $calculo['entero'];
-                        $aseoPublico += $calculo['aseo_publico'] ?? 0;
-                        $recargos += $calculo['recargos'] ?? 0;
-                        $actualizacion += $calculo['actualizacion'] ?? 0;
+                        $aseoPublico_ant += $calculo['aseo_publico'] ?? 0;
+                        $recargos_ant += $calculo['recargos'] ?? 0;
+                        $actualizacion_ant += $calculo['actualizacion'] ?? 0;
                         $total_ant += ($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0);
                     }else {
-                        $aseoPublico += $calculo['aseo_publico'] ?? 0; // Solo sumamos los años anteriores al actual
-                        $recargos += $calculo['recargos'] ?? 0;
-                        $actualizacion += $calculo['actualizacion'] ?? 0;
+                        $aseoPublico_act += $calculo['aseo_publico'] ?? 0;
+                        $recargos_act += $calculo['recargos'] ?? 0;
+                        $actualizacion_act += $calculo['actualizacion'] ?? 0;
                         $total += ($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0);
                     }
                 }
@@ -285,14 +267,28 @@ class PagosController extends Controller
                 $ultimo = end($calculosAnuales);
                 $conceptos[] = ['concepto' => 'Predial Anterior', 'monto' => round($predial_ant, 2)];
                 $conceptos[] = ['concepto' => 'Impuesto Predial Actual', 'monto' => round($calculo['entero'], 2)];
-                $conceptos[] = ['concepto' => 'Aseo Público', 'monto' => round($aseoPublico, 2)];
 
-                if (!empty($ultimo['recargos']) && $ultimo['recargos'] > 0) {
-                    $conceptos[] = ['concepto' => 'Recargos', 'monto' => round($recargos, 2)];
+                if ($aseoPublico_ant > 0) {
+                    $conceptos[] = ['concepto' => 'Aseo Público Anterior', 'monto' => round($aseoPublico_ant, 2)];
                 }
-                if (!empty($ultimo['actualizacion']) && $ultimo['actualizacion'] > 0) {
-                    $conceptos[] = ['concepto' => 'Actualización', 'monto' => round($actualizacion, 2)];
+                if ($aseoPublico_act > 0) {
+                    $conceptos[] = ['concepto' => 'Aseo Público Actual', 'monto' => round($aseoPublico_act, 2)];
                 }
+
+                if ($recargos_ant > 0) {
+                    $conceptos[] = ['concepto' => 'Recargos Anteriores', 'monto' => round($recargos_ant, 2)];
+                }
+                if ($recargos_act > 0) {
+                    $conceptos[] = ['concepto' => 'Recargos Actual', 'monto' => round($recargos_act, 2)];
+                }
+
+                if ($actualizacion_ant > 0) {
+                    $conceptos[] = ['concepto' => 'Actualización Anterior', 'monto' => round($actualizacion_ant, 2)];
+                }
+                if ($actualizacion_act > 0) {
+                    $conceptos[] = ['concepto' => 'Actualización Actual', 'monto' => round($actualizacion_act, 2)];
+                }
+
                 if (!empty($ultimo['descuento']) && $ultimo['descuento'] > 0) {
                     $conceptos[] = ['concepto' => 'Descuento por Prono pago', 'monto' => round($ultimo['descuento'], 2)];
                 }
@@ -340,6 +336,9 @@ class PagosController extends Controller
             'conceptos' => 'required|array|min:1',
             'conceptos.*.concepto' => 'required|string',
             'conceptos.*.monto' => 'required|numeric',
+            'formas_pagos' => 'required|array|min:1',
+            'formas_pagos.*.forma_pago_id' => 'required|integer',
+            'formas_pagos.*.monto' => 'required|numeric|min:0.01',
         ]);
 
         $cajero = Cajero::with('caja')->where('usuario_id', auth()->id())->first();
@@ -382,10 +381,49 @@ class PagosController extends Controller
                 'url_file' => null,
             ]);
 
+            $cuentasList = DB::table('cuentas')
+                ->select('id', DB::raw("TRIM(REPLACE(REPLACE(descripcion, '\r', ''), '\n', '')) as descripcion_clean"))
+                ->get();
+
+            $conceptCuentaMapping = [
+                'Predial Anterior' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'ANTERIORES')
+                ),
+                'Impuesto Predial Actual' => fn($list) => $list->first(fn($c) =>
+                    $c->descripcion_clean === 'PREDIAL URBANO AÑO ACTUAL'
+                ),
+                'Aseo Público Anterior' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'S.A.P.') && str_contains($c->descripcion_clean, 'REZAGO')
+                ),
+                'Aseo Público Actual' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'S.A.P. - URBANO ACTUAL')
+                ),
+                'Recargos Anteriores' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'RECARGOS PREDIAL URBANO')
+                ),
+                'Recargos Actual' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'RECARGOS PREDIAL URBANO')
+                ),
+                'Actualización Anterior' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'ACTUALIZACIONES PREDIAL URBANO')
+                ),
+                'Actualización Actual' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'ACTUALIZACIONES PREDIAL URBANO')
+                ),
+            ];
+
             foreach ($validated['conceptos'] as $c) {
+                $concepto = trim($c['concepto']);
+                $cuentaId = null;
+
+                if (isset($conceptCuentaMapping[$concepto])) {
+                    $match = $conceptCuentaMapping[$concepto]($cuentasList);
+                    if ($match) $cuentaId = $match->id;
+                }
+
                 CuentasPagos::create([
                     'pago_id' => $pago->id,
-                    'cuenta_id' => null,
+                    'cuenta_id' => $cuentaId,
                     'concepto' => $c['concepto'],
                     'fecha_registro' => now(),
                     'cantidad' => 1,
@@ -394,9 +432,37 @@ class PagosController extends Controller
                 ]);
             }
 
+            foreach ($validated['formas_pagos'] as $fp) {
+                \App\Models\FormasPagosCada::create([
+                    'pago_id' => $pago->id,
+                    'forma_pago_id' => $fp['forma_pago_id'],
+                    'monto' => $fp['monto'],
+                ]);
+            }
+
             $cajaAbierta->increment('total_ingreso', $validated['monto']);
 
-            $pdf = Pdf::loadView('pagos.recibo-pdf', ['pago' => $pago]);
+            $predio = DB::table('tb_predio')
+                ->where('id_predio', $validated['id_predio'])
+                ->first();
+
+            \App\Models\IncidenciaPago::create([
+                'pago_id' => $pago->id,
+                'id_predio' => $validated['id_predio'],
+                'año_ultimo_pago_anterior' => $predio?->año_ultimo_pago,
+                'ultimo_bimestre_pago_anterior' => $predio?->ultimo_bimestre_pago,
+                'snapshot' => $predio ? (array) $predio : [],
+            ]);
+
+            DB::table('tb_predio')
+                ->where('id_predio', $validated['id_predio'])
+                ->update([
+                    'año_ultimo_pago' => date('Y'),
+                    'ultimo_bimestre_pago' => DB::raw('CEIL(MONTH(CURDATE()) / 2)'),
+                ]);
+
+            $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
+            $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
             $pdfDir = public_path('pagos/recibos');
             if (!is_dir($pdfDir)) {
                 mkdir($pdfDir, 0755, true);
@@ -405,10 +471,6 @@ class PagosController extends Controller
             $pdf->save(public_path($pdfPath));
 
             $pago->update(['url_file' => $pdfPath]);
-
-            DB::table('tb_predio')
-                ->where('id_predio', $validated['id_predio'])
-                ->update(['año_ultimo_pago' => date('Y')]);
 
             DB::commit();
 
@@ -427,14 +489,63 @@ class PagosController extends Controller
 
     public function recibo($id)
     {
-        $pago = Pago::with('cuentasPagos')->findOrFail($id);
+        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia'])->findOrFail($id);
+        $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
 
         if ($pago->url_file && file_exists(public_path($pago->url_file))) {
             return response()->file(public_path($pago->url_file));
         }
 
-        $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago'));
+        $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
 
         return $pdf->stream("recibo-{$pago->folio}.pdf");
+    }
+
+    public function cancelar(Pago $pago)
+    {
+        if ($pago->estatus === 'cancelado') {
+            return redirect()->back()->with('error', 'Este pago ya está cancelado.');
+        }
+
+        $incidencia = \App\Models\IncidenciaPago::where('pago_id', $pago->id)->first();
+
+        if (!$incidencia) {
+            return redirect()->back()->with('error', 'No se encontró la incidencia de este pago.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            DB::table('tb_predio')
+                ->where('id_predio', $pago->id_predio)
+                ->update([
+                    'año_ultimo_pago' => $incidencia->año_ultimo_pago_anterior,
+                    'ultimo_bimestre_pago' => $incidencia->ultimo_bimestre_pago_anterior,
+                ]);
+
+            $pago->update(['estatus' => 'cancelado']);
+
+            \App\Models\CuentasPagos::where('pago_id', $pago->id)
+                ->update(['monto' => 0]);
+
+            $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
+            $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
+            $pdfPath = "pagos/recibos/recibo-{$pago->folio}.pdf";
+            $pdf->save(public_path($pdfPath));
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Pago cancelado y datos del predio restaurados.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Error al cancelar el pago: ' . $e->getMessage());
+        }
+    }
+
+    private function generarQrBase64(string $url): string
+    {
+        $qrPng = @file_get_contents('https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl=' . urlencode($url));
+        return $qrPng !== false ? base64_encode($qrPng) : '';
     }
 }

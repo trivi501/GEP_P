@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CuentasPagos extends Model
 {
@@ -18,4 +19,9 @@ class CuentasPagos extends Model
         'monto',
         'concepto_id',
     ];
+
+    public function cuenta(): BelongsTo
+    {
+        return $this->belongsTo(Cuentas::class, 'cuenta_id', 'id');
+    }
 }

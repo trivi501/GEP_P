@@ -1,8 +1,19 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Historial({ pagos, cajero, cajaAbierta }) {
+    const { post } = useForm();
+    const [cancelModal, setCancelModal] = useState(null);
+
+    const confirmarCancelacion = () => {
+        if (cancelModal) {
+            post(route('pagos.cancelar', cancelModal));
+            setCancelModal(null);
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -51,13 +62,14 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estatus</th>
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Caja</th>
                                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Recibo</th>
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             {pagos.data.map((pago) => (
                                                 <tr key={pago.id} className="hover:bg-gray-50 dark:bg-gray-700">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{pago.folio}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.predio?.clave_predial ?? '—'}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.predio?.Clave_predial ?? '—'}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.fecha ?? '—'}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm max-w-[200px] truncate">{pago.nombre}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.rfc}</td>
@@ -87,6 +99,16 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                                             <span className="text-xs text-gray-400">—</span>
                                                         )}
                                                     </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                                {pago.estatus === 'pagado' && (
+                                                            <button
+                                                                onClick={() => setCancelModal(pago.id)}
+                                                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 border border-red-300 rounded hover:text-red-800"
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                        )}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -99,6 +121,31 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                     </div>
                 </div>
             </div>
+
+            {cancelModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+                        <h3 className="text-lg font-semibold mb-2">Cancelar pago</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                            ¿Estás seguro de cancelar este pago? Se restaurarán los datos anteriores del predio (<strong>año y bimestre de último pago</strong>).
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setCancelModal(null)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                            >
+                                No, volver
+                            </button>
+                            <button
+                                onClick={confirmarCancelacion}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
+                            >
+                                Sí, cancelar pago
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

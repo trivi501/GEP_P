@@ -48,6 +48,8 @@ export default function Edit({
         id_titulo_propiedad: predio.id_titulo_propiedad ?? '',
         numero_de_escritura: predio.numero_de_escritura ?? '',
         año_ultimo_pago: predio.año_ultimo_pago ?? '',
+        latitud: predio.latitud ?? '',
+        longitud: predio.longitud ?? '',
         observacion: predio.observaciones?.[0]?.observacion ?? '',
         id_zona_urbana: urbano?.id_zona_urbana ?? '',
         numero_de_pisos_construidos: urbano?.numero_de_pisos_construidos ?? '',
@@ -128,7 +130,7 @@ export default function Edit({
             <Head title="Editar Predio" />
 
             <div className="py-12">
-                <div className="mx-auto max-w sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <form onSubmit={submit} className="space-y-6">
@@ -290,38 +292,39 @@ export default function Edit({
                                         <InputError message={errors.codigo_postal} className="mt-2" />
                                     </div>
 
-                                    <div>
-                                        <InputLabel htmlFor="superficie" value="Superficie" />
-                                        <TextInput
-                                            id="superficie"
-                                            type="number"
-                                            name="superficie"
-                                            value={data.superficie}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) => setData('superficie', e.target.value)}
-                                            step="0.0001"
-                                        />
-                                        <InputError message={errors.superficie} className="mt-2" />
-                                    </div>
-
-                                    <div>
-                                        <InputLabel htmlFor="construccion" value="Construcción" />
-                                        <TextInput
-                                            id="construccion"
-                                            type="number"
-                                            name="construccion"
-                                            value={data.construccion}
-                                            className="mt-1 block w-full"
-                                            onChange={(e) => setData('construccion', e.target.value)}
-                                            step="0.0001"
-                                        />
-                                        <InputError message={errors.construccion} className="mt-2" />
-                                    </div>
                                 </div>
 
                                 <div className="border-t pt-4">
                                     <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Datos Catastrales</h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                        <div>
+                                            <InputLabel htmlFor="superficie" value="Superficie" />
+                                            <TextInput
+                                                id="superficie"
+                                                type="number"
+                                                name="superficie"
+                                                value={data.superficie}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('superficie', e.target.value)}
+                                                step="0.0001"
+                                            />
+                                            <InputError message={errors.superficie} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="construccion" value="Construcción" />
+                                            <TextInput
+                                                id="construccion"
+                                                type="number"
+                                                name="construccion"
+                                                value={data.construccion}
+                                                className="mt-1 block w-full"
+                                                onChange={(e) => setData('construccion', e.target.value)}
+                                                step="0.0001"
+                                            />
+                                            <InputError message={errors.construccion} className="mt-2" />
+                                        </div>
+
                                         <div>
                                             <InputLabel htmlFor="valor_catastral" value="Valor Catastral" />
                                             <TextInput
@@ -351,19 +354,60 @@ export default function Edit({
                                         </div>
 
                                         <div>
-                                            <InputLabel htmlFor="numero_de_escritura" value="Número de Escritura" />
-                                            <TextInput
-                                                id="numero_de_escritura"
-                                                type="text"
-                                                name="numero_de_escritura"
-                                                value={data.numero_de_escritura}
-                                                className="mt-1 block w-full"
-                                                onChange={(e) => setData('numero_de_escritura', e.target.value)}
-                                            />
-                                            <InputError message={errors.numero_de_escritura} className="mt-2" />
-                                        </div>
+                                        <InputLabel htmlFor="numero_de_escritura" value="Número de Escritura" />
+                                        <TextInput
+                                            id="numero_de_escritura"
+                                            type="text"
+                                            name="numero_de_escritura"
+                                            value={data.numero_de_escritura}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => setData('numero_de_escritura', e.target.value)}
+                                        />
+                                        <InputError message={errors.numero_de_escritura} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="año_ultimo_pago" value="Año Último Pago" />
+                                        <TextInput
+                                            id="año_ultimo_pago"
+                                            type="number"
+                                            name="año_ultimo_pago"
+                                            value={data.año_ultimo_pago}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => setData('año_ultimo_pago', e.target.value)}
+                                        />
+                                        <InputError message={errors.año_ultimo_pago} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="latitud" value="Latitud" />
+                                        <TextInput
+                                            id="latitud"
+                                            type="number"
+                                            name="latitud"
+                                            value={data.latitud}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => setData('latitud', e.target.value)}
+                                            step="any"
+                                        />
+                                        <InputError message={errors.latitud} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="longitud" value="Longitud" />
+                                        <TextInput
+                                            id="longitud"
+                                            type="number"
+                                            name="longitud"
+                                            value={data.longitud}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => setData('longitud', e.target.value)}
+                                            step="any"
+                                        />
+                                        <InputError message={errors.longitud} className="mt-2" />
                                     </div>
                                 </div>
+                            </div>
 
                                 <div className="border-t pt-4">
                                     <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Información Legal</h4>

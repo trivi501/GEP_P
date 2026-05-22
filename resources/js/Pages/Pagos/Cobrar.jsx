@@ -11,10 +11,11 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
     const [conceptos, setConceptos] = useState([]);
     const [total, setTotal] = useState(0);
     const [contribuyenteData, setContribuyenteData] = useState({});
-    const [formaPago, setFormaPago] = useState('');
-    const [pagoCon, setPagoCon] = useState('');
+    const [formasPagosData, setFormasPagosData] = useState([{ forma_pago_id: '1', monto: '' }]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showPagadoModal, setShowPagadoModal] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
     const searchRef = useRef(null);
     const timeoutRef = useRef(null);
 
@@ -33,7 +34,7 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
                     setShowResults(true);
                 })
                 .catch(() => setResults([]));
-        }, 100);
+        }, 300);
     }, [search]);
 
     useEffect(() => {
@@ -53,6 +54,7 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
         setConceptos([]);
         setTotal(0);
         setError(null);
+        setFormasPagosData([]);
 
         axios.get(route('pagos.get-calculo'), { params: { id: p.id } })
             .then((r) => {
@@ -66,36 +68,75 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
                         rfc: data.predio.rfc || '—',
                         nombre: data.predio.contribuyente_nombre || data.predio.contribuyente || '—',
                     });
+                    setFormasPagosData([{ forma_pago_id: '1', monto: '' }]);
+
+                    if (data.total <= 0) {
+                        setShowPagadoModal(true);
+                    }
                 }
             })
             .catch(() => setError('Error al obtener cálculo'));
     };
 
-    const pagar = () => {
+    const addFormaPagoRow = () => {
+        setFormasPagosData((prev) => [...prev, { forma_pago_id: '', monto: '' }]);
+    };
+
+    const removeFormaPagoRow = (index) => {
+        setFormasPagosData((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const updateFormaPagoRow = (index, field, value) => {
+        setFormasPagosData((prev) =>
+            prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+        );
+    };
+
+    const sumaFormasPagos = formasPagosData.reduce(
+        (sum, row) => sum + (parseFloat(row.monto) || 0), 0
+    );
+
+    const formasValidas = formasPagosData.every((row) => row.forma_pago_id && parseFloat(row.monto) > 0);
+    const suficiente = sumaFormasPagos >= total - 0.01;
+    const cambio = Math.max(0, sumaFormasPagos - total);
+
+    const abrirConfirmacion = () => {
         if (!selectedPredio || conceptos.length === 0) {
             alert('Selecciona un predio y espera el cálculo.');
             return;
         }
-        if (!formaPago) {
-            alert('Selecciona una forma de pago.');
+        if (!formasValidas) {
+            alert('Completa todas las formas de pago con montos válidos.');
+            return;
+        }
+        if (!suficiente) {
+            alert(`La suma de las formas de pago ($${sumaFormasPagos.toFixed(2)}) es menor al total ($${total.toFixed(2)}).`);
             return;
         }
 
+        setShowConfirmModal(true);
+    };
+
+    const confirmarPago = () => {
+        setShowConfirmModal(false);
         setLoading(true);
         setError(null);
 
-        const monto = conceptos.reduce((sum, c) => sum + parseFloat(c.monto || 0), 0);
         const payload = {
             id_predio: selectedPredio.id,
             id_contribuyente: contribuyenteData.id_contribuyente,
-            monto,
+            monto: total,
             descuento: 0,
             nombre: contribuyenteData.nombre,
             rfc: contribuyenteData.rfc,
             descripcion: 'Pago predial urbano',
-            forma_pago: formaPago,
+            forma_pago: formasPagosData[0]?.forma_pago_id || '',
             tipo_pago: 'predial_urbano',
             conceptos,
+            formas_pagos: formasPagosData.map((row) => ({
+                forma_pago_id: parseInt(row.forma_pago_id),
+                monto: parseFloat(row.monto),
+            })),
         };
 
         axios.post(route('pagos.guardar'), payload)
@@ -222,43 +263,88 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
                                 </div>
                             </div>
 
-                            {conceptos.length > 0 && (
+                            {conceptos.length > 0 && total > 0 && (
                                 <div className="mt-6 border-t border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 pt-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="block text-sm font-medium">Formas de Pago</label>
+                                            <button
+                                                type="button"
+                                                onClick={addFormaPagoRow}
+                                                className="text-sm text-indigo-600 hover:text-indigo-900"
+                                            >
+                                                + Agregar otra forma
+                                            </button>
+                                        </div>
+
+                                        {formasPagosData.map((row, i) => (
+                                            <div key={i} className="flex gap-3 items-end mb-2">
+                                                <div className="flex-1">
+                                                    <select
+                                                        value={row.forma_pago_id}
+                                                        onChange={(e) => updateFormaPagoRow(i, 'forma_pago_id', e.target.value)}
+                                                        className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                                                    >
+                                                        <option value="">Seleccionar...</option>
+                                                        {formasPago.map((fp) => (
+                                                            <option key={fp.id} value={fp.id}>{fp.Descripción}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="w-40">
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={row.monto}
+                                                        onChange={(e) => updateFormaPagoRow(i, 'monto', e.target.value)}
+                                                        placeholder="Monto"
+                                                        className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                                                    />
+                                                </div>
+                                                {formasPagosData.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeFormaPagoRow(i)}
+                                                        className="text-red-500 hover:text-red-700 text-sm pb-1"
+                                                    >
+                                                        Quitar
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        <div className="mt-1 text-sm">
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                Suma formas de pago:{' '}
+                                            </span>
+                                            <span className={suficiente ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                                                ${sumaFormasPagos.toFixed(2)}
+                                            </span>
+                                            {!suficiente && (
+                                                <span className="ml-2 text-red-500 text-xs">
+                                                    (debe ser ≥ ${total.toFixed(2)})
+                                                </span>
+                                            )}
+                                            {suficiente && cambio > 0 && (
+                                                <span className="ml-2 text-green-600 text-xs">
+                                                    cambio: ${cambio.toFixed(2)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Total</label>
+                                            <label className="block text-sm font-medium mb-1">Total a pagar</label>
                                             <p className="text-2xl font-bold text-green-600">${total.toFixed(2)}</p>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Forma de Pago</label>
-                                            <select
-                                                value={formaPago}
-                                                onChange={(e) => setFormaPago(e.target.value)}
-                                                className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {formasPago.map((fp) => (
-                                                    <option key={fp.id} value={fp.id}>{fp.Descripción}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Pago con</label>
-                                            <input
-                                                type="text"
-                                                value={pagoCon}
-                                                onChange={(e) => setPagoCon(e.target.value)}
-                                                placeholder="Monto recibido"
-                                                className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
-                                            />
-                                        </div>
-                                        <div>
+                                        <div className="text-right">
                                             <button
-                                                onClick={pagar}
-                                                disabled={loading || !formaPago}
-                                                className="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                onClick={abrirConfirmacion}
+                                                disabled={loading || !formasValidas || !suficiente}
+                                                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                {loading ? 'Procesando...' : 'Pagar'}
+                                                {loading ? 'Procesando...' : 'Revisar y Pagar'}
                                             </button>
                                         </div>
                                     </div>
@@ -268,6 +354,71 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
                     </div>
                 </div>
             </div>
+
+            {showPagadoModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+                        <h3 className="text-lg font-semibold mb-2">Predial al día</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                            Este predio no tiene adeudos. El cálculo total es $0.00, lo que indica que ya está pagado.
+                        </p>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setShowPagadoModal(false)}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-500"
+                            >
+                                Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-xl">
+                        <h3 className="text-lg font-semibold mb-4">Confirmar pago</h3>
+
+                        <div className="space-y-3 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Total a pagar:</span>
+                                <span className="font-semibold">${total.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Recibido:</span>
+                                <span className="font-semibold">${sumaFormasPagos.toFixed(2)}</span>
+                            </div>
+                            {cambio > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Cambio:</span>
+                                    <span className="font-bold">${cambio.toFixed(2)}</span>
+                                </div>
+                            )}
+                            <hr className="border-gray-300 dark:border-gray-600" />
+                            <div className="text-xs text-gray-500">
+                                <p>Contribuyente: {contribuyenteData.nombre}</p>
+                                <p>Clave catastral: {selectedPredio?.clave_catastral}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-6">
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmarPago}
+                                disabled={loading}
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500 disabled:opacity-50"
+                            >
+                                {loading ? 'Procesando...' : 'Confirmar pago'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

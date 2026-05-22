@@ -47,7 +47,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <button
                                             type="button"
                                             className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
-                                                route().current('cajas.*') || route().current('cajeros.*') || route().current('pagos.*') || route().current('cuentas.*')
+                                                route().current('cajas.*') || route().current('cajeros.*') || route().current('pagos.*') || route().current('pagos.historial') || route().current('cuentas.*')
                                                     ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
                                                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
                                             }`}
@@ -68,6 +68,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('pagos.index')}>
                                             Historial de Caja
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('pagos.historial')}>
+                                            Historial de Pagos
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('cuentas.index')}>
                                             Cuentas
@@ -196,8 +199,11 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ResponsiveNavLink href={route('cajeros.index')} active={route().current('cajeros.*')}>
                                 Listado de Cajeros
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('pagos.index')} active={route().current('pagos.*')}>
+                            <ResponsiveNavLink href={route('pagos.index')} active={route().current('pagos.index')}>
                                 Historial de Caja
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('pagos.historial')} active={route().current('pagos.historial')}>
+                                Historial de Pagos
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('cuentas.index')} active={route().current('cuentas.*')}>
                                 Cuentas
