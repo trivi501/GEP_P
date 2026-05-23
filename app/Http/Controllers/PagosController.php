@@ -132,7 +132,7 @@ class PagosController extends Controller
             $ids = DB::table('tb_predio')
                 ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
                 ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
-                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
+                ->whereIn('tb_predio.id_tipo_predio', [1, 2, 3, 4, 5, 6])
                 ->where(function ($query) use ($fulltextTerms) {
                     $query->whereRaw('MATCH (tb_predio.Clave_predial) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
                         ->orWhereRaw('MATCH (tb_contribuyentes.cuenta) AGAINST (? IN BOOLEAN MODE)', [$fulltextTerms])
@@ -147,7 +147,7 @@ class PagosController extends Controller
             $ids = DB::table('tb_predio')
                 ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
                 ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
-                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
+                ->whereIn('tb_predio.id_tipo_predio', [1, 2, 3, 4, 5, 6])
                 ->where(function ($query) use ($prefix) {
                     $query->where('tb_predio.Clave_predial', 'like', $prefix)
                         ->orWhere('tb_contribuyentes.cuenta', 'like', $prefix)
@@ -163,7 +163,7 @@ class PagosController extends Controller
             $ids = DB::table('tb_predio')
                 ->join('tb_contribuyentes', 'tb_predio.id_contribuyente', '=', 'tb_contribuyentes.id_contribuyente')
                 ->leftJoin('tb_clave_predial', 'tb_predio.id_clave_predial', '=', 'tb_clave_predial.id_clave_predial')
-                ->whereIn('tb_predio.id_tipo_predio', [5, 6])
+                ->whereIn('tb_predio.id_tipo_predio', [1, 2, 3, 4, 5, 6])
                 ->where(function ($query) use ($like) {
                     $query->where('tb_predio.Clave_predial', 'like', $like)
                         ->orWhere('tb_contribuyentes.cuenta', 'like', $like)
@@ -227,6 +227,7 @@ class PagosController extends Controller
             'calle', 'colonia', 'clavePredial',
             'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio',
             'datosUrbano.estadoFisico', 'datosUrbano.pavimento',
+            'datosRustico',
             'nivelesConstruidos.tipoConstruccion',
             'medidasYColindancias.orientacion',
         ])->find($request->id);
@@ -299,7 +300,7 @@ class PagosController extends Controller
             } catch (\Exception $e) {
                 $conceptos[] = ['concepto' => 'Error al calcular: ' . $e->getMessage(), 'monto' => 0];
             }
-        } elseif ($predio->datosRustico || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO')) {
+        } elseif ($predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA')) {
             $predio->load('datosRustico');
             $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
             $valorUma = $uma?->valor ?? 0;
@@ -342,7 +343,7 @@ class PagosController extends Controller
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
         }
 
-        $esRustico = $predio->datosRustico || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO');
+        $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
 
         return response()->json([
             'predio' => [
