@@ -299,10 +299,50 @@ class PagosController extends Controller
             } catch (\Exception $e) {
                 $conceptos[] = ['concepto' => 'Error al calcular: ' . $e->getMessage(), 'monto' => 0];
             }
+        } elseif ($predio->datosRustico || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO')) {
+            $predio->load('datosRustico');
+            $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
+            $valorUma = $uma?->valor ?? 0;
+            $hectareas = $predio->superficie ?? 0;
+            $esMina = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
+
+            $anhoInicio = $predio->año_ultimo_pago ?? now()->year;
+            $anhoActual = now()->year;
+            $totalRustico = 0;
+            $anhoInicio = $anhoInicio + 1;
+
+            while ($anhoInicio <= $anhoActual) {
+                $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
+                $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
+
+                if ($esMina) {
+                    $subtotal = $hectareas * (11 * $valorUmaAnual);
+                } elseif ($predio->datosRustico?->valor_catastral_casa) {
+                    $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
+                } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
+                    $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
+                    $subtotal = $hectareas < 20
+                        ? (3 * $valorUmaAnual) + ($hectareas * 3)
+                        : (2 * $valorUmaAnual) + ($hectareas * 6.40);
+                } else {
+                    $subtotal = $hectareas < 20
+                        ? ($hectareas * 3) + (3 * $valorUmaAnual) + (2 * $valorUmaAnual)
+                        : ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                }
+
+                $totalRustico += $subtotal;
+                $anhoInicio++;
+            }
+
+            $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($totalRustico, 2)];
+            $total = round($totalRustico, 2);
         } else {
-            $conceptos[] = ['concepto' => 'Sin datos urbanos', 'monto' => 0];
+            $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
         }
+
+        $esRustico = $predio->datosRustico || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO');
 
         return response()->json([
             'predio' => [
@@ -317,6 +357,8 @@ class PagosController extends Controller
                 'ultimo_pago' => $predio->año_ultimo_pago
                     ? $predio->año_ultimo_pago . ($predio->ultimo_bimestre_pago ? ' - Bimestre ' . $predio->ultimo_bimestre_pago : '')
                     : 'Sin pagos',
+                'tipo_predio' => $predio->tipoPredio?->Tipo_predio ?? '',
+                'es_rustico' => $esRustico,
             ],
             'conceptos' => $conceptos,
             'total' => $total,
@@ -387,7 +429,13 @@ class PagosController extends Controller
                 ->select('id', DB::raw("TRIM(REPLACE(REPLACE(descripcion, '\r', ''), '\n', '')) as descripcion_clean"))
                 ->get();
 
-            $conceptCuentaMapping = [
+            $esRustico = ($validated['tipo_pago'] ?? '') === 'predial_rustico';
+
+            $conceptCuentaMapping = $esRustico ? [
+                'Predial Rústico' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')
+                ),
+            ] : [
                 'Predial Anterior' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'ANTERIORES')
                 ),

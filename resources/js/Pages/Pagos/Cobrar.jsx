@@ -13,6 +13,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const [contribuyenteData, setContribuyenteData] = useState({});
     const [formasPagosData, setFormasPagosData] = useState([{ forma_pago_id: '1', monto: '' }]);
     const [loading, setLoading] = useState(false);
+    const [esRustico, setEsRustico] = useState(false);
     const [error, setError] = useState(null);
     const [showPagadoModal, setShowPagadoModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -53,6 +54,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             .then((r) => {
                 const data = r.data;
                 if (data.predio) {
+                    const rustico = data.predio.es_rustico ?? false;
+                    setEsRustico(rustico);
                     setSelectedPredio({ id: predioId, clave_catastral: data.predio.clave_catastral ?? '', contribuyente: data.predio.contribuyente ?? '' });
                     setSearch(`${data.predio.clave_catastral ?? ''} - ${data.predio.contribuyente ?? ''}`);
                     const items = data.conceptos.filter((c) => c.concepto !== 'TOTAL');
@@ -85,6 +88,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             .then((r) => {
                 const data = r.data;
                 if (data.predio) {
+                    setEsRustico(data.predio.es_rustico ?? false);
                     const items = data.conceptos.filter((c) => c.concepto !== 'TOTAL');
                     setConceptos(items);
                     setTotal(data.total);
@@ -154,9 +158,9 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             descuento: 0,
             nombre: contribuyenteData.nombre,
             rfc: contribuyenteData.rfc,
-            descripcion: 'Pago predial urbano',
+            descripcion: esRustico ? 'Pago predial rústico' : 'Pago predial urbano',
             forma_pago: formasPagosData[0]?.forma_pago_id || '',
-            tipo_pago: 'predial_urbano',
+            tipo_pago: esRustico ? 'predial_rustico' : 'predial_urbano',
             conceptos,
             formas_pagos: formasPagosData.map((row) => ({
                 forma_pago_id: parseInt(row.forma_pago_id),
@@ -184,11 +188,11 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">
-                    Pago Predial Urbano
+                    {esRustico ? 'Pago Predial Rústico' : 'Pago Predial Urbano'}
                 </h2>
             }
         >
-            <Head title="Pago Predial Urbano" />
+            <Head title={esRustico ? 'Pago Predial Rústico' : 'Pago Predial Urbano'} />
 
             <div className="py-12 w-full">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -199,7 +203,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-medium">Cobro - Caja {cajaAbierta?.caja?.nombre ?? ''}</h3>
+                                <h3 className="text-lg font-medium">Cobro {esRustico ? 'Rústico' : 'Urbano'} - Caja {cajaAbierta?.caja?.nombre ?? ''}</h3>
                                 <a href="/pagos" className="text-sm text-gray-600 dark:text-gray-400 hover:underline">&larr; Volver</a>
                             </div>
 
