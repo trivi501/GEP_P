@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('id_contribuyente');
             $table->unsignedBigInteger('id_historial_caja');
             $table->unsignedBigInteger('id_usuario');
-            $table->year('anio_pago');
+            $table->year('anio_pago')->nullable();
             $table->string('im', 50)->nullable();
             $table->string('url_file')->nullable();
 

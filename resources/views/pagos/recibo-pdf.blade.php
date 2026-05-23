@@ -40,7 +40,7 @@
         table.conceptos td.monto { text-align: right; }
         table.conceptos .total-row td { font-weight: bold; font-size: 7pt; border-top: 0.5px solid #333; padding-top: 1px; }
 
-        .footer { text-align: center; margin-top: 24px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 7pt; color: #888; }
+        .footer { text-align: center; margin-top: 24px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 7pt; color: #000000; }
 
         .badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 7pt; font-weight: bold; text-transform: uppercase; }
         .badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -100,6 +100,10 @@
     @if ($pago->estatus === 'cancelado')
         <div class="watermark">Cancelado</div>
     @endif
+    @php
+        $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
+        $anioActual = (int) date('Y');
+    @endphp
     <div class="recibo-original">
         <div class="section">
             <table width="100%">
@@ -119,10 +123,12 @@
                         <tr>
                             <td class="label" style="width:100px">Cuenta</td>
                             <td class="label" style="width:100px">Clave Catastral</td>
+                            <td class="label" style="width:500px; text-align: right;">Período del pago</td>
                         <tr>
                         <tr>
                             <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</b></td>
                             <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->Clave_predial ?? '—' }}</b></td>
+                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $ultimoAno + 1 == $anioActual ? $anioActual : ($ultimoAno + 1) . ' - ' . $anioActual }}</b></td>
                         </tr>
                     </table>
                     
@@ -144,7 +150,7 @@
                     </table>
                 </tr>
             </table>
-            <table>
+                    <table>
                         <tr>
                             <td class="label" style="width:100%">Ubicación</td>
                         </tr>
@@ -158,16 +164,16 @@
             <table class="conceptos">
                 <thead>
                     <tr>
-                        <th>Concepto</th>
                         <th>Indetec</th>
+                        <th>Concepto</th>
                         <th class="monto">Monto</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($pago->cuentasPagos as $c)
                     <tr>
-                        <td>{{ $c->concepto }}</td>
                         <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td>{{ $c->concepto }}</td>
                         <td class="monto">${{ number_format($c->monto, 2) }}</td>
                     </tr>
                     @endforeach
@@ -212,10 +218,12 @@
                         <tr>
                             <td class="label" style="width:100px">Cuenta</td>
                             <td class="label" style="width:100px">Clave Catastral</td>
+                            <td class="label" style="width:500px; text-align: right;">Período del pago</td>
                         <tr>
                         <tr>
                             <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</td>
                             <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
+                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $ultimoAno + 1 == $anioActual ? $anioActual : ($ultimoAno + 1) . ' - ' . $anioActual }}</b></td>
                         </tr>
                     </table>
                     
@@ -237,30 +245,22 @@
                     </table>
                 </tr>
             </table>
-            <table>
-                        <tr>
-                            <td class="label" style="width:100%">Ubicación</td>
-                        </tr>
-                        <tr>
-                            <td class="value" style="width:100%" style="font-size: 9pt;"><b>{{ $pago->predio?->ubicacion_completa ?? '—' }}</b></td>
-                        </tr>
-                    </table>
         </div>
 
         <div class="section-title">Descripción</div>
             <table class="conceptos">
                 <thead>
                     <tr>
-                        <th>Concepto</th>
                         <th>Indetec</th>
+                        <th>Concepto</th>
                         <th class="monto">Monto</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($pago->cuentasPagos as $c)
                     <tr>
-                        <td>{{ $c->concepto }}</td>
                         <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td>{{ $c->concepto }}</td>
                         <td class="monto">${{ number_format($c->monto, 2) }}</td>
                     </tr>
                     @endforeach

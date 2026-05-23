@@ -47,7 +47,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <button
                                             type="button"
                                             className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
-                                                route().current('cajas.*') || route().current('cajeros.*') || route().current('pagos.*') || route().current('pagos.historial') || route().current('cuentas.*')
+                                                route().current('cajas.*') || route().current('cajeros.*') || route().current('pagos.*') || route().current('pagos.historial') || route().current('pagos.caja-general') || route().current('pagos.caja-general.*') || route().current('cuentas.*') || route().current('ordenes-pago.*') || route().current('secretarias.*')
                                                     ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
                                                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
                                             }`}
@@ -74,6 +74,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('cuentas.index')}>
                                             Cuentas
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('ordenes-pago.index')}>
+                                            Órdenes de Pago
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('pagos.caja-general')}>
+                                            Caja General
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('secretarias.index')}>
+                                            Secretarías
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -207,6 +216,15 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('cuentas.index')} active={route().current('cuentas.*')}>
                                 Cuentas
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
+                                Órdenes de Pago
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('pagos.caja-general')} active={route().current('pagos.caja-general') || route().current('pagos.caja-general.*')}>
+                                Caja General
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('secretarias.index')} active={route().current('secretarias.*')}>
+                                Secretarías
                             </ResponsiveNavLink>
                         </div>
 

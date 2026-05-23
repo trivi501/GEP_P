@@ -8,6 +8,8 @@ use App\Http\Controllers\CajasController;
 use App\Http\Controllers\CajeroController;
 use App\Http\Controllers\CalculosPrediosController;
 use App\Http\Controllers\CuentasController;
+use App\Http\Controllers\SecretariaController;
+use App\Http\Controllers\OrdenPagoController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -62,10 +64,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('pagos/historial', [PagosController::class, 'historial'])->name('pagos.historial');
     Route::get('pagos/recibo/{id}', [PagosController::class, 'recibo'])->name('pagos.recibo');
     Route::post('pagos/{pago}/cancelar', [PagosController::class, 'cancelar'])->name('pagos.cancelar');
+    Route::get('pagos/caja-general', [PagosController::class, 'cajaGeneralIndex'])->name('pagos.caja-general');
+    Route::get('pagos/caja-general/pagar/{ordenPago}', [PagosController::class, 'cajaGeneralPagar'])->name('pagos.caja-general.pagar');
+    Route::post('pagos/caja-general/guardar', [PagosController::class, 'cajaGeneralGuardar'])->name('pagos.caja-general.guardar');
+    Route::get('pagos/caja-general/{pago}', [PagosController::class, 'cajaGeneralShow'])->name('pagos.caja-general.show');
+    Route::post('pagos/caja-general/{pago}/cancelar', [PagosController::class, 'cajaGeneralCancelar'])->name('pagos.caja-general.cancelar');
     Route::get('calculos-predios', [CalculosPrediosController::class, 'index'])->name('calculos-predios.index');
     Route::get('calculos-predios/pdf', [CalculosPrediosController::class, 'pdf'])->name('calculos-predios.pdf');
     Route::get('calculos-predios/pdf-rustico', [CalculosPrediosController::class, 'pdfRustico'])->name('calculos-predios.pdf-rustico');
     Route::post('calculos-predios/calculo-predial-urbano', [CalculosPrediosController::class, 'calculoPredialUrbano'])->name('calculos-predios.calculo-predial-urbano');
+
+    Route::resource('secretarias', SecretariaController::class);
+    Route::resource('ordenes-pago', OrdenPagoController::class)->parameters(['ordenes-pago' => 'ordenPago']);
 });
 
 require __DIR__.'/auth.php';

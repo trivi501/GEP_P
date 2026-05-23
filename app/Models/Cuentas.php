@@ -34,4 +34,9 @@ class Cuentas extends Model
     {
         return $this->hasMany(Cuentas::class, 'cuentaMayor_id', 'id');
     }
+
+    public function secretarias()
+    {
+        return $this->belongsToMany(Secretaria::class, 'cuentas_por_secretaria', 'cuenta_id', 'secretaria_id');
+    }
 }

@@ -27,6 +27,7 @@ class Pago extends Model
         'anio_pago',
         'im',
         'url_file',
+        'orden_pago_id',
     ];
 
     public function cuentasPagos()
@@ -42,5 +43,20 @@ class Pago extends Model
     public function predio()
     {
         return $this->belongsTo(Predio::class, 'id_predio', 'id_predio');
+    }
+
+    public function formasPagosCada()
+    {
+        return $this->hasMany(FormasPagosCada::class, 'pago_id', 'id');
+    }
+
+    public function incidencia()
+    {
+        return $this->hasOne(IncidenciaPago::class, 'pago_id', 'id');
+    }
+
+    public function ordenPago()
+    {
+        return $this->belongsTo(OrdenPago::class, 'orden_pago_id', 'id');
     }
 }

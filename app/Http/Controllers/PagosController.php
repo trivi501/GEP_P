@@ -7,7 +7,9 @@ use App\Models\HistorialCaja;
 use App\Models\Predio;
 use App\Models\FormaPago;
 use App\Models\Pago;
+use App\Models\OrdenPago;
 use App\Models\CuentasPagos;
+use App\Models\FormasPagosCada;
 use App\Services\CalculoPredialUrbanoService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -52,8 +54,11 @@ class PagosController extends Controller
             $idsHistorial = HistorialCaja::where('cajero_id', $cajero->id_cajero)
                 ->pluck('id');
 
-            $pagos = Pago::with('historialCaja.caja', 'predio')
-                ->whereIn('id_historial_caja', $idsHistorial)
+            $pagos = Pago::with('historialCaja.caja', 'predio', 'formasPagosCada.formaPago')
+                ->where(function ($q) use ($idsHistorial) {
+                    $q->whereIn('id_historial_caja', $idsHistorial)
+                      ->orWhereNotNull('orden_pago_id');
+                })
                 ->orderBy('fecha', 'desc')
                 ->paginate(15);
         }
@@ -538,9 +543,194 @@ class PagosController extends Controller
         }
     }
 
+    public function cajaGeneralIndex(Request $request)
+    {
+        $filters = $request->only(['search_folio', 'search_nombre', 'search_secretaria', 'search_fecha', 'search_monto', 'search_estatus']);
+
+        $userSecretariaId = auth()->user()->secretaria_id;
+
+        $ordenes = OrdenPago::with('secretaria', 'user', 'pagos', 'cuentasOrdenesPago.cuenta')
+            ->where('secretaria_id', $userSecretariaId)
+            ->when($filters['search_folio'] ?? null, fn($q, $v) => $q->where('folio', 'like', "%{$v}%"))
+            ->when($filters['search_nombre'] ?? null, fn($q, $v) => $q->where('nombre', 'like', "%{$v}%"))
+            ->when($filters['search_secretaria'] ?? null, fn($q, $v) => $q->whereHas('secretaria', fn($q) => $q->where('nombre', 'like', "%{$v}%")))
+            ->when($filters['search_fecha'] ?? null, fn($q, $v) => $q->where('fecha', $v))
+            ->when($filters['search_estatus'] ?? null, function ($q, $v) {
+                if ($v === 'pagado') $q->where('pagado', true);
+                elseif ($v === 'pendiente') $q->where('pagado', false);
+                elseif ($v === 'vencida') $q->where('pagado', false)->where('fecha_vencimiento', '<', now()->startOfDay());
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(15);
+
+        $formasPago = FormaPago::where('activo', 1)->orderBy('Descripción')->get();
+
+        return Inertia::render('Pagos/CajaGeneral/Index', compact('ordenes', 'formasPago', 'filters', 'userSecretariaId'));
+    }
+
+    public function cajaGeneralPagar(OrdenPago $ordenPago)
+    {
+        if ($ordenPago->pagado) {
+            return redirect()->route('pagos.caja-general')->with('error', 'Esta orden ya está pagada.');
+        }
+
+        if ($ordenPago->fecha_vencimiento && now()->startOfDay()->gt(now()->parse($ordenPago->fecha_vencimiento))) {
+            return redirect()->route('pagos.caja-general')->with('error', 'Esta orden está vencida.');
+        }
+
+        $ordenPago->load('cuentasOrdenesPago.cuenta', 'secretaria', 'user');
+        $formasPago = FormaPago::where('activo', 1)->orderBy('Descripción')->get();
+
+        return Inertia::render('Pagos/CajaGeneral/Pagar', compact('ordenPago', 'formasPago'));
+    }
+
+    public function cajaGeneralGuardar(Request $request)
+    {
+        $validated = $request->validate([
+            'orden_pago_id' => 'required|exists:ordenes_pago,id',
+            'formas_pagos' => 'required|array|min:1',
+            'formas_pagos.*.forma_pago_id' => 'required|integer|exists:f4_c_formapago,id',
+            'formas_pagos.*.monto' => 'required|numeric|min:0.01',
+        ]);
+
+        $ordenPago = OrdenPago::with('cuentasOrdenesPago.cuenta')->findOrFail($validated['orden_pago_id']);
+
+        if ($ordenPago->pagado) {
+            return response()->json(['error' => 'Esta orden ya está pagada.'], 400);
+        }
+
+        if ($ordenPago->fecha_vencimiento && now()->startOfDay()->gt(now()->parse($ordenPago->fecha_vencimiento))) {
+            return response()->json(['error' => 'Esta orden está vencida y no puede pagarse.'], 400);
+        }
+
+        $idHistorialCaja = null;
+        $cajero = \App\Models\Cajero::with('caja')->where('usuario_id', auth()->id())->first();
+        if ($cajero) {
+            $cajaAbierta = HistorialCaja::where('cajero_id', $cajero->id_cajero)
+                ->whereNull('datetime_cierre')
+                ->first();
+            if ($cajaAbierta) {
+                $idHistorialCaja = $cajaAbierta->id;
+            }
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $ultimoFolio = Pago::max('id') ?? 0;
+            $folio = 'CG-' . str_pad($ultimoFolio + 1, 6, '0', STR_PAD_LEFT);
+
+            $pago = Pago::create([
+                'monto' => $ordenPago->monto,
+                'folio' => $folio,
+                'fecha' => now(),
+                'estatus' => 'pagado',
+                'forma_pago' => '',
+                'rfc' => '',
+                'tipo_pago' => 'Ingresos',
+                'nombre' => $ordenPago->nombre,
+                'descripcion' => $ordenPago->descripcion,
+                'id_predio' => '',
+                'id_contribuyente' => '',
+                'id_historial_caja' => $idHistorialCaja,
+                'orden_pago_id' => $ordenPago->id,
+                'id_usuario' => auth()->id(),
+            ]);
+
+            if ($idHistorialCaja) {
+                HistorialCaja::find($idHistorialCaja)->increment('total_ingreso', $ordenPago->monto);
+            }
+
+            foreach ($ordenPago->cuentasOrdenesPago as $c) {
+                CuentasPagos::create([
+                    'pago_id' => $pago->id,
+                    'cuenta_id' => $c->IdCuenta,
+                    'concepto' => $c->cuenta?->descripcion ?? ('Cuenta #' . $c->IdCuenta),
+                    'fecha_registro' => now(),
+                    'cantidad' => $c->cantidad,
+                    'monto' => $c->monto * $c->cantidad,
+                    'concepto_id' => null,
+                ]);
+            }
+
+            $fpCadaIds = [];
+            foreach ($validated['formas_pagos'] as $fp) {
+                $fpc = FormasPagosCada::create([
+                    'pago_id' => $pago->id,
+                    'forma_pago_id' => $fp['forma_pago_id'],
+                    'monto' => $fp['monto'],
+                ]);
+                $fpCadaIds[] = $fpc->id;
+            }
+
+            $pago->update(['forma_pago' => implode(',', $fpCadaIds)]);
+
+            $ordenPago->update([
+                'pagado' => true,
+                'fecha_pago' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pago registrado exitosamente.',
+                'pago_id' => $pago->id,
+                'folio' => $folio,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Error al registrar el pago: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function cajaGeneralShow(Pago $pago)
+    {
+        if (!$pago->orden_pago_id) {
+            return redirect()->route('pagos.caja-general')->with('error', 'Este pago no pertenece a Caja General.');
+        }
+
+        $pago->load('ordenPago.cuentasOrdenesPago.cuenta', 'ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago');
+
+        return Inertia::render('Pagos/CajaGeneral/Show', compact('pago'));
+    }
+
+    public function cajaGeneralCancelar(Pago $pago)
+    {
+        if ($pago->estatus === 'cancelado') {
+            return redirect()->back()->with('error', 'Este pago ya está cancelado.');
+        }
+
+        if (!$pago->orden_pago_id) {
+            return redirect()->back()->with('error', 'Este pago no pertenece a Caja General.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $pago->update(['estatus' => 'cancelado']);
+
+            if ($pago->ordenPago) {
+                $pago->ordenPago->update([
+                    'pagado' => false,
+                    'fecha_pago' => null,
+                ]);
+            }
+
+            CuentasPagos::where('pago_id', $pago->id)->update(['monto' => 0]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Pago cancelado y orden restaurada.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al cancelar el pago: ' . $e->getMessage());
+        }
+    }
+
     public function recibo($id)
     {
-        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia'])->findOrFail($id);
+        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia', 'incidencia'])->findOrFail($id);
         $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
 
         if ($pago->url_file && file_exists(public_path($pago->url_file))) {

@@ -173,7 +173,11 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                 if (result.data.success) {
                     const reciboUrl = route('pagos.recibo', result.data.pago_id);
                     window.open(reciboUrl, '_blank');
-                    window.location.reload();
+                    if (predioId) {
+                        window.location.href = '/predios';
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     alert('Error: ' + (result.data.error || 'Error desconocido'));
                 }

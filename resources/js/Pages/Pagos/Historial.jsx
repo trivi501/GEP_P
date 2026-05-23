@@ -4,15 +4,8 @@ import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Historial({ pagos, cajero, cajaAbierta }) {
-    const { post } = useForm();
     const [cancelModal, setCancelModal] = useState(null);
-
-    const confirmarCancelacion = () => {
-        if (cancelModal) {
-            post(route('pagos.cancelar', cancelModal));
-            setCancelModal(null);
-        }
-    };
+    const { post, processing } = useForm();
 
     return (
         <AuthenticatedLayout
@@ -55,7 +48,6 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Clave Catastral</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fecha</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Contribuyente</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">RFC</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipo</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Forma Pago</th>
                                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Monto</th>
@@ -71,21 +63,38 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.predio?.Clave_predial ?? '—'}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.fecha ?? '—'}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm max-w-[200px] truncate">{pago.nombre}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.rfc}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                         {pago.tipo_pago === 'predial_rustico' ? (
                                                             <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
                                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                                                                 Rústico
                                                             </span>
-                                                        ) : (
+                                                        ) : pago.tipo_pago === 'predial_urbano' ? (
                                                             <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700">
                                                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                                                                 Urbano
                                                             </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-purple-700">
+                                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                                                {pago.tipo_pago}
+                                                            </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">{pago.forma_pago}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                        {pago.formas_pagos_cada?.length > 0
+                                                            ? pago.formas_pagos_cada.map((f, i) => (
+                                                                <span key={i}>
+                                                                    {i > 0 && <br />}
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                        {f.forma_pago?.Descripción ?? f.forma_pago_id}
+                                                                        <span className="text-gray-400 text-xs">(${parseFloat(f.monto ?? 0).toFixed(2)})</span>
+                                                                    </span>
+                                                                </span>
+                                                            ))
+                                                            : pago.forma_pago ?? '—'
+                                                        }
+                                                    </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">${parseFloat(pago.monto ?? 0).toFixed(2)}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right">${parseFloat(pago.descuento ?? 0).toFixed(2)}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
@@ -117,7 +126,7 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                                             )}
                                                             {pago.estatus === 'pagado' && (
                                                                 <button
-                                                                    onClick={() => setCancelModal(pago.id)}
+                                                                    onClick={() => setCancelModal(pago)}
                                                                     className="inline-flex items-center justify-center w-7 h-7 rounded text-red-600 hover:bg-red-50"
                                                                     title="Cancelar Pago"
                                                                 >
@@ -154,10 +163,20 @@ export default function Historial({ pagos, cajero, cajaAbierta }) {
                                 No, volver
                             </button>
                             <button
-                                onClick={confirmarCancelacion}
-                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
+                                onClick={() => {
+                                    const routeName = cancelModal.orden_pago_id
+                                        ? 'pagos.caja-general.cancelar'
+                                        : 'pagos.cancelar';
+                                    post(route(routeName, cancelModal.id), {
+                                        preserveScroll: true,
+                                        onSuccess: () => setCancelModal(null),
+                                        onError: () => setCancelModal(null),
+                                    });
+                                }}
+                                disabled={processing}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500 disabled:opacity-50"
                             >
-                                Sí, cancelar pago
+                                {processing ? 'Cancelando...' : 'Sí, cancelar pago'}
                             </button>
                         </div>
                     </div>

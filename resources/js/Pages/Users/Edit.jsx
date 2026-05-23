@@ -5,12 +5,13 @@ import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ user, roles }) {
+export default function Edit({ user, roles, secretarias }) {
     const { data, setData, patch, processing, errors } = useForm({
         name: user.name,
         email: user.email,
         password: '',
         password_confirmation: '',
+        secretaria_id: user.secretaria_id ?? '',
         roles: user.roles?.map((role) => role.id) ?? [],
     });
 
@@ -131,6 +132,28 @@ export default function Edit({ user, roles }) {
                                     </select>
                                     <InputError
                                         message={errors.roles}
+                                        className="mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="secretaria_id" value="Secretaría" />
+                                    <select
+                                        id="secretaria_id"
+                                        name="secretaria_id"
+                                        value={data.secretaria_id}
+                                        onChange={(e) => setData('secretaria_id', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="">Seleccione una secretaría</option>
+                                        {secretarias.map((secretaria) => (
+                                            <option key={secretaria.id} value={secretaria.id}>
+                                                {secretaria.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError
+                                        message={errors.secretaria_id}
                                         className="mt-2"
                                     />
                                 </div>
