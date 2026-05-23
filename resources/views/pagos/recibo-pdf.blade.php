@@ -89,8 +89,8 @@
                         <td class="label" style="width:100px">Clave Catastral</td>
                     <tr>
                     <tr>
-                        <td class="value" style="width:100px">{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
+                        <td class="value" style="width:100px"><b>{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</b></td>
+                        <td class="value" style="width:100px"><b>{{ $pago->predio?->Clave_predial ?? '—' }}</b></td>
                     </tr>
                 </table>
                 

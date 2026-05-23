@@ -76,7 +76,7 @@
         <table class="grid-2">
             <tr>
                 <td width="12%" style="font-size: 7.5pt; background: #803047; color: white; padding: 2px;"><b>Cuenta:</b><br><b>Contribuyente:</b></td>
-                <td style="font-size: 7.5pt; padding: 2px;"><b>{{ $predio->contribuyente->cuenta ?? '—' }} </b> <br> <b>{{ $predio->contribuyente->nombre ?? '—' }}</b></td>
+                <td style="font-size: 7.5pt; padding: 2px;"><b>{{ $predio->contribuyente->cuenta ?? '—' }} </b> <br> <b>{{ $predio->contribuyente->nombre_completo ?? $predio->contribuyente->nombre ?? '—' }}</b></td>
             </tr>
         </table>
     </div>

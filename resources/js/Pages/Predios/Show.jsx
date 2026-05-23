@@ -75,7 +75,14 @@ export default function Show({ predio }) {
                     <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+
                                 <div>
+                                    <Link
+                                        href={route('predios.index')}
+                                        className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-blue-500 focus:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
+                                    >
+                                        Volver al listado
+                                    </Link>
                                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                         Predio: {predio.Clave_predial}
                                     </h3>
@@ -106,6 +113,7 @@ export default function Show({ predio }) {
                                     >
                                         Editar
                                     </Link>
+                                    
                                 </div>
                             </div>
 
@@ -305,14 +313,6 @@ export default function Show({ predio }) {
                                 )}
                             </div>
 
-                            <div className="mt-6 flex gap-3">
-                                <Link
-                                    href={route('predios.index')}
-                                    className="inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-gray-900"
-                                >
-                                    Volver al listado
-                                </Link>
-                            </div>
                         </div>
                     </div>
                 </div>

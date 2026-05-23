@@ -177,6 +177,7 @@ class CalculosPrediosController extends Controller
             'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio',
             'datosUrbano.estadoFisico', 'datosUrbano.pavimento',
             'nivelesConstruidos.tipoConstruccion',
+            'nivelesConstruidos.usoConstruccion',
             'medidasYColindancias.orientacion',
         ])->findOrFail($request->id_predio);
 
@@ -369,6 +370,7 @@ class CalculosPrediosController extends Controller
 
         $calculos = [];
 
+        $anhoInicio = $anhoInicio + 1;
         while ($anhoInicio <= $anhoActual) {
             $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
             $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
