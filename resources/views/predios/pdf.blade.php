@@ -45,6 +45,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 3px;
             overflow: hidden;
+            line-height: 1;
         }
         .section-title {
             font-size: 9px;

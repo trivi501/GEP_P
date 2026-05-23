@@ -25,7 +25,7 @@
         .folio-box { text-align: right;  }
         .folio-box .folio { font-size: 10pt; font-weight: bold; color: #803047; }
 
-        .section { margin-bottom: 4px; margin-top: 135px; margin-right: 10px; margin-left: 10px; }
+        .section { margin-bottom: 4px; margin-top: 135px; margin-right: 10px; margin-left: 10px; line-height: 1; }
         .section-title { font-size: 6pt;margin-right: 20px; margin-left: 20px; text-align: center; font-weight: bold; text-transform: uppercase; background: #e5e7eb; padding: 2px 4px; border-bottom: 1px solid #333; margin-bottom: 2px; }
 
         .info-table { width: 100%;  border-collapse: collapse; border-spacing: 0; font-size: 7pt;}
@@ -49,6 +49,37 @@
         .amount-box .amount { font-size: 22pt; font-weight: bold; color: #155724; }
         .amount-box .label { font-size: 8pt; color: #888; text-transform: uppercase; }
 
+        .recibo-original{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 10px;
+        }
+
+        .recibo-copia{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 570px;
+        }
+
+        .footer_recibo_original{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            top: 480px;
+        }
+
+        .footer_recibo_copia{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            top: 1040px;
+        } 
+
+
         .watermark {
             position: fixed;
             top: 50%;
@@ -69,194 +100,191 @@
     @if ($pago->estatus === 'cancelado')
         <div class="watermark">Cancelado</div>
     @endif
-    <div class="section">
-        <table width="100%">
-            <tr>
-                <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
-            </tr>
-            <tr>
-                <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
-                <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
-            </tr>
-        </table>
-        <table class="info-table">
-            
-            <tr>
-                <table>
-                    <tr>
-                        <td class="label" style="width:100px">Cuenta</td>
-                        <td class="label" style="width:100px">Clave Catastral</td>
-                    <tr>
-                    <tr>
-                        <td class="value" style="width:100px"><b>{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</b></td>
-                        <td class="value" style="width:100px"><b>{{ $pago->predio?->Clave_predial ?? '—' }}</b></td>
-                    </tr>
-                </table>
+    <div class="recibo-original">
+        <div class="section">
+            <table width="100%">
+                <tr>
+                    <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
+                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
+                </tr>
+                <tr>
+                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
+                    <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
+                </tr>
+            </table>
+            <table class="info-table">
                 
-            </tr>
-            <tr>
-                <table>
-                    <tr>
-                        <td class="label" style="width:100px">Zona</td>
-                        <td class="label" style="width:100px">Tipo Predio</td>
-                        <td class="label" style="width:100px">Terreno</td>
-                        <td class="label" style="width:100px">Construcción</td>
-                    <tr>
-                    <tr>
-                        <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
-                        <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
-                    </tr>
-                </table>
-            </tr>
-        </table>
-        <table>
-                    <tr>
-                        <td class="label" style="width:100%">Ubicación</td>
-                    </tr>
-                    <tr>
-                        <td class="value" style="width:100%" style="font-size: 9pt;"><b>{{ $pago->predio?->ubicacion_completa ?? '—' }}</b></td>
-                    </tr>
-                </table>
-    </div>
-
-    <div class="section-title">Descripción</div>
-        <table class="conceptos">
-            <thead>
                 <tr>
-                    <th>Concepto</th>
-                    <th>Indetec</th>
-                    <th class="monto">Monto</th>
+                    <table>
+                        <tr>
+                            <td class="label" style="width:100px">Cuenta</td>
+                            <td class="label" style="width:100px">Clave Catastral</td>
+                        <tr>
+                        <tr>
+                            <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</b></td>
+                            <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->Clave_predial ?? '—' }}</b></td>
+                        </tr>
+                    </table>
+                    
                 </tr>
-            </thead>
-            <tbody>
-                @foreach($pago->cuentasPagos as $c)
                 <tr>
-                    <td>{{ $c->concepto }}</td>
-                    <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                    <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    <table>
+                        <tr>
+                            <td class="label" style="width:100px">Zona</td>
+                            <td class="label" style="width:100px">Tipo Predio</td>
+                            <td class="label" style="width:100px">Terreno</td>
+                            <td class="label" style="width:100px">Construcción</td>
+                        <tr>
+                        <tr>
+                            <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
+                            <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
+                            <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
+                            <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
+                        </tr>
+                    </table>
                 </tr>
-                @endforeach
-                <tr class="total-row">
-                    <td colspan="2">Total</td>
-                    <td class="monto">${{ number_format($pago->monto, 2) }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            </table>
+            <table>
+                        <tr>
+                            <td class="label" style="width:100%">Ubicación</td>
+                        </tr>
+                        <tr>
+                            <td class="value" style="width:100%" style="font-size: 9pt;"><b>{{ $pago->predio?->ubicacion_completa ?? '—' }}</b></td>
+                        </tr>
+                    </table>
+        </div>
 
-
-    @if (!empty($qrBase64))
-    <div style="text-align: center; margin: 10px 0;">
-        <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-        <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-    </div>
-    @endif
-
-    <div class="footer">
-        <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
-            POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTOQUE APARTIR DE LA FECHA CUENTA CON UN PLAZO DE 15 (DIAS)HABILES PARA INFORME AL DEPARTAMENTODENTRO DE ESTA MUNICIPALIDAD.SI EXISTE ALGUNA MODIFICACION EN LAS CONSTRUCCIONES Y CARACTERISTICAS DEL PREDIO QUE SE DETALLA EN EL ANVERSO DE ESTE DOCUMENTO APERCIBIENDOLO.LO QUE EN EL SUPUESRO DE HACER CASO OMISO A TAL REQUERIMINTO, ESTE MUNICIPIO EN SU USO DE SUS ATRIBUCIONES Y FACULTADES CONTENIDAS EN LOSN ART.1,2 FRAC ll y ll de 3 FRAC III 4,6,7,8 FRAC IV. 13 FRAC VI 22,24,25,38,44,45,47FRAC II Y III 50,56,57, FRAC VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS PROCEDERA A LLEVAR A CABO DE MANERA OFICIOSA LA ACTUALIZACION CATASTRAL DE ACUERDO ALA INFORMACION EXISTENTE EN ESTE MUNICIPIO POR LO QUE EL IMPORTE DE EL PAGO CONSIGNADO EN EL ANVERSO DE ESTE RECIBO, PODRA SER MODIFICADO EN ATENCION AL RESULTADO DE ACTUALIZACION DE LA CEDULA CATASTRAL, QUEDANDO EXPEDITO EL DERECHO DEL MUNICIPIO DE GUADALUPE ZAC.PARA REQURIR EL COMBRO DEL IMPUESTO IMPORTE DEL DINERO QUE ARROJE, LO ANTERIOR FUNDAMENTADO EN LO DISPUESTO POR LOS ARTICULOS 131 FRAC I Y 147 FRAC II DEL CODIGO FISCAL DEL ESTADO DE ZACATECAS.
-        </p>
-    </div>
-    <div margin-top: 200px; text-align: center;">
-        &nbsp;    <br> 
-        &nbsp;    <br> 
-        &nbsp;    <br> 
-        &nbsp;    <br> 
-
-    </div>
-     <div class="section">
-        <table width="100%">
-            <tr>
-                <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
-            </tr>
-            <tr>
-                <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
-                <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
-            </tr>
-        </table>
-        <table class="info-table">
-            
-            <tr>
-                <table>
+        <div class="section-title">Descripción</div>
+            <table class="conceptos">
+                <thead>
                     <tr>
-                        <td class="label" style="width:100px">Cuenta</td>
-                        <td class="label" style="width:100px">Clave Catastral</td>
-                    <tr>
-                    <tr>
-                        <td class="value" style="width:100px">{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
+                        <th>Concepto</th>
+                        <th>Indetec</th>
+                        <th class="monto">Monto</th>
                     </tr>
-                </table>
+                </thead>
+                <tbody>
+                    @foreach($pago->cuentasPagos as $c)
+                    <tr>
+                        <td>{{ $c->concepto }}</td>
+                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="2">Total</td>
+                        <td class="monto">${{ number_format($pago->monto, 2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        @if (!empty($qrBase64))
+        <div style="text-align: center; margin: 10px 0;">
+            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
+            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
+        </div>
+        @endif
+
+        <div class="footer_recibo_original">
+            <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
+                original POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTOQUE APARTIR DE LA FECHA CUENTA CON UN PLAZO DE 15 (DIAS)HABILES PARA INFORME AL DEPARTAMENTODENTRO DE ESTA MUNICIPALIDAD.SI EXISTE ALGUNA MODIFICACION EN LAS CONSTRUCCIONES Y CARACTERISTICAS DEL PREDIO QUE SE DETALLA EN EL ANVERSO DE ESTE DOCUMENTO APERCIBIENDOLO.LO QUE EN EL SUPUESRO DE HACER CASO OMISO A TAL REQUERIMINTO, ESTE MUNICIPIO EN SU USO DE SUS ATRIBUCIONES Y FACULTADES CONTENIDAS EN LOSN ART.1,2 FRAC ll y ll de 3 FRAC III 4,6,7,8 FRAC IV. 13 FRAC VI 22,24,25,38,44,45,47FRAC II Y III 50,56,57, FRAC VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS PROCEDERA A LLEVAR A CABO DE MANERA OFICIOSA LA ACTUALIZACION CATASTRAL DE ACUERDO ALA INFORMACION EXISTENTE EN ESTE MUNICIPIO POR LO QUE EL IMPORTE DE EL PAGO CONSIGNADO EN EL ANVERSO DE ESTE RECIBO, PODRA SER MODIFICADO EN ATENCION AL RESULTADO DE ACTUALIZACION DE LA CEDULA CATASTRAL, QUEDANDO EXPEDITO EL DERECHO DEL MUNICIPIO DE GUADALUPE ZAC.PARA REQURIR EL COMBRO DEL IMPUESTO IMPORTE DEL DINERO QUE ARROJE, LO ANTERIOR FUNDAMENTADO EN LO DISPUESTO POR LOS ARTICULOS 131 FRAC I Y 147 FRAC II DEL CODIGO FISCAL DEL ESTADO DE ZACATECAS.
+            </p>
+        </div>
+    </div>
+    <div class="recibo-copia">
+        <div class="section">
+            <table width="100%">
+                <tr>
+                    <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
+                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
+                </tr>
+                <tr>
+                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
+                    <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
+                </tr>
+            </table>
+            <table class="info-table">
                 
-            </tr>
-            <tr>
-                <table>
-                    <tr>
-                        <td class="label" style="width:100px">Zona</td>
-                        <td class="label" style="width:100px">Tipo Predio</td>
-                        <td class="label" style="width:100px">Terreno</td>
-                        <td class="label" style="width:100px">Construcción</td>
-                    <tr>
-                    <tr>
-                        <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                        <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
-                        <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
-                    </tr>
-                </table>
-            </tr>
-        </table>
-        <table>
-                    <tr>
-                        <td class="label" style="width:100%">Ubicación</td>
-                    </tr>
-                    <tr>
-                        <td class="value" style="width:100%" style="font-size: 9pt;"><b>{{ $pago->predio?->ubicacion_completa ?? '—' }}</b></td>
-                    </tr>
-                </table>
-    </div>
-
-    <div class="section-title">Descripción</div>
-        <table class="conceptos">
-            <thead>
                 <tr>
-                    <th>Concepto</th>
-                    <th>Indetec</th>
-                    <th class="monto">Monto</th>
+                    <table>
+                        <tr>
+                            <td class="label" style="width:100px">Cuenta</td>
+                            <td class="label" style="width:100px">Clave Catastral</td>
+                        <tr>
+                        <tr>
+                            <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</td>
+                            <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
+                        </tr>
+                    </table>
+                    
                 </tr>
-            </thead>
-            <tbody>
-                @foreach($pago->cuentasPagos as $c)
                 <tr>
-                    <td>{{ $c->concepto }}</td>
-                    <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                    <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    <table>
+                        <tr>
+                            <td class="label" style="width:100px">Zona</td>
+                            <td class="label" style="width:100px">Tipo Predio</td>
+                            <td class="label" style="width:100px">Terreno</td>
+                            <td class="label" style="width:100px">Construcción</td>
+                        <tr>
+                        <tr>
+                            <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
+                            <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
+                            <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
+                            <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
+                        </tr>
+                    </table>
                 </tr>
-                @endforeach
-                <tr class="total-row">
-                    <td colspan="2">Total</td>
-                    <td class="monto">${{ number_format($pago->monto, 2) }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+            </table>
+            <table>
+                        <tr>
+                            <td class="label" style="width:100%">Ubicación</td>
+                        </tr>
+                        <tr>
+                            <td class="value" style="width:100%" style="font-size: 9pt;"><b>{{ $pago->predio?->ubicacion_completa ?? '—' }}</b></td>
+                        </tr>
+                    </table>
+        </div>
+
+        <div class="section-title">Descripción</div>
+            <table class="conceptos">
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Indetec</th>
+                        <th class="monto">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($pago->cuentasPagos as $c)
+                    <tr>
+                        <td>{{ $c->concepto }}</td>
+                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="2">Total</td>
+                        <td class="monto">${{ number_format($pago->monto, 2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
 
-    @if (!empty($qrBase64))
-    <div style="text-align: center; margin: 10px 0;">
-        <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-        <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-    </div>
-    @endif
+        @if (!empty($qrBase64))
+        <div style="text-align: center; margin: 10px 0;">
+            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
+            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
+        </div>
+        @endif
 
-    <div class="footer">
-        <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
-            POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTOQUE APARTIR DE LA FECHA CUENTA CON UN PLAZO DE 15 (DIAS)HABILES PARA INFORME AL DEPARTAMENTODENTRO DE ESTA MUNICIPALIDAD.SI EXISTE ALGUNA MODIFICACION EN LAS CONSTRUCCIONES Y CARACTERISTICAS DEL PREDIO QUE SE DETALLA EN EL ANVERSO DE ESTE DOCUMENTO APERCIBIENDOLO.LO QUE EN EL SUPUESRO DE HACER CASO OMISO A TAL REQUERIMINTO, ESTE MUNICIPIO EN SU USO DE SUS ATRIBUCIONES Y FACULTADES CONTENIDAS EN LOSN ART.1,2 FRAC ll y ll de 3 FRAC III 4,6,7,8 FRAC IV. 13 FRAC VI 22,24,25,38,44,45,47FRAC II Y III 50,56,57, FRAC VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS PROCEDERA A LLEVAR A CABO DE MANERA OFICIOSA LA ACTUALIZACION CATASTRAL DE ACUERDO ALA INFORMACION EXISTENTE EN ESTE MUNICIPIO POR LO QUE EL IMPORTE DE EL PAGO CONSIGNADO EN EL ANVERSO DE ESTE RECIBO, PODRA SER MODIFICADO EN ATENCION AL RESULTADO DE ACTUALIZACION DE LA CEDULA CATASTRAL, QUEDANDO EXPEDITO EL DERECHO DEL MUNICIPIO DE GUADALUPE ZAC.PARA REQURIR EL COMBRO DEL IMPUESTO IMPORTE DEL DINERO QUE ARROJE, LO ANTERIOR FUNDAMENTADO EN LO DISPUESTO POR LOS ARTICULOS 131 FRAC I Y 147 FRAC II DEL CODIGO FISCAL DEL ESTADO DE ZACATECAS.
-        </p>
+        <div class="footer_recibo_copia">
+            <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
+                POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTOQUE APARTIR DE LA FECHA CUENTA CON UN PLAZO DE 15 (DIAS)HABILES PARA INFORME AL DEPARTAMENTODENTRO DE ESTA MUNICIPALIDAD.SI EXISTE ALGUNA MODIFICACION EN LAS CONSTRUCCIONES Y CARACTERISTICAS DEL PREDIO QUE SE DETALLA EN EL ANVERSO DE ESTE DOCUMENTO APERCIBIENDOLO.LO QUE EN EL SUPUESRO DE HACER CASO OMISO A TAL REQUERIMINTO, ESTE MUNICIPIO EN SU USO DE SUS ATRIBUCIONES Y FACULTADES CONTENIDAS EN LOSN ART.1,2 FRAC ll y ll de 3 FRAC III 4,6,7,8 FRAC IV. 13 FRAC VI 22,24,25,38,44,45,47FRAC II Y III 50,56,57, FRAC VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS PROCEDERA A LLEVAR A CABO DE MANERA OFICIOSA LA ACTUALIZACION CATASTRAL DE ACUERDO ALA INFORMACION EXISTENTE EN ESTE MUNICIPIO POR LO QUE EL IMPORTE DE EL PAGO CONSIGNADO EN EL ANVERSO DE ESTE RECIBO, PODRA SER MODIFICADO EN ATENCION AL RESULTADO DE ACTUALIZACION DE LA CEDULA CATASTRAL, QUEDANDO EXPEDITO EL DERECHO DEL MUNICIPIO DE GUADALUPE ZAC.PARA REQURIR EL COMBRO DEL IMPUESTO IMPORTE DEL DINERO QUE ARROJE, LO ANTERIOR FUNDAMENTADO EN LO DISPUESTO POR LOS ARTICULOS 131 FRAC I Y 147 FRAC II DEL CODIGO FISCAL DEL ESTADO DE ZACATECAS.
+            </p>
+        </div>
     </div>
 </body>
 </html>

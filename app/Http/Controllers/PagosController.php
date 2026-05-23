@@ -93,7 +93,7 @@ class PagosController extends Controller
         return redirect()->route('pagos.index')->with('success', 'Caja abierta exitosamente.');
     }
 
-    public function cobrar()
+    public function cobrar(Request $request)
     {
         $cajero = Cajero::with('caja')->where('usuario_id', auth()->id())->first();
 
@@ -107,7 +107,9 @@ class PagosController extends Controller
 
         $formasPago = FormaPago::where('activo', 1)->orderBy('Descripción')->get();
 
-        return Inertia::render('Pagos/Cobrar', compact('cajaAbierta', 'formasPago'));
+        $predioId = $request->query('id_predio');
+
+        return Inertia::render('Pagos/Cobrar', compact('cajaAbierta', 'formasPago', 'predioId'));
     }
 
     public function searchPredio(Request $request)
@@ -463,11 +465,11 @@ class PagosController extends Controller
 
             $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
             $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
-            $pdfDir = public_path('pagos/recibos');
+            $pdfDir = public_path('recibos');
             if (!is_dir($pdfDir)) {
                 mkdir($pdfDir, 0755, true);
             }
-            $pdfPath = "pagos/recibos/recibo-{$pago->folio}.pdf";
+            $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
             $pdf->save(public_path($pdfPath));
 
             $pago->update(['url_file' => $pdfPath]);
@@ -525,12 +527,16 @@ class PagosController extends Controller
 
             $pago->update(['estatus' => 'cancelado']);
 
+            if ($pago->historialCaja) {
+                $pago->historialCaja->decrement('total_ingreso', $pago->monto);
+            }
+
             \App\Models\CuentasPagos::where('pago_id', $pago->id)
                 ->update(['monto' => 0]);
 
             $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
             $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
-            $pdfPath = "pagos/recibos/recibo-{$pago->folio}.pdf";
+            $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
             $pdf->save(public_path($pdfPath));
 
             DB::commit();

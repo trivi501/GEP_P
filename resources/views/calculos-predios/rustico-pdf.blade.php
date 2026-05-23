@@ -17,7 +17,7 @@
         .header h1 { font-size: 16pt; text-transform: uppercase; letter-spacing: 2px; }
         .header h3 { font-size: 10pt; font-weight: normal; color: #555; margin-top: 4px; }
 
-        .section { margin-bottom: 14px; }
+        .section { margin-bottom: 14px; line-height: 1; }
         .section-title { font-size: 10pt; font-weight: bold; text-transform: uppercase; background: #e5e7eb; padding: 5px 8px; border-bottom: 2px solid #333; margin-bottom: 6px; }
 
         .grid-2 { width: 100%; }

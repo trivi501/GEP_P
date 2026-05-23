@@ -175,11 +175,15 @@ class PredioController extends Controller
             'construccion' => (float) ($p->construccion ?? 0),
         ])->values();
 
+        $cajero = \App\Models\Cajero::with('caja')->where('usuario_id', auth()->id())->first();
+        $cajaAbierta = $cajero ? \App\Models\HistorialCaja::where('cajero_id', $cajero->id_cajero)->whereNull('datetime_cierre')->first() : null;
+
         return Inertia::render('Predios/Index', [
             'predios' => $predios,
             'prediosData' => $prediosData,
             'search_global' => $request->search_global ?? '',
             'filters' => $request->only(['Clave_predial', 'ubicacion', 'contribuyente', 'cuenta', 'tipo_predio', 'estado', 'colonia', 'año_ultimo_pago', 'superficie', 'construccion']),
+            'cajaAbierta' => $cajaAbierta ? true : false,
         ]);
     }
 

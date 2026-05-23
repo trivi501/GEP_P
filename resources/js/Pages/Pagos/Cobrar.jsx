@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-export default function Cobrar({ cajaAbierta, formasPago }) {
+export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const [search, setSearch] = useState('');
     const [results, setResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
@@ -46,6 +46,31 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
         document.addEventListener('click', handleClick);
         return () => document.removeEventListener('click', handleClick);
     }, []);
+
+    useEffect(() => {
+        if (!predioId) return;
+        axios.get(route('pagos.get-calculo'), { params: { id: predioId } })
+            .then((r) => {
+                const data = r.data;
+                if (data.predio) {
+                    setSelectedPredio({ id: predioId, clave_catastral: data.predio.clave_catastral ?? '', contribuyente: data.predio.contribuyente ?? '' });
+                    setSearch(`${data.predio.clave_catastral ?? ''} - ${data.predio.contribuyente ?? ''}`);
+                    const items = data.conceptos.filter((c) => c.concepto !== 'TOTAL');
+                    setConceptos(items);
+                    setTotal(data.total);
+                    setContribuyenteData({
+                        id_contribuyente: data.predio.id_contribuyente,
+                        rfc: data.predio.rfc || '—',
+                        nombre: data.predio.contribuyente_nombre || data.predio.contribuyente || '—',
+                    });
+                    setFormasPagosData([{ forma_pago_id: '1', monto: '' }]);
+                    if (data.total <= 0) {
+                        setShowPagadoModal(true);
+                    }
+                }
+            })
+            .catch(() => setError('Error al cargar datos del predio.'));
+    }, [predioId]);
 
     const selectPredio = (p) => {
         setSelectedPredio(p);
@@ -175,7 +200,7 @@ export default function Cobrar({ cajaAbierta, formasPago }) {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-medium">Cobro - Caja {cajaAbierta?.caja?.nombre ?? ''}</h3>
-                                <Link href={route('pagos.index')} className="text-sm text-gray-600 dark:text-gray-400 hover:underline">&larr; Volver</Link>
+                                <a href="/pagos" className="text-sm text-gray-600 dark:text-gray-400 hover:underline">&larr; Volver</a>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
