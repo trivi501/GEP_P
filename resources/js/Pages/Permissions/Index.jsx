@@ -34,7 +34,13 @@ export default function Index({ permissions }) {
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Nombre
+                                                Nombre (Clave)
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Nombre Mostrar
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Categoría
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Guard Name
@@ -50,6 +56,14 @@ export default function Index({ permissions }) {
                                                 <tr key={permission.id} className="hover:bg-gray-50 dark:bg-gray-700">
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                                         {permission.name}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {permission.nombre_mostrar ?? '—'}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                            {permission.categoria ?? '—'}
+                                                        </span>
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {permission.guard_name}
@@ -73,7 +87,7 @@ export default function Index({ permissions }) {
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan="3"
+                                                    colSpan="5"
                                                     className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                                                 >
                                                     No hay permisos registrados.

@@ -2,20 +2,26 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 const allModules = [
-    { name: 'Predios', href: 'predios.index', color: 'bg-blue-500', icon: '🏠', admin: false },
-    { name: 'Contribuyentes', href: 'contribuyentes.index', color: 'bg-green-500', icon: '👤', admin: false },
-    { name: 'Pagos', href: 'pagos.index', color: 'bg-indigo-500', icon: '💰', admin: false },
-    { name: 'Cajas', href: 'cajas.index', color: 'bg-yellow-500', icon: '📦', admin: false },
-    { name: 'Cajeros', href: 'cajeros.index', color: 'bg-purple-500', icon: '🧑‍💼', admin: false },
-    { name: 'Cuentas', href: 'cuentas.index', color: 'bg-pink-500', icon: '📋', admin: false },
-    { name: 'Roles', href: 'roles.index', color: 'bg-orange-500', icon: '🔐', admin: true },
-    { name: 'Permisos', href: 'permissions.index', color: 'bg-red-500', icon: '⚙️', admin: true },
-    { name: 'Usuarios', href: 'users.index', color: 'bg-gray-600', icon: '👥', admin: true },
+    { name: 'Predios', href: 'predios.index', color: 'bg-blue-500', icon: '🏠', permiso: 'predios-index' },
+    { name: 'Contribuyentes', href: 'contribuyentes.index', color: 'bg-green-500', icon: '👤', permiso: 'contribuyentes-index' },
+    { name: 'Cajas', href: 'cajas.index', color: 'bg-yellow-500', icon: '📦', permiso: 'cajas-index' },
+    { name: 'Cajeros', href: 'cajeros.index', color: 'bg-purple-500', icon: '🧑‍💼', permiso: 'cajeros-index' },
+    { name: 'Cuentas', href: 'cuentas.index', color: 'bg-pink-500', icon: '📋', permiso: 'cuentas-index' },
+    { name: 'Historial de Caja', href: 'pagos.index', color: 'bg-indigo-500', icon: '💰', permiso: 'caja-pago-index' },
+    { name: 'Historial de Pagos', href: 'pagos.historial', color: 'bg-teal-500', icon: '📜', permiso: null },
+    { name: 'Órdenes de Pago', href: 'ordenes-pago.index', color: 'bg-orange-500', icon: '📄', permiso: 'ordenes-pago-index' },
+    { name: 'Órdenes Pago Cajas', href: 'ordenes-pgo-cajas.index', color: 'bg-amber-500', icon: '💳', permiso: 'ordenes-pago-caja' },
+    { name: 'Caja General', href: 'pagos.caja-general', color: 'bg-lime-500', icon: '🏦', permiso: 'caja-pago-index' },
+    { name: 'Secretarías', href: 'secretarias.index', color: 'bg-cyan-500', icon: '🏛️', permiso: 'secretarias-index' },
+    { name: 'Roles', href: 'roles.index', color: 'bg-red-500', icon: '🔐', permiso: 'roles-index' },
+    { name: 'Permisos', href: 'permissions.index', color: 'bg-rose-500', icon: '⚙️', permiso: 'permissions-index' },
+    { name: 'Usuarios', href: 'users.index', color: 'bg-gray-600', icon: '👥', permiso: 'users-index' },
 ];
 
 export default function Dashboard() {
-    const isSuperAdmin = usePage().props.userRoles?.includes('SuperAdmin');
-    const modules = allModules.filter(m => !m.admin || isSuperAdmin);
+    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
+    const can = (permiso) => !permiso || permissions.includes(permiso);
+    const modules = allModules.filter(m => can(m.permiso));
     return (
         <AuthenticatedLayout
             header={

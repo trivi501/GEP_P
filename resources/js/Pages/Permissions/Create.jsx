@@ -5,9 +5,11 @@ import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Create() {
+export default function Create({ categorias }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        nombre_mostrar: '',
+        categoria: '',
         guard_name: 'web',
     });
 
@@ -32,7 +34,7 @@ export default function Create() {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <form onSubmit={submit} className="space-y-6">
                                 <div>
-                                    <InputLabel htmlFor="name" value="Nombre" />
+                                    <InputLabel htmlFor="name" value="Nombre (Clave)" />
                                     <TextInput
                                         id="name"
                                         type="text"
@@ -46,6 +48,50 @@ export default function Create() {
                                     />
                                     <InputError
                                         message={errors.name}
+                                        className="mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="nombre_mostrar" value="Nombre Mostrar" />
+                                    <TextInput
+                                        id="nombre_mostrar"
+                                        type="text"
+                                        name="nombre_mostrar"
+                                        value={data.nombre_mostrar}
+                                        className="mt-1 block w-full"
+                                        onChange={(e) =>
+                                            setData('nombre_mostrar', e.target.value)
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.nombre_mostrar}
+                                        className="mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="categoria" value="Categoría" />
+                                    <div className="mt-1 flex gap-2">
+                                        <input
+                                            type="text"
+                                            id="categoria"
+                                            name="categoria"
+                                            value={data.categoria}
+                                            onChange={(e) =>
+                                                setData('categoria', e.target.value)
+                                            }
+                                            list="categorias-list"
+                                            className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        <datalist id="categorias-list">
+                                            {categorias.map((cat) => (
+                                                <option key={cat} value={cat} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <InputError
+                                        message={errors.categoria}
                                         className="mt-2"
                                     />
                                 </div>

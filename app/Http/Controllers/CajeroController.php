@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Cajero;
 use App\Models\Cajas;
 use App\Models\User;
+use App\Models\HistorialCaja;
 use Illuminate\Http\Request;
 
 class CajeroController extends Controller
@@ -61,6 +62,16 @@ class CajeroController extends Controller
             'caja_id' => 'required|exists:cajas,id',
             'status' => 'nullable|integer',
         ]);
+
+        if ($cajero->caja_id != $validated['caja_id']) {
+            $cajaAbierta = HistorialCaja::where('cajero_id', $cajero->id_cajero)
+                ->whereNull('datetime_cierre')
+                ->first();
+
+            if ($cajaAbierta) {
+                return redirect()->route('cajeros.index')->with('error', 'No se puede cambiar la caja del cajero porque tiene una caja abierta. Ciérrela primero.');
+            }
+        }
 
         $cajero->update([
             'usuario_id' => $validated['usuario_id'],

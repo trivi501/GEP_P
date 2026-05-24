@@ -59,7 +59,7 @@ export default function Index({ roles }) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {role.permissions?.length > 0
-                                                            ? role.permissions.map((p) => p.name).join(', ')
+                                                            ? role.permissions.map((p) => p.nombre_mostrar ?? p.name).join(', ')
                                                             : '—'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">

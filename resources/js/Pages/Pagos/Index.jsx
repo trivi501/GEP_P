@@ -1,13 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ historial, cajero, cajaAbierta }) {
     const user = usePage().props.auth.user;
     const [showModal, setShowModal] = useState(false);
+    const [showCerrarModal, setShowCerrarModal] = useState(false);
     const [fondo, setFondo] = useState('');
     const [errors, setErrors] = useState({});
+    const cerrarFormRef = useRef(null);
 
     const abrirCaja = (e) => {
         e.preventDefault();
@@ -71,6 +73,12 @@ export default function Index({ historial, cajero, cajaAbierta }) {
                                         >
                                             Historial de Pagos
                                         </Link>
+                                        <button
+                                            onClick={() => setShowCerrarModal(true)}
+                                            className="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500"
+                                        >
+                                            Cerrar Caja
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -95,6 +103,7 @@ export default function Index({ historial, cajero, cajaAbierta }) {
                                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fondo</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ingresos</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -112,10 +121,23 @@ export default function Index({ historial, cajero, cajaAbierta }) {
                                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Abierta</span>
                                                     )}
                                                 </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                    {h.datetime_cierre ? (
+                                                        <a
+                                                            href={route('pagos.corte-pdf', h.id)}
+                                                            className="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-500"
+                                                            target="_blank"
+                                                        >
+                                                            Reporte
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-gray-400 text-xs">—</span>
+                                                    )}
+                                                </td>
                                             </tr>
                                         )) : (
                                             <tr>
-                                                <td colSpan="6" className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No hay registros.</td>
+                                                <td colSpan="7" className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No hay registros.</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -161,6 +183,39 @@ export default function Index({ historial, cajero, cajaAbierta }) {
                                     Abrir
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showCerrarModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+                        <h3 className="text-lg font-medium mb-4">Cerrar Caja</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            ¿Estás seguro de cerrar la caja? Se generará un reporte con el resumen de pagos.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowCerrarModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowCerrarModal(false);
+                                    cerrarFormRef.current.submit();
+                                }}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
+                            >
+                                Cerrar y generar reporte
+                            </button>
+                        </div>
+                        <form ref={cerrarFormRef} method="POST" action={route('pagos.cerrar')} className="hidden">
+                            <input type="hidden" name="_token" value={document.querySelector('meta[name=csrf-token]')?.content} />
                         </form>
                     </div>
                 </div>

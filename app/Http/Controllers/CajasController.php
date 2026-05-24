@@ -29,7 +29,7 @@ class CajasController extends Controller
             'ubicacion' => 'required|string|max:255',
             'folio' => 'required|string|max:255',
             'status' => 'nullable|integer',
-            'cajeros' => 'nullable|array',
+            'cajeros' => 'nullable|array|max:2',
             'cajeros.*' => 'exists:users,id',
         ]);
 
@@ -74,7 +74,7 @@ class CajasController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'folio' => 'required|string|max:255',
             'status' => 'nullable|integer',
-            'cajeros' => 'nullable|array',
+            'cajeros' => 'nullable|array|max:2',
             'cajeros.*' => 'exists:users,id',
         ]);
 

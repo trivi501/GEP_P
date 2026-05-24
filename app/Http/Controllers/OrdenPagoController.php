@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\OrdenPago;
 use App\Models\Cuentas;
+use App\Models\FormaPago;
 use App\Models\Secretaria;
 use Illuminate\Http\Request;
 
@@ -162,5 +163,29 @@ class OrdenPagoController extends Controller
     {
         $ordenPago->delete();
         return redirect()->route('ordenes-pago.index')->with('success', 'Orden de pago eliminada exitosamente.');
+    }
+
+    public function ordenesPgoCajas(Request $request)
+    {
+        $filters = $request->only(['search_folio', 'search_nombre', 'search_secretaria', 'search_fecha', 'search_monto', 'search_estatus', 'search_usuario']);
+
+        $userSecretariaId = auth()->user()->secretaria_id;
+
+        $ordenes = OrdenPago::with('cuentasOrdenesPago.cuenta', 'user', 'secretaria')
+            ->when($filters['search_folio'] ?? null, fn($q, $v) => $q->where('folio', 'like', "%{$v}%"))
+            ->when($filters['search_nombre'] ?? null, fn($q, $v) => $q->where('nombre', 'like', "%{$v}%"))
+            ->when($filters['search_secretaria'] ?? null, fn($q, $v) => $q->whereHas('secretaria', fn($q) => $q->where('nombre', 'like', "%{$v}%")))
+            ->when($filters['search_fecha'] ?? null, fn($q, $v) => $q->where('fecha', $v))
+            ->when($filters['search_usuario'] ?? null, fn($q, $v) => $q->whereHas('user', fn($q) => $q->where('name', 'like', "%{$v}%")))
+            ->when($filters['search_estatus'] ?? null, function ($q, $v) {
+                if ($v === 'pagado') $q->where('pagado', true);
+                elseif ($v === 'pendiente') $q->where('pagado', false);
+            })
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        $formasPago = FormaPago::where('activo', 1)->orderBy('Descripción')->get();
+
+        return Inertia::render('OrdenesPago/OrdenesPgoCajas', compact('ordenes', 'formasPago', 'filters', 'userSecretariaId'));
     }
 }

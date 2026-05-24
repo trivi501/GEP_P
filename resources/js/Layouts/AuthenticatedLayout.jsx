@@ -7,7 +7,9 @@ import { useEffect, useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    const isSuperAdmin = usePage().props.userRoles?.includes('SuperAdmin');
+    const isSuperAdmin = usePage().props.userRoles?.includes('Super Admin') || usePage().props.userRoles?.includes('Admin');
+    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
+    const can = (permiso) => permissions.includes(permiso);
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -24,70 +26,18 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                                </Link>
+                                
                             </div>
 
-                            <div className="hidden space-x-2 sm:-my-px sm:ms-10 sm:flex">
+                        </div>
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center sm:gap-2">
+                            <Link href="/">
+                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                </Link>
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                    Dashboard
+                                    Inicio
                                 </NavLink>
-
-                                <NavLink href={route('contribuyentes.index')} active={route().current('contribuyentes.*')}>
-                                    Contribuyentes
-                                </NavLink>
-
-                                <NavLink href={route('predios.index')} active={route().current('predios.*')}>
-                                    Predios
-                                </NavLink>
-
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <button
-                                            type="button"
-                                            className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
-                                                route().current('cajas.*') || route().current('cajeros.*') || route().current('pagos.*') || route().current('pagos.historial') || route().current('pagos.caja-general') || route().current('pagos.caja-general.*') || route().current('cuentas.*') || route().current('ordenes-pago.*') || route().current('secretarias.*')
-                                                    ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
-                                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
-                                            }`}
-                                        >
-                                            Operaciones
-                                            <svg className="-me-0.5 ms-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link href={route('cajas.index')}>
-                                            Listado de Cajas
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('cajeros.index')}>
-                                            Listado de Cajeros
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('pagos.index')}>
-                                            Historial de Caja
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('pagos.historial')}>
-                                            Historial de Pagos
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('cuentas.index')}>
-                                            Cuentas
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('ordenes-pago.index')}>
-                                            Órdenes de Pago
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('pagos.caja-general')}>
-                                            Caja General
-                                        </Dropdown.Link>
-                                        <Dropdown.Link href={route('secretarias.index')}>
-                                            Secretarías
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-
-                                {isSuperAdmin && (
+                                {can('users-index') && (
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <button
@@ -118,8 +68,104 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Content>
                                     </Dropdown>
                                 )}
-                            </div>
-                        </div>
+                            
+                                {can('contribuyentes-index') && (
+                                    <NavLink href={route('contribuyentes.index')} active={route().current('contribuyentes.*')}>
+                                        Contribuyentes
+                                    </NavLink>
+                                )}
+                                {can('predios-index') && (
+                                    <NavLink href={route('predios.index')} active={route().current('predios.*')}>
+                                        Predios
+                                    </NavLink>
+                                )}
+                                {can('ordenes-pago-index') && (
+                                    <NavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
+                                        Ordenes de Pago
+                                    </NavLink>
+                                )}
+                                {can('ordenes-pago-caja') && (
+                                    <NavLink href={route('ordenes-pgo-cajas.index')} active={route().current('ordenes-pgo-cajas.*')}>
+                                        Órdenes Pago Cajas
+                                    </NavLink>
+                                )}
+                                {can('secretarias-index') && (
+                                    <NavLink href={route('secretarias.index')} active={route().current('secretarias.*')}>
+                                        Secretarías
+                                    </NavLink>
+                                )}
+                                {can('caja-pago-index') && (
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                            type="button"
+                                            className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
+                                                route().current('reportes.*')
+                                                    ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
+                                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
+                                            }`}
+                                        >
+                                            Operaciones de Cajas
+                                            <svg className="-me-0.5 ms-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </Dropdown.Trigger>
+
+                                    <Dropdown.Content>
+                                        <Dropdown.Link href={route('pagos.index')}>
+                                                Historial de Caja
+                                            </Dropdown.Link>
+                                        <Dropdown.Link href={route('ordenes-pago.index')}>
+                                            Ordenes Pago
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('ordenes-pgo-cajas.index')}>
+                                            Órdenes Pago Cajas
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('pagos.caja-general')}>
+                                            Caja General
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('pagos.historial')}>
+                                            Historial de Pagos
+                                        </Dropdown.Link>
+                                    </Dropdown.Content>
+                                </Dropdown>
+                                )}
+                                    {can('admin-cajas') && (
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                                type="button"
+                                                className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
+                                                    route().current('reportes.*')
+                                                        ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
+                                                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
+                                                }`}
+                                            >
+                                                Cajas
+                                                <svg className="-me-0.5 ms-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </Dropdown.Trigger>
+
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('cajas.index')}>
+                                                Listado de Cajas
+                                            </Dropdown.Link>
+                                            <Dropdown.Link href={route('cajeros.index')}>
+                                                Listado de Cajeros
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                    )}
+
+                                    {can('cuentas-admin') && (
+                                        <NavLink href={route('cuentas.index')} active={route().current('cuentas.*')}>
+                                            Cuentas
+                                        </NavLink>
+                                    )}
+                                </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center sm:gap-2">
                             <button
@@ -219,6 +265,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
                                 Órdenes de Pago
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('ordenes-pgo-cajas.index')} active={route().current('ordenes-pgo-cajas.*')}>
+                                Órdenes Pago Cajas
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('pagos.caja-general')} active={route().current('pagos.caja-general') || route().current('pagos.caja-general.*')}>
                                 Caja General

@@ -10,8 +10,8 @@ class SuperAdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->hasRole('Super Admin')) {
-            abort(403, 'Solo el Super Admin puede acceder a esta sección.');
+        if (!$request->user() || !$request->user()->hasAnyRole(['Super Admin', 'Admin'])) {
+            abort(403, 'Solo el Super Admin o Admin pueden acceder a esta sección.');
         }
 
         return $next($request);

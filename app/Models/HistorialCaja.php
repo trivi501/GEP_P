@@ -28,4 +28,9 @@ class HistorialCaja extends Model
     {
         return $this->belongsTo(Cajas::class, 'caja_id', 'id');
     }
+
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class, 'id_historial_caja', 'id');
+    }
 }

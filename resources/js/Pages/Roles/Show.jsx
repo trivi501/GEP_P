@@ -82,7 +82,7 @@ export default function Show({ role }) {
                                                 key={permission.id}
                                                 className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800"
                                             >
-                                                {permission.name}
+                                                {permission.nombre_mostrar ?? permission.name}
                                             </span>
                                         ))}
                                     </div>

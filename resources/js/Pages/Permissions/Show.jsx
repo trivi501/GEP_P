@@ -39,10 +39,28 @@ export default function Show({ permission }) {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">
-                                        Nombre
+                                        Nombre (Clave)
                                     </label>
                                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                                         {permission.name}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Nombre Mostrar
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        {permission.nombre_mostrar ?? '—'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Categoría
+                                    </label>
+                                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            {permission.categoria ?? '—'}
+                                        </span>
                                     </p>
                                 </div>
                                 <div>

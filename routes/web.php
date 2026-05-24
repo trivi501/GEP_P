@@ -63,6 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pagos/guardar', [PagosController::class, 'guardar'])->name('pagos.guardar');
     Route::get('pagos/historial', [PagosController::class, 'historial'])->name('pagos.historial');
     Route::get('pagos/recibo/{id}', [PagosController::class, 'recibo'])->name('pagos.recibo');
+    Route::post('pagos/cerrar', [PagosController::class, 'cerrar'])->name('pagos.cerrar');
+    Route::get('pagos/corte-pdf/{historialCaja}', [PagosController::class, 'cortePdf'])->name('pagos.corte-pdf');
     Route::post('pagos/{pago}/cancelar', [PagosController::class, 'cancelar'])->name('pagos.cancelar');
     Route::get('pagos/caja-general', [PagosController::class, 'cajaGeneralIndex'])->name('pagos.caja-general');
     Route::get('pagos/caja-general/pagar/{ordenPago}', [PagosController::class, 'cajaGeneralPagar'])->name('pagos.caja-general.pagar');
@@ -76,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('secretarias', SecretariaController::class);
     Route::resource('ordenes-pago', OrdenPagoController::class)->parameters(['ordenes-pago' => 'ordenPago']);
+    Route::get('ordenes-pgo-cajas', [OrdenPagoController::class, 'ordenesPgoCajas'])->name('ordenes-pgo-cajas.index');
 });
 
 require __DIR__.'/auth.php';

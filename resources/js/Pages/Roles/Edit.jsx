@@ -27,6 +27,13 @@ export default function Edit({ role, permissions }) {
         );
     };
 
+    const grouped = permissions.reduce((acc, p) => {
+        const cat = p.categoria || 'Sin categoría';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(p);
+        return acc;
+    }, {});
+
     return (
         <AuthenticatedLayout
             header={
@@ -89,24 +96,31 @@ export default function Edit({ role, permissions }) {
 
                                 <div>
                                     <InputLabel value="Permisos" />
-                                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                                        {permissions.map((permission) => (
-                                            <label
-                                                key={permission.id}
-                                                className="flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-700 p-2 text-sm"
-                                            >
-                                                <Checkbox
-                                                    checked={data.permissions.includes(permission.id)}
-                                                    onChange={() =>
-                                                        handlePermissionToggle(
-                                                            permission.id,
-                                                        )
-                                                    }
-                                                />
-                                                {permission.name}
-                                            </label>
-                                        ))}
-                                    </div>
+                                    {Object.entries(grouped).map(([categoria, perms]) => (
+                                        <div key={categoria} className="mt-4">
+                                            <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                                {categoria}
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                                {perms.map((permission) => (
+                                                    <label
+                                                        key={permission.id}
+                                                        className="flex items-center gap-2 rounded-md border border-gray-200 dark:border-gray-700 p-2 text-sm"
+                                                    >
+                                                        <Checkbox
+                                                            checked={data.permissions.includes(permission.id)}
+                                                            onChange={() =>
+                                                                handlePermissionToggle(
+                                                                    permission.id,
+                                                                )
+                                                            }
+                                                        />
+                                                        {permission.nombre_mostrar ?? permission.name}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
                                     <InputError
                                         message={errors.permissions}
                                         className="mt-2"

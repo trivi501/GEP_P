@@ -51,16 +51,14 @@ class PagosController extends Controller
                 ->whereNull('datetime_cierre')
                 ->first();
 
-            $idsHistorial = HistorialCaja::where('cajero_id', $cajero->id_cajero)
-                ->pluck('id');
-
-            $pagos = Pago::with('historialCaja.caja', 'predio', 'formasPagosCada.formaPago')
-                ->where(function ($q) use ($idsHistorial) {
-                    $q->whereIn('id_historial_caja', $idsHistorial)
-                      ->orWhereNotNull('orden_pago_id');
-                })
-                ->orderBy('fecha', 'desc')
-                ->paginate(15);
+            if ($cajaAbierta) {
+                $pagos = Pago::with('historialCaja.caja', 'predio', 'formasPagosCada.formaPago')
+                    ->where('id_historial_caja', $cajaAbierta->id)
+                    ->orderBy('fecha', 'desc')
+                    ->paginate(15);
+            } else {
+                $pagos = Pago::whereRaw('1 = 0')->paginate(15);
+            }
         }
 
         return Inertia::render('Pagos/Historial', compact('pagos', 'cajero', 'cajaAbierta'));
@@ -80,6 +78,15 @@ class PagosController extends Controller
 
         if ($cajaAbierta) {
             return redirect()->route('pagos.index')->with('error', 'Ya tienes una caja abierta. Ciérrala antes de abrir una nueva.');
+        }
+
+        $cajaAbiertaMismaCaja = HistorialCaja::where('caja_id', $cajero->caja_id)
+            ->whereNull('datetime_cierre')
+            ->where('cajero_id', '!=', $cajero->id_cajero)
+            ->first();
+
+        if ($cajaAbiertaMismaCaja) {
+            return redirect()->route('pagos.index')->with('error', 'La caja ya está abierta por otro cajero. Ciérrela primero.');
         }
 
         $validated = $request->validate([
@@ -609,9 +616,10 @@ class PagosController extends Controller
             $cajaAbierta = HistorialCaja::where('cajero_id', $cajero->id_cajero)
                 ->whereNull('datetime_cierre')
                 ->first();
-            if ($cajaAbierta) {
-                $idHistorialCaja = $cajaAbierta->id;
+            if (!$cajaAbierta) {
+                return response()->json(['error' => 'No tienes una caja abierta. Abre una caja antes de realizar el pago.'], 400);
             }
+            $idHistorialCaja = $cajaAbierta->id;
         }
 
         DB::beginTransaction();
@@ -766,6 +774,13 @@ class PagosController extends Controller
 
             $pago->update(['estatus' => 'cancelado']);
 
+            if ($pago->ordenPago) {
+                $pago->ordenPago->update([
+                    'pagado' => false,
+                    'fecha_pago' => null,
+                ]);
+            }
+
             if ($pago->historialCaja) {
                 $pago->historialCaja->decrement('total_ingreso', $pago->monto);
             }
@@ -786,6 +801,60 @@ class PagosController extends Controller
 
             return redirect()->back()->with('error', 'Error al cancelar el pago: ' . $e->getMessage());
         }
+    }
+
+    public function cerrar(Request $request)
+    {
+        $cajero = Cajero::with('caja')->where('usuario_id', auth()->id())->first();
+
+        if (!$cajero) {
+            return redirect()->route('pagos.index')->with('error', 'No tienes un cajero asignado.');
+        }
+
+        $cajaAbierta = HistorialCaja::where('cajero_id', $cajero->id_cajero)
+            ->whereNull('datetime_cierre')
+            ->first();
+
+        if (!$cajaAbierta) {
+            return redirect()->route('pagos.index')->with('error', 'No tienes una caja abierta.');
+        }
+
+        $cajaAbierta->update([
+            'datetime_cierre' => now(),
+        ]);
+
+        return redirect()->route('pagos.corte-pdf', $cajaAbierta->id);
+    }
+
+    public function cortePdf(HistorialCaja $historialCaja)
+    {
+        $historialCaja->load('caja', 'cajero.usuario', 'pagos.formasPagosCada.formaPago');
+
+        $pagos = $historialCaja->pagos;
+
+        $totalRecibos = $pagos->count();
+        $totalIngresos = $pagos->sum('monto');
+
+        $pagosPorForma = $pagos->flatMap(function ($pago) {
+            return $pago->formasPagosCada->map(function ($fpc) {
+                return [
+                    'forma_pago' => $fpc->formaPago?->Descripción ?? 'Sin método',
+                    'monto' => $fpc->monto,
+                ];
+            });
+        })->groupBy('forma_pago')->map(function ($items, $forma) {
+            return [
+                'forma' => $forma,
+                'total' => $items->sum('monto'),
+                'count' => $items->count(),
+            ];
+        })->values();
+
+        $pdf = Pdf::loadView('pagos.corte-caja-pdf', compact(
+            'historialCaja', 'pagos', 'totalRecibos', 'totalIngresos', 'pagosPorForma'
+        ));
+
+        return $pdf->stream("corte-caja-{$historialCaja->id}.pdf");
     }
 
     private function generarQrBase64(string $url): string
