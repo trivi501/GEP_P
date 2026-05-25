@@ -1,19 +1,41 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Pagination from '@/Components/Pagination';
 
-export default function Index({ descuentos }) {
+export default function Index({ descuentos, filters, id_predio }) {
     const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
     const can = (permiso) => permissions.includes(permiso);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(filters?.search ?? '');
     const [predioSearch, setPredioSearch] = useState('');
+    const [selectedPredio, setSelectedPredio] = useState(null);
     const [predioResults, setPredioResults] = useState([]);
     const [showPredioResults, setShowPredioResults] = useState(false);
-    const [selectedPredio, setSelectedPredio] = useState(null);
+
+    useEffect(() => {
+        if (id_predio) {
+            axios.get(route('descuentos.search-predio'), { params: { q: id_predio } })
+                .then((r) => {
+                    const found = r.data.find(p => p.id === id_predio);
+                    if (found) {
+                        setSelectedPredio(found);
+                        setPredioSearch(found.text);
+                        setShowModal(true);
+                        setForm({
+                            idPredio: found.id,
+                            multas: '0',
+                            actualizaciones: '0',
+                            gastos_cobranza: '0',
+                            fecha_expiracion: '',
+                        });
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [id_predio]);
     const predioSearchRef = useRef(null);
     const timeoutRef = useRef(null);
     const [form, setForm] = useState({
@@ -110,13 +132,13 @@ export default function Index({ descuentos }) {
                                     <input
                                         type="text"
                                         value={search}
-                                        onChange={(e) => {
-                                            setSearch(e.target.value);
-                                            const url = new URL(window.location);
-                                            url.searchParams.set('search', e.target.value);
-                                            window.location.href = route('descuentos.index') + '?search=' + encodeURIComponent(e.target.value);
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                router.get(route('descuentos.index'), { search: e.target.value }, { preserveState: true, replace: true });
+                                            }
                                         }}
-                                        placeholder="Buscar por cuenta, nombre o clave..."
+                                        placeholder="Buscar por cuenta, nombre o clave... (Enter)"
                                         className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                                     />
                                     {can('crear descuentos') && (

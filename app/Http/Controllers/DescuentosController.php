@@ -26,9 +26,12 @@ class DescuentosController extends Controller
             $query->whereIn('idPredio', $predioIds);
         }
 
-        $descuentos = $query->orderBy('created_at', 'desc')->paginate(15);
+        $descuentos = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        return Inertia::render('Descuentos/Index', compact('descuentos'));
+        $filters = $request->only(['search']);
+        $id_predio = $request->get('id_predio');
+
+        return Inertia::render('Descuentos/Index', compact('descuentos', 'filters', 'id_predio'));
     }
 
     public function store(Request $request)
