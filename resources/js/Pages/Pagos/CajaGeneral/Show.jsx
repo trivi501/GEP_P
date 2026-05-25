@@ -37,6 +37,13 @@ export default function Show({ pago }) {
                                             Cancelar
                                         </button>
                                     )}
+                                    <a
+                                        href={route('pagos.recibo', pago.id)}
+                                        target="_blank"
+                                        className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-blue-500"
+                                    >
+                                        Ver Recibo
+                                    </a>
                                     <Link
                                         href={route('pagos.caja-general')}
                                         className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-gray-500"

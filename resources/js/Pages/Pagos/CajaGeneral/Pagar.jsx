@@ -24,7 +24,14 @@ export default function Pagar({ ordenPago, formasPago }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('pagos.caja-general.guardar'));
+        post(route('pagos.caja-general.guardar'), {
+            onSuccess: (page) => {
+                const redirectUrl = page?.props?.redirect;
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                }
+            },
+        });
     };
 
     return (

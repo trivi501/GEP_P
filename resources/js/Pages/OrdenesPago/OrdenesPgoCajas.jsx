@@ -83,6 +83,9 @@ export default function Index({ ordenes, formasPago, filters: initialFilters }) 
                 setErrorMessage(result.error || 'Error al procesar el pago.');
             } else {
                 closePagarModal();
+                if (result.pago_id) {
+                    window.open(route('pagos.recibo', result.pago_id), '_blank');
+                }
                 window.location.reload();
             }
         } catch (err) {

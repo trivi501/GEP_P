@@ -99,9 +99,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <Dropdown.Link href={route('estado-cuenta-masivo.index')}>
                                                 Estado Cuenta Masivo
                                             </Dropdown.Link>
+                                            {can('descuentos-show') && (
                                             <Dropdown.Link href={route('descuentos.index')}>
                                                 Descuentos
                                             </Dropdown.Link>
+                                            )}
                                         </Dropdown.Content>
                                     </Dropdown>
                                 )}

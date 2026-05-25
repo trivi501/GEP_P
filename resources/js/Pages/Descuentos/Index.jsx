@@ -150,7 +150,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">Descuentos</h2>}>
             <Head title="Descuentos" />
             <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div className="mx-auto max-w sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">

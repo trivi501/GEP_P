@@ -771,11 +771,27 @@ class PagosController extends Controller
 
             DB::commit();
 
+            try {
+                $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago']);
+                $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
+                $pdf = Pdf::loadView('pagos.recibo-orden-pago-pdf', compact('pago', 'qrBase64'));
+                $pdfDir = public_path('recibos');
+                if (!is_dir($pdfDir)) {
+                    mkdir($pdfDir, 0755, true);
+                }
+                $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
+                $pdf->save(public_path($pdfPath));
+                $pago->update(['url_file' => $pdfPath]);
+            } catch (\Exception $e) {
+                // PDF generation failed but payment was saved
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Pago registrado exitosamente.',
                 'pago_id' => $pago->id,
                 'folio' => $folio,
+                'redirect' => route('pagos.caja-general.show', $pago->id),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -820,6 +836,17 @@ class PagosController extends Controller
 
             DB::commit();
 
+            try {
+                $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago']);
+                $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
+                $pdf = Pdf::loadView('pagos.recibo-orden-pago-pdf', compact('pago', 'qrBase64'));
+                $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
+                $pdf->save(public_path($pdfPath));
+                $pago->update(['url_file' => $pdfPath]);
+            } catch (\Exception $e) {
+                // PDF regeneration failed but cancellation was processed
+            }
+
             return redirect()->back()->with('success', 'Pago cancelado y orden restaurada.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -829,14 +856,15 @@ class PagosController extends Controller
 
     public function recibo($id)
     {
-        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia', 'incidencia'])->findOrFail($id);
+        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia', 'incidencia', 'ordenPago.secretaria', 'ordenPago.user', 'formasPagosCada.formaPago'])->findOrFail($id);
         $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
 
         if ($pago->url_file && file_exists(public_path($pago->url_file))) {
             return response()->file(public_path($pago->url_file));
         }
 
-        $pdf = Pdf::loadView('pagos.recibo-pdf', compact('pago', 'qrBase64'));
+        $vista = $pago->orden_pago_id ? 'pagos.recibo-orden-pago-pdf' : 'pagos.recibo-pdf';
+        $pdf = Pdf::loadView($vista, compact('pago', 'qrBase64'));
 
         return $pdf->stream("recibo-{$pago->folio}.pdf");
     }

@@ -8,7 +8,7 @@ const allModules = [
     { name: 'Cajeros', href: 'cajeros.index', color: 'bg-purple-500', icon: '🧑‍💼', permiso: 'cajeros-index' },
     { name: 'Cuentas', href: 'cuentas.index', color: 'bg-pink-500', icon: '📋', permiso: 'cuentas-index' },
     { name: 'Historial de Caja', href: 'pagos.index', color: 'bg-indigo-500', icon: '💰', permiso: 'caja-pago-index' },
-    { name: 'Historial de Pagos', href: 'pagos.historial', color: 'bg-teal-500', icon: '📜', permiso: null },
+    { name: 'Historial de Pagos', href: 'pagos.historial', color: 'bg-teal-500', icon: '📜', permiso: 'predios-pay' },
     { name: 'Órdenes de Pago', href: 'ordenes-pago.index', color: 'bg-orange-500', icon: '📄', permiso: 'ordenes-pago-index' },
     { name: 'Órdenes Pago Cajas', href: 'ordenes-pgo-cajas.index', color: 'bg-amber-500', icon: '💳', permiso: 'ordenes-pago-caja' },
     { name: 'Caja General', href: 'pagos.caja-general', color: 'bg-lime-500', icon: '🏦', permiso: 'caja-pago-index' },
