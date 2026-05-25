@@ -69,6 +69,14 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
+                <div>
+                    <InputLabel value="Secretaría" />
+
+                    <p className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                        {user.secretaria?.nombre ?? 'Sin asignar'}
+                    </p>
+                </div>
+
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="mt-2 text-sm text-gray-800 dark:text-gray-100">
