@@ -168,7 +168,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                         placeholder="Buscar por cuenta, nombre o clave... (Enter)"
                                         className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                                     />
-                                    {can('crear descuentos') && (
+                                    {can('crear-descuentos') && (
                                         <button onClick={openCreate} className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500">+ Nuevo Descuento</button>
                                     )}
                                 </div>
