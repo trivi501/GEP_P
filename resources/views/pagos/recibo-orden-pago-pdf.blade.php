@@ -98,7 +98,7 @@
         <div class="section">
             <table width="100%">
                 <tr>
-                    <td class="label" style="font-size: 9pt;" width="80%">Contribuyente / Solicitante</td>
+                    <td class="label" style="font-size: 9pt;" width="80%">Contribuyente</td>
                     <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
@@ -112,14 +112,10 @@
                         <tr>
                             <td class="label" style="width:120px">No. Orden</td>
                             <td class="label" style="width:100px">Secretaría</td>
-                            <td class="label" style="width:250px; text-align: right;">Vencimiento</td>
                         </tr>
                         <tr>
                             <td class="value" style="width:120px; font-size: 10pt;"><b>{{ $ordenPago?->folio ?? '—' }}</b></td>
                             <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $ordenPago?->secretaria?->nombre ?? '—' }}</b></td>
-                            <td class="value" style="font-size: 8pt; width: 250px; text-align: right;">
-                                <b>{{ $ordenPago?->fecha_vencimiento ? \Carbon\Carbon::parse($ordenPago->fecha_vencimiento)->format('d/m/Y') : '—' }}</b>
-                            </td>
                         </tr>
                     </table>
                 </tr>
@@ -127,15 +123,9 @@
                     <table>
                         <tr>
                             <td class="label" style="width:120px">Folio Orden</td>
-                            <td class="label" style="width:100px">Usuario</td>
-                            <td class="label" style="width:250px; text-align: right;">Estatus</td>
                         </tr>
                         <tr>
                             <td class="value" style="width:120px">{{ $ordenPago?->folio ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ $ordenPago?->user?->name ?? '—' }}</td>
-                            <td class="value" style="width:250px; text-align: right;">
-                                <span class="badge badge-success">{{ $pago->estatus }}</span>
-                            </td>
                         </tr>
                     </table>
                 </tr>
@@ -179,25 +169,17 @@
         </table>
 
         <div style="margin-top: 8px; text-align: right; font-size: 7pt; margin-right: 25px;">
-            @foreach($pago->formasPagosCada as $fpc)
-                <div>{{ $fpc->formaPago?->Descripción ?? '—' }}: ${{ number_format($fpc->monto, 2) }}</div>
-            @endforeach
+            <div>TOTAL ${{ number_format($pago->monto, 2) }}</div>
         </div>
 
-        @if (!empty($qrBase64))
-        <div style="text-align: center; margin: 10px 0;">
-            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-        </div>
-        @endif
 
     </div>
 
     <div class="recibo-copia">
-        <div class="section">
+               <div class="section">
             <table width="100%">
                 <tr>
-                    <td class="label" style="font-size: 9pt;" width="80%">Contribuyente / Solicitante</td>
+                    <td class="label" style="font-size: 9pt;" width="80%">Contribuyente</td>
                     <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
@@ -211,14 +193,10 @@
                         <tr>
                             <td class="label" style="width:120px">No. Orden</td>
                             <td class="label" style="width:100px">Secretaría</td>
-                            <td class="label" style="width:250px; text-align: right;">Vencimiento</td>
                         </tr>
                         <tr>
-                            <td class="value" style="width:120px; font-size: 10pt;">{{ $ordenPago?->folio ?? '—' }}</td>
-                            <td class="value" style="width:100px; font-size: 10pt;">{{ $ordenPago?->secretaria?->nombre ?? '—' }}</td>
-                            <td class="value" style="font-size: 8pt; width: 250px; text-align: right;">
-                                {{ $ordenPago?->fecha_vencimiento ? \Carbon\Carbon::parse($ordenPago->fecha_vencimiento)->format('d/m/Y') : '—' }}
-                            </td>
+                            <td class="value" style="width:120px; font-size: 10pt;"><b>{{ $ordenPago?->folio ?? '—' }}</b></td>
+                            <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $ordenPago?->secretaria?->nombre ?? '—' }}</b></td>
                         </tr>
                     </table>
                 </tr>
@@ -226,15 +204,9 @@
                     <table>
                         <tr>
                             <td class="label" style="width:120px">Folio Orden</td>
-                            <td class="label" style="width:100px">Usuario</td>
-                            <td class="label" style="width:250px; text-align: right;">Estatus</td>
                         </tr>
                         <tr>
                             <td class="value" style="width:120px">{{ $ordenPago?->folio ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ $ordenPago?->user?->name ?? '—' }}</td>
-                            <td class="value" style="width:250px; text-align: right;">
-                                <span class="badge badge-success">{{ $pago->estatus }}</span>
-                            </td>
                         </tr>
                     </table>
                 </tr>
@@ -278,22 +250,7 @@
         </table>
 
         <div style="margin-top: 8px; text-align: right; font-size: 7pt; margin-right: 25px;">
-            @foreach($pago->formasPagosCada as $fpc)
-                <div>{{ $fpc->formaPago?->Descripción ?? '—' }}: ${{ number_format($fpc->monto, 2) }}</div>
-            @endforeach
-        </div>
-
-        @if (!empty($qrBase64))
-        <div style="text-align: center; margin: 10px 0;">
-            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-        </div>
-        @endif
-
-        <div class="footer_recibo_copia">
-            <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
-                COPIA - POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTO QUE EL PAGO REALIZADO CORRESPONDE A LA ORDEN DE PAGO CON FOLIO {{ $ordenPago?->folio ?? '—' }}. ESTE DOCUMENTO ES COMPROBANTE DE PAGO OFICIAL DEL MUNICIPIO DE GUADALUPE, ZACATECAS. CUALQUIER ACLARACIÓN DEBERÁ REALIZARSE EN LA SECRETARÍA QUE EMITIÓ LA ORDEN DENTRO DE LOS 15 DÍAS HÁBILES SIGUIENTES A LA FECHA DE PAGO. FUNDAMENTO LEGAL: ARTÍCULOS 1, 2 FRACCIÓN II Y III, 3 FRACCIÓN III, 4, 6, 7, 8 FRACCIÓN IV, 13 FRACCIÓN VI, 22, 24, 25, 38, 44, 45, 47 FRACCIÓN II Y III, 50, 56, 57 FRACCIÓN VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS.
-            </p>
+            <div>TOTAL ${{ number_format($pago->monto, 2) }}</div>
         </div>
     </div>
 </body>
