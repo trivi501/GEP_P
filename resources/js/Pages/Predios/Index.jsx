@@ -10,14 +10,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
     const [search, setSearch] = useState(page.props.search_global ?? '');
     const [columnFilters, setColumnFilters] = useState(filters ?? {});
     const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, predio: null });
-    const debounceRef = useRef(null);
     const menuRef = useRef(null);
-
-    useEffect(() => {
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, []);
 
     const closeContextMenu = useCallback(() => {
         setContextMenu({ show: false, x: 0, y: 0, predio: null });
@@ -67,16 +60,12 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
 
     const handleColumnFilterChange = (field, value) => {
         setColumnFilters(prev => ({ ...prev, [field]: value }));
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            const params = {};
-            const newFilters = { ...columnFilters, [field]: value };
-            Object.entries(newFilters).forEach(([key, val]) => {
-                if (val) params[key] = val;
-            });
-            if (search) params.search_global = search;
-            router.get(route('predios.index'), params, { preserveState: true });
-        }, 500);
+    };
+
+    const handleColumnFilterKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch(e);
+        }
     };
 
     const inputClass = "block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1";
@@ -147,6 +136,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.Clave_predial ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('Clave_predial', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -156,6 +146,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.cuenta ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('cuenta', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -165,6 +156,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.contribuyente ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('contribuyente', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -174,6 +166,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.colonia ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('colonia', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -183,6 +176,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.ubicacion ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('ubicacion', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -192,6 +186,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.tipo_predio ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('tipo_predio', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={inputClass}
                                                 />
@@ -201,6 +196,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.año_ultimo_pago ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('año_ultimo_pago', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={`${inputClass} text-center`}
                                                 />
@@ -210,6 +206,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.superficie ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('superficie', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={`${inputClass} text-right`}
                                                 />
@@ -220,6 +217,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     type="text"
                                                     value={columnFilters.construccion ?? ''}
                                                     onChange={(e) => handleColumnFilterChange('construccion', e.target.value)}
+                                                    onKeyDown={handleColumnFilterKeyDown}
                                                     placeholder="Filtrar..."
                                                     className={`${inputClass} text-right`}
                                                 />
