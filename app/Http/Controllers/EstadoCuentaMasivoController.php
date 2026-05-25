@@ -90,6 +90,7 @@ class EstadoCuentaMasivoController extends Controller
 
             $totalDescuento = 0;
             $descuento = \App\Models\Descuento::where('idPredio', $predio->id_predio)
+                ->where('activo', true)
                 ->where(function ($q) {
                     $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
                 })->first();

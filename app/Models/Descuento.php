@@ -15,6 +15,7 @@ class Descuento extends Model
         'actualizaciones',
         'gastos_cobranza',
         'fecha_expiracion',
+        'activo',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class Descuento extends Model
             'actualizaciones' => 'decimal:2',
             'gastos_cobranza' => 'decimal:2',
             'fecha_expiracion' => 'date',
+            'activo' => 'boolean',
         ];
     }
 

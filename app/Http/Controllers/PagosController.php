@@ -21,6 +21,7 @@ class PagosController extends Controller
     private function getDescuentosPredio(string $idPredio): array
     {
         $descuento = \App\Models\Descuento::where('idPredio', $idPredio)
+            ->where('activo', true)
             ->where(function ($q) {
                 $q->whereNull('fecha_expiracion')
                   ->orWhere('fecha_expiracion', '>=', now()->toDateString());
@@ -523,7 +524,7 @@ class PagosController extends Controller
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
                 'Descuentos' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'DESCUENTO')
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false
                 ),
             ] : [
                 'Predial Anterior' => fn($list) => $list->first(fn($c) =>
@@ -557,7 +558,7 @@ class PagosController extends Controller
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
                 'Descuentos' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'DESCUENTO')
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false
                 ),
             ];
 
@@ -602,6 +603,10 @@ class PagosController extends Controller
                 'ultimo_bimestre_pago_anterior' => $predio?->ultimo_bimestre_pago,
                 'snapshot' => $predio ? (array) $predio : [],
             ]);
+
+            \App\Models\Descuento::where('idPredio', $validated['id_predio'])
+                ->where('activo', true)
+                ->update(['activo' => false]);
 
             DB::table('tb_predio')
                 ->where('id_predio', $validated['id_predio'])

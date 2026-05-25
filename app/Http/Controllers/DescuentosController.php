@@ -31,7 +31,14 @@ class DescuentosController extends Controller
         $filters = $request->only(['search']);
         $id_predio = $request->get('id_predio');
 
-        return Inertia::render('Descuentos/Index', compact('descuentos', 'filters', 'id_predio'));
+        $existingDescuento = null;
+        if ($id_predio) {
+            $existingDescuento = Descuento::with(['predio.contribuyente', 'user'])
+                ->where('idPredio', $id_predio)
+                ->first();
+        }
+
+        return Inertia::render('Descuentos/Index', compact('descuentos', 'filters', 'id_predio', 'existingDescuento'));
     }
 
     public function store(Request $request)
@@ -42,9 +49,11 @@ class DescuentosController extends Controller
             'actualizaciones' => 'required|numeric|min:0|max:100',
             'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
+            'activo' => 'boolean',
         ]);
 
         $validated['idUser'] = auth()->id();
+        $validated['activo'] = $validated['activo'] ?? true;
 
         Descuento::create($validated);
 
@@ -59,6 +68,7 @@ class DescuentosController extends Controller
             'actualizaciones' => 'required|numeric|min:0|max:100',
             'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
+            'activo' => 'boolean',
         ]);
 
         $descuento->update($validated);

@@ -19,6 +19,7 @@ class MultiPagosController extends Controller
     private function getDescuentosPredio(string $idPredio): array
     {
         $descuento = \App\Models\Descuento::where('idPredio', $idPredio)
+            ->where('activo', true)
             ->where(function ($q) {
                 $q->whereNull('fecha_expiracion')
                   ->orWhere('fecha_expiracion', '>=', now()->toDateString());
@@ -311,7 +312,7 @@ class MultiPagosController extends Controller
                         str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                     ),
                     'Descuentos' => fn($list) => $list->first(fn($c) =>
-                        str_contains($c->descripcion_clean, 'DESCUENTO')
+                        stripos($c->descripcion_clean, 'DESCUENTO') !== false
                     ),
                 ] : [
                     'Predial Anterior' => fn($list) => $list->first(fn($c) => str_contains($c->descripcion_clean, 'ANTERIORES')),
@@ -329,7 +330,7 @@ class MultiPagosController extends Controller
                         str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                     ),
                     'Descuentos' => fn($list) => $list->first(fn($c) =>
-                        str_contains($c->descripcion_clean, 'DESCUENTO')
+                        stripos($c->descripcion_clean, 'DESCUENTO') !== false
                     ),
                 ];
 
@@ -373,6 +374,10 @@ class MultiPagosController extends Controller
                     'ultimo_bimestre_pago_anterior' => $predioData?->ultimo_bimestre_pago,
                     'snapshot' => $predioData ? (array) $predioData : [],
                 ]);
+
+                \App\Models\Descuento::where('idPredio', $item['id'])
+                    ->where('activo', true)
+                    ->update(['activo' => false]);
 
                 DB::table('tb_predio')->where('id_predio', $item['id'])->update([
                     'año_ultimo_pago' => date('Y'),
