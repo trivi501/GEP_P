@@ -89,6 +89,12 @@ class PermissionSeeder extends Seeder
             // Reportes
             ['name' => 'ver reportes', 'nombre_mostrar' => 'Ver Reportes', 'categoria' => 'Reportes'],
             ['name' => 'descargar reportes pdf', 'nombre_mostrar' => 'Descargar Reportes PDF', 'categoria' => 'Reportes'],
+
+            // Descuentos
+            ['name' => 'ver descuentos', 'nombre_mostrar' => 'Ver Descuentos', 'categoria' => 'Descuentos'],
+            ['name' => 'crear descuentos', 'nombre_mostrar' => 'Crear Descuentos', 'categoria' => 'Descuentos'],
+            ['name' => 'editar descuentos', 'nombre_mostrar' => 'Editar Descuentos', 'categoria' => 'Descuentos'],
+            ['name' => 'eliminar descuentos', 'nombre_mostrar' => 'Eliminar Descuentos', 'categoria' => 'Descuentos'],
         ];
 
         foreach ($permissions as $permission) {

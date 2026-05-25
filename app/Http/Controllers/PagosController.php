@@ -18,6 +18,40 @@ use Inertia\Inertia;
 
 class PagosController extends Controller
 {
+    private function getDescuentosPredio(string $idPredio): array
+    {
+        $descuento = \App\Models\Descuento::where('idPredio', $idPredio)
+            ->where(function ($q) {
+                $q->whereNull('fecha_expiracion')
+                  ->orWhere('fecha_expiracion', '>=', now()->toDateString());
+            })
+            ->first();
+
+        if (!$descuento) {
+            return [
+                'aplica' => false,
+                'multas_pct' => 0,
+                'actualizaciones_pct' => 0,
+                'cobranza_pct' => 0,
+                'descuento_multas' => 0,
+                'descuento_actualizaciones' => 0,
+                'descuento_cobranza' => 0,
+                'total_descuento' => 0,
+            ];
+        }
+
+        return [
+            'aplica' => true,
+            'multas_pct' => (float) $descuento->multas,
+            'actualizaciones_pct' => (float) $descuento->actualizaciones,
+            'cobranza_pct' => (float) $descuento->gastos_cobranza,
+            'descuento_multas' => 0,
+            'descuento_actualizaciones' => 0,
+            'descuento_cobranza' => 0,
+            'total_descuento' => 0,
+        ];
+    }
+
     public function index()
     {
         $cajero = Cajero::with('caja')->where('usuario_id', auth()->id())->first();
@@ -368,6 +402,32 @@ class PagosController extends Controller
 
         $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
 
+        $descInfo = $this->getDescuentosPredio($predio->id_predio);
+        if ($descInfo['aplica']) {
+            $descuentoMulta = 0;
+            $descuentoActualizacion = 0;
+            $descuentoCobranza = 0;
+
+            foreach ($conceptos as &$c) {
+                if ($c['concepto'] === 'Multa' && $descInfo['multas_pct'] > 0) {
+                    $descuentoMulta = round($c['monto'] * $descInfo['multas_pct'] / 100, 2);
+                }
+                if (in_array($c['concepto'], ['Actualización Anterior', 'Actualización Actual']) && $descInfo['actualizaciones_pct'] > 0) {
+                    $descuentoActualizacion += round($c['monto'] * $descInfo['actualizaciones_pct'] / 100, 2);
+                }
+                if ($c['concepto'] === 'Gastos de Ejecución Predial Urbano' && $descInfo['cobranza_pct'] > 0) {
+                    $descuentoCobranza = round($c['monto'] * $descInfo['cobranza_pct'] / 100, 2);
+                }
+            }
+            unset($c);
+
+            $totalDescuento = $descuentoMulta + $descuentoActualizacion + $descuentoCobranza;
+            if ($totalDescuento > 0) {
+                $conceptos[] = ['concepto' => 'Descuentos', 'monto' => -$totalDescuento];
+                $total = round($total - $totalDescuento, 2);
+            }
+        }
+
         return response()->json([
             'predio' => [
                 'id' => $predio->id_predio,
@@ -462,6 +522,9 @@ class PagosController extends Controller
                 'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
+                'Descuentos' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'DESCUENTO')
+                ),
             ] : [
                 'Predial Anterior' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'ANTERIORES')
@@ -492,6 +555,9 @@ class PagosController extends Controller
                 ),
                 'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
+                ),
+                'Descuentos' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'DESCUENTO')
                 ),
             ];
 

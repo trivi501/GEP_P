@@ -13,6 +13,7 @@ use App\Http\Controllers\OrdenPagoController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\EstadoCuentaMasivoController;
 use App\Http\Controllers\MultiPagosController;
+use App\Http\Controllers\DescuentosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -90,6 +91,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('multi-pagos-predial/search', [MultiPagosController::class, 'search'])->name('multi-pagos.search');
     Route::post('multi-pagos-predial/get-calculo', [MultiPagosController::class, 'getCalculo'])->name('multi-pagos.get-calculo');
     Route::post('multi-pagos-predial/pagar', [MultiPagosController::class, 'pagar'])->name('multi-pagos.pagar');
+
+    Route::get('descuentos', [DescuentosController::class, 'index'])->name('descuentos.index');
+    Route::get('descuentos/search-predio', [DescuentosController::class, 'searchPredio'])->name('descuentos.search-predio');
+    Route::post('descuentos', [DescuentosController::class, 'store'])->name('descuentos.store');
+    Route::put('descuentos/{descuento}', [DescuentosController::class, 'update'])->name('descuentos.update');
+    Route::delete('descuentos/{descuento}', [DescuentosController::class, 'destroy'])->name('descuentos.destroy');
 });
 
 require __DIR__.'/auth.php';

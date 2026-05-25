@@ -87,14 +87,44 @@ class EstadoCuentaMasivoController extends Controller
             }
 
             $subtotalPredio = collect($calculos)->sum('total');
-            $granTotal += $subtotalPredio;
+
+            $totalDescuento = 0;
+            $descuento = \App\Models\Descuento::where('idPredio', $predio->id_predio)
+                ->where(function ($q) {
+                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
+                })->first();
+
+            if ($descuento) {
+                $descMulta = 0;
+                $descActualizacion = 0;
+                $descCobranza = 0;
+
+                foreach ($calculos as &$c) {
+                    if (!empty($c['multa']) && $descuento->multas > 0) {
+                        $descMulta += $c['multa'] * (float) $descuento->multas / 100;
+                    }
+                    if (!empty($c['actualizacion']) && $descuento->actualizaciones > 0) {
+                        $descActualizacion += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
+                    }
+                    if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
+                        $descCobranza += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
+                    }
+                }
+                unset($c);
+
+                $totalDescuento = round($descMulta + $descActualizacion + $descCobranza, 2);
+            }
+
+            $subtotalConDescuento = round($subtotalPredio - $totalDescuento, 2);
+            $granTotal += $subtotalConDescuento;
             $totalPredios++;
 
             $data[] = [
                 'predio' => $predio,
                 'calculos' => $calculos,
-                'subtotal' => $subtotalPredio,
+                'subtotal' => $subtotalConDescuento,
                 'esRustico' => $esRustico,
+                'descuento' => $totalDescuento > 0 ? $totalDescuento : null,
             ];
         }
 
