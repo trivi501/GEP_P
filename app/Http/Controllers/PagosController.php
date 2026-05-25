@@ -257,7 +257,9 @@ class PagosController extends Controller
         $recargos_act = 0;
         $actualizacion_ant = 0;
         $actualizacion_act = 0;
-        $total_ant = 0; 
+        $total_ant = 0;
+        $multa_total = 0;
+        $cobranza_total = 0;
 
         if ($predio->datosUrbano) {
             try {
@@ -277,6 +279,8 @@ class PagosController extends Controller
                         $actualizacion_act += $calculo['actualizacion'] ?? 0;
                         $total += ($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0);
                     }
+                    $multa_total += $calculo['multa'] ?? 0;
+                    $cobranza_total += $calculo['cobranza'] ?? 0;
                 }
                 
                 $ultimo = end($calculosAnuales);
@@ -304,11 +308,18 @@ class PagosController extends Controller
                     $conceptos[] = ['concepto' => 'Actualización Actual', 'monto' => round($actualizacion_act, 2)];
                 }
 
+                if ($multa_total > 0) {
+                    $conceptos[] = ['concepto' => 'Multa', 'monto' => round($multa_total, 2)];
+                }
+                if ($cobranza_total > 0) {
+                    $conceptos[] = ['concepto' => 'Gastos de Ejecución Predial Urbano', 'monto' => round($cobranza_total, 2)];
+                }
+
                 if (!empty($ultimo['descuento']) && $ultimo['descuento'] > 0) {
                     $conceptos[] = ['concepto' => 'Descuento por Prono pago', 'monto' => round($ultimo['descuento'], 2)];
                 }
 
-                $total = round($total + $total_ant, 2);
+                $total = round($total + $total_ant + $multa_total + $cobranza_total, 2);
             } catch (\Exception $e) {
                 $conceptos[] = ['concepto' => 'Error al calcular: ' . $e->getMessage(), 'monto' => 0];
             }
@@ -448,6 +459,9 @@ class PagosController extends Controller
                 'Predial Rústico' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')
                 ),
+                'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
+                ),
             ] : [
                 'Predial Anterior' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'ANTERIORES')
@@ -472,6 +486,12 @@ class PagosController extends Controller
                 ),
                 'Actualización Actual' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'ACTUALIZACIONES PREDIAL URBANO')
+                ),
+                'Multa' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'MULTA')
+                ),
+                'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
             ];
 

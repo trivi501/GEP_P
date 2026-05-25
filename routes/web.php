@@ -11,6 +11,8 @@ use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\SecretariaController;
 use App\Http\Controllers\OrdenPagoController;
 use App\Http\Controllers\PagosController;
+use App\Http\Controllers\EstadoCuentaMasivoController;
+use App\Http\Controllers\MultiPagosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -79,6 +81,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('secretarias', SecretariaController::class);
     Route::resource('ordenes-pago', OrdenPagoController::class)->parameters(['ordenes-pago' => 'ordenPago']);
     Route::get('ordenes-pgo-cajas', [OrdenPagoController::class, 'ordenesPgoCajas'])->name('ordenes-pgo-cajas.index');
+
+    Route::get('estado-cuenta-masivo', [EstadoCuentaMasivoController::class, 'index'])->name('estado-cuenta-masivo.index');
+    Route::post('estado-cuenta-masivo/search', [EstadoCuentaMasivoController::class, 'search'])->name('estado-cuenta-masivo.search');
+    Route::post('estado-cuenta-masivo/pdf', [EstadoCuentaMasivoController::class, 'pdf'])->name('estado-cuenta-masivo.pdf');
+
+    Route::get('multi-pagos-predial', [MultiPagosController::class, 'index'])->name('multi-pagos.index');
+    Route::post('multi-pagos-predial/search', [MultiPagosController::class, 'search'])->name('multi-pagos.search');
+    Route::post('multi-pagos-predial/get-calculo', [MultiPagosController::class, 'getCalculo'])->name('multi-pagos.get-calculo');
+    Route::post('multi-pagos-predial/pagar', [MultiPagosController::class, 'pagar'])->name('multi-pagos.pagar');
 });
 
 require __DIR__.'/auth.php';

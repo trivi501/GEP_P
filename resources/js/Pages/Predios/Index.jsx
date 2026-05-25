@@ -5,6 +5,8 @@ import Pagination from '@/Components/Pagination';
 
 export default function Index({ predios, prediosData, filters, cajaAbierta }) {
     const page = usePage();
+    const permissions = Array.isArray(page.props.userPermissions) ? page.props.userPermissions : [];
+    const can = (permiso) => permissions.includes(permiso);
     const [search, setSearch] = useState(page.props.search_global ?? '');
     const [columnFilters, setColumnFilters] = useState(filters ?? {});
     const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, predio: null });
@@ -261,15 +263,18 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <div className="flex items-center justify-center gap-2">
-                                                            <a
-                                                                href={`/calculos-predios/${predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-red-600 hover:text-red-900"
-                                                                title="Estado de Cuenta"
+                                                            {can('predios-edocuenta') && (
+                                                                <a
+                                                                    href={`/calculos-predios/${predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-red-600 hover:text-red-900"
+                                                                    title="Estado de Cuenta"
                                                             >
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                             </a>
+                                                            )}
+                                                            {can('predios-cedula') && (
                                                             <a
                                                                 href={route('predios.pdf', predio.id)}
                                                                 target="_blank"
@@ -279,6 +284,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                             >
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
                                                             </a>
+                                                            )}
                                                             <Link
                                                                 href={route('predios.show', predio.id)}
                                                                 className="text-indigo-600 hover:text-indigo-900"
@@ -286,6 +292,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                             >
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                             </Link>
+                                                            {can('predios-show') && (
                                                             <Link
                                                                 href={route('predios.edit', predio.id)}
                                                                 className="text-yellow-600 hover:text-yellow-900"
@@ -293,6 +300,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                             >
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                             </Link>
+                                                            )}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -320,16 +328,19 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                     className="fixed z-50 w-44 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 border border-gray-200 dark:border-gray-600 py-1 text-sm"
                     style={{ left: contextMenu.x, top: contextMenu.y }}
                 >
-                    <a
-                        href={`/calculos-predios/${contextMenu.predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${contextMenu.predio.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={closeContextMenu}
-                        className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                        <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Estado de Cuenta
-                    </a>
+                    {can('predios-edocuenta') && (
+                        <a
+                            href={`/calculos-predios/${contextMenu.predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${contextMenu.predio.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={closeContextMenu}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Estado de Cuenta
+                        </a>
+                    )}
+                    {can('predios-cedula') && (
                     <a
                         href={route('predios.pdf', contextMenu.predio.id)}
                         target="_blank"
@@ -340,7 +351,8 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
                         Cédula
                     </a>
-                    {cajaAbierta && (
+                    )}
+                    {(cajaAbierta && can('predios-pay')) && (
                         <a
                             href={`/pagos/cobrar?id_predio=${contextMenu.predio.id}`}
                             onClick={closeContextMenu}
@@ -350,7 +362,9 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                             Cobrar
                         </a>
                     )}
+                    
                     <hr className="border-gray-200 dark:border-gray-600" />
+                    {can('predio-editar') && (
                     <Link
                         href={route('predios.show', contextMenu.predio.id)}
                         onClick={closeContextMenu}
@@ -359,6 +373,8 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         Ver
                     </Link>
+                    )}
+                    {can('predio-eliminar') && (
                     <Link
                         href={route('predios.edit', contextMenu.predio.id)}
                         onClick={closeContextMenu}
@@ -367,6 +383,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         Editar
                     </Link>
+                    )}
                 </div>
             )}
         </AuthenticatedLayout>

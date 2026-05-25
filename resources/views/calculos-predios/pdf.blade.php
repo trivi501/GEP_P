@@ -135,8 +135,8 @@
                     <td>${{ number_format($c['aseo_publico'], 2) }}</td>
                     <td>${{ number_format($c['recargos'], 2) }}</td>
                     <td>${{ number_format($c['actualizacion'], 2) }}</td>
-                    <td>$0.00</td>
-                    <td>$0.00</td>
+                    <td>${{ number_format($c['cobranza'] ?? 0, 2) }}</td>
+                    <td>${{ number_format($c['multa'] ?? 0, 2) }}</td>
                     <td>${{ number_format($c['descuento'], 2) }}</td>
                     <td>${{ number_format($c['total'], 2) }}</td>
                 </tr>
@@ -144,7 +144,7 @@
                 @if (count($calculos) > 0)
                 @php
                     $c = collect($calculos);
-                    $subtotal = $c->sum('entero') + $c->sum('aseo_publico') + $c->sum('recargos') + $c->sum('actualizacion');
+                    $subtotal = $c->sum('entero') + $c->sum('aseo_publico') + $c->sum('recargos') + $c->sum('actualizacion') + $c->sum('cobranza') + $c->sum('multa');
                     $descuentoTotal = $c->sum('descuento');
                     $totalPredio = $subtotal - $descuentoTotal;
                 @endphp
@@ -158,8 +158,8 @@
                     <td><b>${{ number_format($c->sum('aseo_publico'), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('recargos'), 2) }}</b></td>
                     <td><b>${{ number_format($c->sum('actualizacion'), 2) }}</b></td>
-                    <td><b>$0.00</b></td>
-                    <td><b>$0.00</b></td>
+                    <td><b>${{ number_format($c->sum(fn($r) => $r['cobranza'] ?? 0), 2) }}</b></td>
+                    <td><b>${{ number_format($c->sum(fn($r) => $r['multa'] ?? 0), 2) }}</b></td>
                     <td><b>${{ number_format($descuentoTotal, 2) }}</b></td>
                     <td><b>${{ number_format($totalPredio, 2) }}</b></td>
                 </tr>

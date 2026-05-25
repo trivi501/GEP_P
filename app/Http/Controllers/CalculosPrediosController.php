@@ -257,6 +257,7 @@ class CalculosPrediosController extends Controller
         $resultados = [];
 
         $anhoInicio = $anhoInicio + 1;
+        $primerAnioCalculado = $anhoInicio;
         while ($anhoInicio <= $anhoActual) {
             if($anhoInicio <= 2018){
                 $factorZona = $zonas_2016[$zona] ?? 0;
@@ -313,7 +314,16 @@ class CalculosPrediosController extends Controller
 
             $actualizacion = $factorActualizacion * $entero;
             $cobranza = 0;
-            $multa = 0;
+            if ($primerAnioCalculado > ($anhoActual - 5)) {
+                if ($anhoInicio == $primerAnioCalculado) {
+                    $cobranza = 678.84;
+                }
+            } else {
+                if ($anhoInicio == ($anhoActual - 5)) {
+                    $cobranza = 678.84;
+                }
+            }
+            $multa = $anhoInicio < $anhoActual ? 3750 : 0;
 
             $descuento = 0;
             if ($anhoInicio == $anhoActual) {
@@ -345,6 +355,8 @@ class CalculosPrediosController extends Controller
                 'actualizacion'       => $actualizacion,
                 'recargos'            => $recargos,
                 'descuento'           => $descuento,
+                'multa'               => $multa,
+                'cobranza'            => $cobranza,
             ];
 
             $anhoInicio++;

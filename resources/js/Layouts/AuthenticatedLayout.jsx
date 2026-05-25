@@ -75,9 +75,32 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </NavLink>
                                 )}
                                 {can('predios-index') && (
-                                    <NavLink href={route('predios.index')} active={route().current('predios.*')}>
-                                        Predios
-                                    </NavLink>
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                                type="button"
+                                                className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
+                                                    route().current('predios.*') || route().current('estado-cuenta-masivo.*') || route().current('multi-pagos.*')
+                                                        ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-500 dark:text-gray-100'
+                                                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:border-gray-300 focus:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200'
+                                                }`}
+                                            >
+                                                Predios
+                                                <svg className="-me-0.5 ms-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </Dropdown.Trigger>
+
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('predios.index')}>
+                                                Listado de Predios
+                                            </Dropdown.Link>
+                                            <Dropdown.Link href={route('estado-cuenta-masivo.index')}>
+                                                Estado Cuenta Masivo
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
                                 )}
                                 {can('ordenes-pago-index') && (
                                     <NavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
@@ -127,6 +150,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('pagos.historial')}>
                                             Historial de Pagos
+                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('multi-pagos.index')}>
+                                            Multi Pagos Predial
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -245,6 +271,12 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href={route('predios.index')} active={route().current('predios.*')}>
                             Predios
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('estado-cuenta-masivo.index')} active={route().current('estado-cuenta-masivo.*')}>
+                            Estado Cuenta Masivo
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('multi-pagos.index')} active={route().current('multi-pagos.*')}>
+                            Multi Pagos Predial
+                        </ResponsiveNavLink>
 
                         <div className="pt-2 pb-1">
                             <div className="px-4 text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">Operaciones</div>
@@ -271,6 +303,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('pagos.caja-general')} active={route().current('pagos.caja-general') || route().current('pagos.caja-general.*')}>
                                 Caja General
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('multi-pagos.index')} active={route().current('multi-pagos.*')}>
+                                Multi Pagos Predial
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('secretarias.index')} active={route().current('secretarias.*')}>
                                 Secretarías
