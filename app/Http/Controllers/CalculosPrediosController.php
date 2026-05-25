@@ -314,7 +314,10 @@ class CalculosPrediosController extends Controller
 
             $actualizacion = $factorActualizacion * $entero;
             $cobranza = 0;
-            if ($primerAnioCalculado > ($anhoActual - 5)) {
+            $ultimoPago = $predio->año_ultimo_pago;
+            if ($ultimoPago && ($ultimoPago + 1) == $anhoActual) {
+                $cobranza = 0;
+            } elseif ($primerAnioCalculado > ($anhoActual - 5)) {
                 if ($anhoInicio == $primerAnioCalculado) {
                     $cobranza = 678.84;
                 }
