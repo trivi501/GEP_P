@@ -1,9 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ ordenes, filters: initialFilters }) {
+    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
+    const can = (permiso) => permissions.includes(permiso);
     const [filters, setFilters] = useState(initialFilters ?? {});
 
     const setFilter = (key, value) => {
@@ -49,12 +51,14 @@ export default function Index({ ordenes, filters: initialFilters }) {
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     Listado de Órdenes de Pago
                                 </h3>
-                                <Link
-                                    href={route('ordenes-pago.create')}
-                                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-500 focus:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-700"
-                                >
-                                    + Nueva Orden
-                                </Link>
+                                {can('ordenes-pago-crear') && (
+                                    <Link
+                                        href={route('ordenes-pago.create')}
+                                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-500 focus:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-700"
+                                    >
+                                        + Nueva Orden
+                                    </Link>
+                                )}
                             </div>
 
                             <form onSubmit={handleSearch} className="overflow-x-auto">
