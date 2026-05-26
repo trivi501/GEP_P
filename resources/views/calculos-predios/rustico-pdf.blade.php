@@ -103,14 +103,19 @@
 
     {{-- CÁLCULOS PREDIALES RÚSTICOS --}}
     <div class="section">
+        @php $tipos = array_unique(array_column($calculos, 'tipo_calculo')); @endphp
+        <div style="font-size: 7.5pt; font-weight: bold; margin-bottom: 4px;">Tipo de Cálculo: {{ implode(', ', $tipos) }}</div>
         <table class="grid-2">
             <thead style="background: #803047; color: white; font-size: 6.5pt;">
                 <tr style="background: #803047; color: white;">
                     <th>Año</th>
                     <th>UMA</th>
-                    <th>Hectáreas</th>
-                    <th>Tipo Cálculo</th>
+                    <th>Ha</th>
                     <th>Subtotal</th>
+                    <th>Recargos</th>
+                    <th>Actualiz.</th>
+                    <th>Cobranza</th>
+                    <th>Multa</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -120,8 +125,11 @@
                     <td>{{ $c['anho'] }}</td>
                     <td>${{ number_format($c['uma'], 2) }}</td>
                     <td>{{ number_format($c['hectareas'], 4) }}</td>
-                    <td>{{ $c['tipo_calculo'] }}</td>
                     <td>${{ number_format($c['subtotal'], 2) }}</td>
+                    <td>${{ number_format($c['recargos'], 2) }}</td>
+                    <td>${{ number_format($c['actualizacion'], 2) }}</td>
+                    <td>${{ number_format($c['cobranza'], 2) }}</td>
+                    <td>${{ number_format($c['multa'], 2) }}</td>
                     <td>${{ number_format($c['total'], 2) }}</td>
                 </tr>
                 @endforeach
@@ -129,20 +137,31 @@
                 @php
                     $coll = collect($calculos);
                     $subtotalRustico = $coll->sum('subtotal');
+                    $recargosRustico = $coll->sum('recargos');
+                    $actualizacionRustico = $coll->sum('actualizacion');
+                    $cobranzaRustico = $coll->sum('cobranza');
+                    $multaRustico = $coll->sum('multa');
                     $totalRustico = $coll->sum('total');
                 @endphp
                 <tr class="total-row" style="font-size: 6.5pt;">
                     <td><b>Total</b></td>
                     <td></td>
                     <td></td>
-                    <td></td>
                     <td><b>${{ number_format($subtotalRustico, 2) }}</b></td>
+                    <td><b>${{ number_format($recargosRustico, 2) }}</b></td>
+                    <td><b>${{ number_format($actualizacionRustico, 2) }}</b></td>
+                    <td><b>${{ number_format($cobranzaRustico, 2) }}</b></td>
+                    <td><b>${{ number_format($multaRustico, 2) }}</b></td>
                     <td><b>${{ number_format($totalRustico, 2) }}</b></td>
                 </tr>
                 <tr>
-                    <td colspan="6" style="padding-top: 8px;">
+                    <td colspan="9" style="padding-top: 8px; font-size: 6.5pt;">
                         <b>Años pendientes de pago en predio:</b> {{ count($calculos) }} &nbsp;&nbsp;&nbsp;
                         <b>SubTotal Predio:</b> ${{ number_format($subtotalRustico, 2) }} &nbsp;&nbsp;&nbsp;
+                        <b>Recargos:</b> ${{ number_format($recargosRustico, 2) }} &nbsp;&nbsp;&nbsp;
+                        <b>Actualización:</b> ${{ number_format($actualizacionRustico, 2) }} &nbsp;&nbsp;&nbsp;
+                        <b>Cobranza:</b> ${{ number_format($cobranzaRustico, 2) }} &nbsp;&nbsp;&nbsp;
+                        <b>Multa:</b> ${{ number_format($multaRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Total Predio:</b> ${{ number_format($totalRustico, 2) }}
                     </td>
                 </tr>

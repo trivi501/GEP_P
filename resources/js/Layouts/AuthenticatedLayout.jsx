@@ -157,9 +157,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Historial de Pagos
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('multi-pagos.index')}>
-                                            Multi Pagos Predial
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
+                                             Multi Pagos Predial
+                                         </Dropdown.Link>
+                                         <Dropdown.Link href={route('corte-cajas.index')}>
+                                             Cortes de Caja
+                                         </Dropdown.Link>
+                                     </Dropdown.Content>
                                 </Dropdown>
                                 )}
                                     {can('admin-cajas') && (
@@ -311,6 +314,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('multi-pagos.index')} active={route().current('multi-pagos.*')}>
                                 Multi Pagos Predial
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('corte-cajas.index')} active={route().current('corte-cajas.*')}>
+                                Cortes de Caja
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('secretarias.index')} active={route().current('secretarias.*')}>
                                 Secretarías

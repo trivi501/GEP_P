@@ -367,8 +367,15 @@ class PagosController extends Controller
 
             $anhoInicio = $predio->año_ultimo_pago ?? now()->year;
             $anhoActual = now()->year;
-            $totalRustico = 0;
+            $predialRustico = 0;
+            $predialRusticoAnt = 0;
+            $predialRusticoAct = 0;
+            $recargosRustico = 0;
+            $actualizacionRustico = 0;
+            $multaRustico = 0;
+            $cobranzaRustico = 0;
             $anhoInicio = $anhoInicio + 1;
+            $cobranzaRustico = 0;
 
             while ($anhoInicio <= $anhoActual) {
                 $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
@@ -390,12 +397,25 @@ class PagosController extends Controller
                         : ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
                 }
 
-                $totalRustico += $subtotal;
+                if ($anhoInicio < $anhoActual) {
+                    $predialRusticoAnt += $subtotal;
+                } else {
+                    $predialRusticoAct += $subtotal;
+                }
+                $predialRustico += $subtotal;
                 $anhoInicio++;
             }
 
-            $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($totalRustico, 2)];
-            $total = round($totalRustico, 2);
+            if ($predialRusticoAnt > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico Anterior', 'monto' => round($predialRusticoAnt, 2)];
+            }
+            if ($predialRusticoAct > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico Actual', 'monto' => round($predialRusticoAct, 2)];
+            }
+            if ($predialRusticoAnt == 0 && $predialRusticoAct == 0 && $predialRustico > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($predialRustico, 2)];
+            }
+            $total = round($predialRustico, 2);
         } else {
             $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
@@ -517,6 +537,12 @@ class PagosController extends Controller
             $esRustico = ($validated['tipo_pago'] ?? '') === 'predial_rustico';
 
             $conceptCuentaMapping = $esRustico ? [
+                'Predial Rústico Actual' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'RÚSTICO') && str_contains($c->descripcion_clean, 'ACTUAL')
+                ),
+                'Predial Rústico Anterior' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'RÚSTICO') && str_contains($c->descripcion_clean, 'ANTERIORES')
+                ),
                 'Predial Rústico' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')
                 ),

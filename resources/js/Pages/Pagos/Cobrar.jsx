@@ -14,6 +14,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const [formasPagosData, setFormasPagosData] = useState([{ forma_pago_id: '1', monto: '' }]);
     const [loading, setLoading] = useState(false);
     const [esRustico, setEsRustico] = useState(false);
+    const [selectedDescuento, setSelectedDescuento] = useState(null);
     const [error, setError] = useState(null);
     const [showPagadoModal, setShowPagadoModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -83,6 +84,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         setTotal(0);
         setError(null);
         setFormasPagosData([]);
+        setSelectedDescuento(null);
 
         axios.get(route('pagos.get-calculo'), { params: { id: p.id } })
             .then((r) => {
@@ -125,9 +127,17 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         (sum, row) => sum + (parseFloat(row.monto) || 0), 0
     );
 
+    const descuentoMonto = selectedDescuento
+        ? conceptos.filter((c) => c.concepto === 'Impuesto Predial Actual' || c.concepto === 'Predial Rústico Actual').reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
+        : 0;
+    const conceptosConDescuento = selectedDescuento && descuentoMonto > 0
+        ? [...conceptos, { concepto: 'Descuento', monto: -descuentoMonto }]
+        : conceptos;
+    const totalConDescuento = total - descuentoMonto;
+
     const formasValidas = formasPagosData.every((row) => row.forma_pago_id && parseFloat(row.monto) > 0);
-    const suficiente = sumaFormasPagos >= total - 0.01;
-    const cambio = Math.max(0, sumaFormasPagos - total);
+    const suficiente = sumaFormasPagos >= totalConDescuento - 0.01;
+    const cambio = Math.max(0, sumaFormasPagos - totalConDescuento);
 
     const abrirConfirmacion = () => {
         if (!selectedPredio || conceptos.length === 0) {
@@ -154,14 +164,14 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         const payload = {
             id_predio: selectedPredio.id,
             id_contribuyente: contribuyenteData.id_contribuyente,
-            monto: total,
-            descuento: 0,
+            monto: totalConDescuento,
+            descuento: descuentoMonto,
             nombre: contribuyenteData.nombre,
             rfc: contribuyenteData.rfc,
             descripcion: esRustico ? 'Pago predial rústico' : 'Pago predial urbano',
             forma_pago: formasPagosData[0]?.forma_pago_id || '',
             tipo_pago: esRustico ? 'predial_rustico' : 'predial_urbano',
-            conceptos,
+            conceptos: conceptosConDescuento,
             formas_pagos: formasPagosData.map((row) => ({
                 forma_pago_id: parseInt(row.forma_pago_id),
                 monto: parseFloat(row.monto),
@@ -258,12 +268,17 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                         <h4 className="text-sm font-semibold mb-3">Descuentos</h4>
                                         <div className="space-y-2">
                                             {['Jubilado', 'Pensionado', 'Adulto Mayor'].map((d) => (
-                                                <label key={d} className="flex items-center gap-2 text-sm">
-                                                    <input type="checkbox" className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
+                                                <label key={d} className="flex items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="checkbox" checked={selectedDescuento === d}
+                                                        onChange={() => setSelectedDescuento(selectedDescuento === d ? null : d)}
+                                                        className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200" />
                                                     {d}
                                                 </label>
                                             ))}
                                         </div>
+                                        {selectedDescuento && (
+                                            <p className="mt-2 text-xs text-green-600 font-medium">10% desc. año actual: -${descuentoMonto.toFixed(2)}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -279,15 +294,15 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {conceptos.map((c, i) => (
+                                                    {conceptosConDescuento.map((c, i) => (
                                                         <tr key={i} className="border-b border-gray-200 dark:border-gray-700">
                                                             <td className="py-1 pr-2">{c.concepto}</td>
-                                                            <td className="text-right py-1 pl-2">${parseFloat(c.monto).toFixed(2)}</td>
+                                                            <td className={`text-right py-1 pl-2 ${c.monto < 0 ? 'text-red-500' : ''}`}>${parseFloat(c.monto).toFixed(2)}</td>
                                                         </tr>
                                                     ))}
                                                     <tr className="border-b border-gray-200 dark:border-gray-700">
                                                         <td className="py-1 pr-2 font-bold">Total</td>
-                                                        <td className="text-right py-1 pl-2 font-bold">${total.toFixed(2)}</td>
+                                                        <td className="text-right py-1 pl-2 font-bold">${totalConDescuento.toFixed(2)}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -356,7 +371,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                             </span>
                                             {!suficiente && (
                                                 <span className="ml-2 text-red-500 text-xs">
-                                                    (debe ser ≥ ${total.toFixed(2)})
+                                                    (debe ser ≥ ${totalConDescuento.toFixed(2)})
                                                 </span>
                                             )}
                                             {suficiente && cambio > 0 && (
@@ -369,7 +384,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                         <div>
                                             <label className="block text-sm font-medium mb-1">Total a pagar</label>
-                                            <p className="text-2xl font-bold text-green-600">${total.toFixed(2)}</p>
+                                            <p className="text-2xl font-bold text-green-600">${totalConDescuento.toFixed(2)}</p>
                                         </div>
                                         <div className="text-right">
                                             <button
@@ -415,8 +430,14 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-gray-500">Total a pagar:</span>
-                                <span className="font-semibold">${total.toFixed(2)}</span>
+                                <span className="font-semibold">${totalConDescuento.toFixed(2)}</span>
                             </div>
+                            {descuentoMonto > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Descuento ({selectedDescuento}):</span>
+                                    <span className="font-bold">-${descuentoMonto.toFixed(2)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between">
                                 <span className="text-gray-500">Recibido:</span>
                                 <span className="font-semibold">${sumaFormasPagos.toFixed(2)}</span>

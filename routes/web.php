@@ -79,6 +79,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('calculos-predios/pdf-rustico', [CalculosPrediosController::class, 'pdfRustico'])->name('calculos-predios.pdf-rustico');
     Route::post('calculos-predios/calculo-predial-urbano', [CalculosPrediosController::class, 'calculoPredialUrbano'])->name('calculos-predios.calculo-predial-urbano');
 
+    Route::get('corte-cajas/{corteCaja}/pdf', [CorteCajaController::class, 'pdf'])->name('corte-cajas.pdf');
+    Route::resource('corte-cajas', CorteCajaController::class)->parameters(['corte-cajas' => 'corteCaja']);
     Route::resource('secretarias', SecretariaController::class);
     Route::resource('ordenes-pago', OrdenPagoController::class)->parameters(['ordenes-pago' => 'ordenPago']);
     Route::get('ordenes-pgo-cajas', [OrdenPagoController::class, 'ordenesPgoCajas'])->name('ordenes-pgo-cajas.index');

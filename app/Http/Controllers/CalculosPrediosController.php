@@ -386,6 +386,7 @@ class CalculosPrediosController extends Controller
         $calculos = [];
 
         $anhoInicio = $anhoInicio + 1;
+        $primerAnioCalculado = $anhoInicio;
         while ($anhoInicio <= $anhoActual) {
             $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
             $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
@@ -416,13 +417,62 @@ class CalculosPrediosController extends Controller
                 }
             }
 
+            $meses = 0;
+            if ($anhoInicio < $anhoActual) {
+                $meses = (12 - 3) + ($anhoActual - $anhoInicio - 1) * 12 + now()->month;
+            } elseif ($anhoInicio == $anhoActual && now()->month > 3) {
+                $meses = now()->month - 3;
+            }
+            $recargos = $subtotal * 0.027 * $meses;
+
+            $actualizacion = 0;
+            $inpc_in = \App\Models\Inpc::where('year', $anhoInicio)->where('month', 3)->first();
+            $inpc_fin = \App\Models\Inpc::orderBy('id', 'desc')->first();
+            if ($inpc_in && $inpc_fin) {
+                $factorActualizacion = max(1, $inpc_fin->value / $inpc_in->value) - 1;
+                $actualizacion = $factorActualizacion * $subtotal;
+            }
+
+            $cobranza = 0;
+            $ultimoPago = $predio->año_ultimo_pago;
+            if ($ultimoPago && ($ultimoPago + 1) == $anhoActual) {
+                $cobranza = 0;
+            } elseif ($primerAnioCalculado > ($anhoActual - 5)) {
+                if ($anhoInicio == $primerAnioCalculado) {
+                    $cobranza = 678.84;
+                }
+            } else {
+                if ($anhoInicio == ($anhoActual - 5)) {
+                    $cobranza = 678.84;
+                }
+            }
+
+            $multa = $anhoInicio < $anhoActual ? 1875 : 0;
+
+            $descuento = 0;
+            if ($anhoInicio == $anhoActual) {
+                $descuento = match (now()->month) {
+                    1 => $subtotal * 0.15,
+                    2 => $subtotal * 0.10,
+                    3 => $subtotal * 0.05,
+                    default => 0,
+                };
+            }
+
+            $total = $subtotal + $recargos + $actualizacion + $cobranza + $multa;
+
             $calculos[] = [
-                'anho'         => $anhoInicio,
-                'uma'          => $valorUmaAnual,
-                'hectareas'    => $hectareas,
-                'tipo_calculo' => $tipoCalculo,
-                'subtotal'     => $subtotal,
-                'total'        => $subtotal,
+                'anho'          => $anhoInicio,
+                'uma'           => $valorUmaAnual,
+                'hectareas'     => $hectareas,
+                'tipo_calculo'  => $tipoCalculo,
+                'subtotal'      => $subtotal,
+                'recargos'      => $recargos,
+                'actualizacion' => $actualizacion,
+                'cobranza'      => $cobranza,
+                'multa'         => $multa,
+                'descuento'     => $descuento,
+                'total'         => $total,
             ];
 
             $anhoInicio++;

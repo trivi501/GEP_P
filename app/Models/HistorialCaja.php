@@ -33,4 +33,9 @@ class HistorialCaja extends Model
     {
         return $this->hasMany(Pago::class, 'id_historial_caja', 'id');
     }
+
+    public function corteCaja()
+    {
+        return $this->belongsTo(CorteCaja::class, 'cortecaja_id', 'id');
+    }
 }
