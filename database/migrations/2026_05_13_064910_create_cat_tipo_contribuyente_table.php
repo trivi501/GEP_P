@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('cat_tipo_contribuyente')) {
+            return;
+        }
         Schema::create('cat_tipo_contribuyente', function (Blueprint $table) {
             $table->smallInteger('id_tipo_contribuyente')->autoIncrement();
             $table->string('area_contribuyente', 300);

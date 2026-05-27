@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('f4_c_formapago')) {
+            return;
+        }
         Schema::create('f4_c_formapago', function (Blueprint $table) {
             $table->id();
             $table->string('c_FormaPago')->nullable();

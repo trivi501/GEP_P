@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('tb_predio')) {
+            return;
+        }
         Schema::create('tb_predio', function (Blueprint $table) {
             $table->string('id_predio', 64)->primary();
             $table->string('Clave_predial', 25)->nullable()->unique();
