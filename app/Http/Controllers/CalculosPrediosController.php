@@ -278,7 +278,7 @@ class CalculosPrediosController extends Controller
 
             $aseoPublico = match (true) {
                 in_array($zona, ['ZONA I', 'ZONA II', 'ZONA III', 'ZONA IV']) => $entero * 0.105,
-                in_array($zona, ['ZONA V', 'ZONA VI', 'ZONA VII'])            => $entero * 0.21,
+                in_array($zona, ['ZONA V', 'ZONA VI', 'ZONA VII', 'ZONA VIII']) => $entero * 0.21,
                 default                                                       => 0,
             };
 
