@@ -73,27 +73,6 @@ class CalculosPrediosController extends Controller
         $impuestoConstruccion = 0;
         $inpc_in = 0;
         $factorActualizacion = 0;
-        echo '<p class="text-lg font-semibold mb-2">Clave Catastral: '.$predio->Clave_predial.'</p>';
-        echo '<table class="min-w-full divide-y divide-gray-200 text-sm mb-6">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Año</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">UMA</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Superficie</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">INPC Inicio</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">INPC Fin</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Factor Act.</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Baldío</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Factor Zona</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Imp. Terreno</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Imp. C/Baldío</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Zona</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Imp. Const.</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Construcción</th>
-                    <th class="px-4 py-2 border text-xs font-medium uppercase">Total</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">';
 
         while ($anho_pago <= date('Y')) {
             if($anho_pago <= date('Y') && date('m') > 3){

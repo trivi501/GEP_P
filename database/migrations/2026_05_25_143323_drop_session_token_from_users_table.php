@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('session_token');
-        });
+        if (Schema::hasColumn('users', 'session_token')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('session_token');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('session_token')->nullable()->after('secretaria_id');
-        });
+        if (!Schema::hasColumn('users', 'session_token')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('session_token')->nullable()->after('secretaria_id');
+            });
+        }
     }
 };

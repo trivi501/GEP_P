@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Predio;
-use App\Models\Contribuyente;
 use App\Models\TipoPredio;
 use App\Models\RegimenPropiedad;
 use App\Models\EstadoRenta;
@@ -79,76 +78,86 @@ class PredioController extends Controller
 
     public function index(Request $request)
     {
-        $query = Predio::with('contribuyente', 'tipoPredio', 'colonia', 'estadoImpuesto', 'calle', 'datosUrbano')
-            ->select(['id_predio', 'Clave_predial', 'id_contribuyente', 'id_tipo_predio', 'id_colonia', 'id_calle', 'ubicacion', 'codigo_postal', 'Numero_exterior', 'Numero_interior', 'superficie', 'construccion', 'valor_catastral', 'año_ultimo_pago', 'ultimo_bimestre_pago', 'id_estaus_cobro_predial'])
-            ->when($request->filled('Clave_predial'), fn($q) => $q->where('Clave_predial', 'like', '%' . $request->Clave_predial . '%'))
-            ->when($request->filled('ubicacion'), fn($q) => $q->where('ubicacion', 'like', '%' . $request->ubicacion . '%'))
-            ->when($request->filled('contribuyente'), fn($q) => $q->whereHas('contribuyente', fn($q) => $q->where('nombre_completo', 'like', '%' . $request->contribuyente . '%')))
-            ->when($request->filled('cuenta'), fn($q) => $q->whereHas('contribuyente', fn($q) => $q->where('cuenta', 'like', '%' . $request->cuenta . '%')))
-            ->when($request->filled('tipo_predio'), fn($q) => $q->whereHas('tipoPredio', fn($q) => $q->where('Tipo_predio', 'like', '%' . $request->tipo_predio . '%')))
-            ->when($request->filled('estado'), fn($q) => $q->whereHas('estadoImpuesto', fn($q) => $q->where('DESCRIPCION', 'like', '%' . $request->estado . '%')))
-            ->when($request->filled('colonia'), fn($q) => $q->whereHas('colonia', fn($q) => $q->where('COLONIA', 'like', '%' . $request->colonia . '%')))
-            ->when($request->filled('año_ultimo_pago'), fn($q) => $q->where('año_ultimo_pago', 'like', '%' . $request->año_ultimo_pago . '%'))
-            ->when($request->filled('superficie'), fn($q) => $q->where('superficie', 'like', '%' . $request->superficie . '%'))
-            ->when($request->filled('construccion'), fn($q) => $q->where('construccion', 'like', '%' . $request->construccion . '%'))
+        $query = Predio::query()
+            ->select([
+                'tb_predio.*',
+                'contrib.cuenta as contrib_cuenta',
+                'contrib.nombre_completo as contrib_nombre',
+                'tipo.Tipo_predio as tipo_predio_nombre',
+                'col.COLONIA as colonia_nombre',
+                'calle.CALLE as calle_nombre',
+                'estado_imp.DESCRIPCION as estado_descripcion',
+                'urbano.valor_catastral_terreno as urbano_terreno',
+            ])
+            ->leftJoin('tb_contribuyentes as contrib', 'tb_predio.id_contribuyente', '=', 'contrib.id_contribuyente')
+            ->leftJoin('cat_tipo_predio as tipo', 'tb_predio.id_tipo_predio', '=', 'tipo.id_tipo_predio')
+            ->leftJoin('cat_colonia as col', 'tb_predio.id_colonia', '=', 'col.id_colonia')
+            ->leftJoin('cat_calle as calle', 'tb_predio.id_calle', '=', 'calle.id_calle')
+            ->leftJoin('cat_estado_impuesto as estado_imp', 'tb_predio.id_estaus_cobro_predial', '=', 'estado_imp.id_estaus_cobro_predial')
+            ->leftJoin('tb_datos_predio_urbano as urbano', 'tb_predio.id_predio', '=', 'urbano.id_predio')
+            ->when($request->filled('Clave_predial'), fn($q) => $q->where('tb_predio.Clave_predial', 'like', '%' . $request->Clave_predial . '%'))
+            ->when($request->filled('ubicacion'), fn($q) => $q->where('tb_predio.ubicacion', 'like', '%' . $request->ubicacion . '%'))
+            ->when($request->filled('contribuyente'), fn($q) => $q->where('contrib.nombre_completo', 'like', '%' . $request->contribuyente . '%'))
+            ->when($request->filled('cuenta'), fn($q) => $q->where('contrib.cuenta', 'like', '%' . $request->cuenta . '%'))
+            ->when($request->filled('tipo_predio'), fn($q) => $q->where('tipo.Tipo_predio', 'like', '%' . $request->tipo_predio . '%'))
+            ->when($request->filled('estado'), fn($q) => $q->where('estado_imp.DESCRIPCION', 'like', '%' . $request->estado . '%'))
+            ->when($request->filled('colonia'), fn($q) => $q->where('col.COLONIA', 'like', '%' . $request->colonia . '%'))
+            ->when($request->filled('año_ultimo_pago'), fn($q) => $q->where('tb_predio.año_ultimo_pago', 'like', '%' . $request->año_ultimo_pago . '%'))
+            ->when($request->filled('superficie'), fn($q) => $q->where('tb_predio.superficie', 'like', '%' . $request->superficie . '%'))
+            ->when($request->filled('construccion'), fn($q) => $q->where('tb_predio.construccion', 'like', '%' . $request->construccion . '%'))
             ->when($request->filled('search_global'), fn($q) => $q->where(function($sub) use ($request) {
                 $s = $request->search_global;
-                $sub->where('Clave_predial', 'like', "%{$s}%")
-                    ->orWhere('ubicacion', 'like', "%{$s}%")
-                    ->orWhere('año_ultimo_pago', 'like', "%{$s}%")
-                    ->orWhere('ultimo_bimestre_pago', 'like', "%{$s}%")
-                    ->orWhereRaw("CAST(superficie AS CHAR) LIKE ?", ["%{$s}%"])
-                    ->orWhereHas('contribuyente', fn($q) => $q->where('nombre_completo', 'like', "%{$s}%")->orWhere('cuenta', 'like', "%{$s}%"))
-                    ->orWhereHas('colonia', fn($q) => $q->where('COLONIA', 'like', "%{$s}%"))
-                    ->orWhereHas('tipoPredio', fn($q) => $q->where('Tipo_predio', 'like', "%{$s}%"))
-                    ->orWhereHas('estadoImpuesto', fn($q) => $q->where('DESCRIPCION', 'like', "%{$s}%"));
+                $sub->where('tb_predio.Clave_predial', 'like', "%{$s}%")
+                    ->orWhere('tb_predio.ubicacion', 'like', "%{$s}%")
+                    ->orWhere('tb_predio.año_ultimo_pago', 'like', "%{$s}%")
+                    ->orWhere('tb_predio.ultimo_bimestre_pago', 'like', "%{$s}%")
+                    ->orWhereRaw("CAST(tb_predio.superficie AS CHAR) LIKE ?", ["%{$s}%"])
+                    ->orWhere('contrib.nombre_completo', 'like', "%{$s}%")
+                    ->orWhere('contrib.cuenta', 'like', "%{$s}%")
+                    ->orWhere('col.COLONIA', 'like', "%{$s}%")
+                    ->orWhere('tipo.Tipo_predio', 'like', "%{$s}%")
+                    ->orWhere('estado_imp.DESCRIPCION', 'like', "%{$s}%");
             }));
 
         $sortColumn = $request->get('sort_column', 'Clave_predial');
         $sortDirection = strtolower($request->get('sort_direction', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        $directColumns = ['Clave_predial', 'ubicacion', 'año_ultimo_pago', 'ultimo_bimestre_pago', 'superficie'];
+        $sortMap = [
+            'Clave_predial' => 'tb_predio.Clave_predial',
+            'ubicacion' => 'tb_predio.ubicacion',
+            'año_ultimo_pago' => 'tb_predio.año_ultimo_pago',
+            'ultimo_bimestre_pago' => 'tb_predio.ultimo_bimestre_pago',
+            'superficie' => 'tb_predio.superficie',
+            'construccion' => 'tb_predio.construccion',
+            'contribuyente' => 'contrib.nombre_completo',
+            'cuenta' => 'contrib.cuenta',
+            'colonia' => 'col.COLONIA',
+            'tipo_predio' => 'tipo.Tipo_predio',
+            'estado' => 'estado_imp.DESCRIPCION',
+        ];
 
-        if (in_array($sortColumn, $directColumns)) {
-            $query->orderBy($sortColumn, $sortDirection);
-        } else {
-            $subQueryMap = [
-                'contribuyente' => [Contribuyente::class, 'nombre_completo', 'id_contribuyente'],
-                'cuenta' => [Contribuyente::class, 'cuenta', 'id_contribuyente'],
-                'colonia' => [CatColonia::class, 'COLONIA', 'id_colonia'],
-                'tipo_predio' => [TipoPredio::class, 'Tipo_predio', 'id_tipo_predio'],
-                'estado' => [EstadoImpuesto::class, 'DESCRIPCION', 'id_estaus_cobro_predial'],
-            ];
+        $query->orderBy($sortMap[$sortColumn] ?? 'tb_predio.Clave_predial', $sortDirection);
 
-            if (isset($subQueryMap[$sortColumn])) {
-                [$model, $column, $localKey] = $subQueryMap[$sortColumn];
-                $query->orderBy(
-                    $model::select($column)->whereColumn($localKey, 'tb_predio.' . $localKey),
-                    $sortDirection
-                );
-            } else {
-                $query->orderBy('Clave_predial', 'asc');
-            }
-        }
+        $mapPredio = fn($p) => [
+            'id' => $p->id_predio,
+            'Clave_predial' => $p->Clave_predial,
+            'cuenta' => $p->contrib_cuenta ?? '—',
+            'contribuyente' => $p->contrib_nombre ?? '—',
+            'colonia' => $p->colonia_nombre ?? '—',
+            'tipo_predio' => $p->tipo_predio_nombre ?? '—',
+            'estado' => $p->estado_descripcion ?? '—',
+            'ubicacion' => $p->ubicacion ?? '—',
+            'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
+            'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
+            'superficie' => (float) $p->superficie,
+            'ubicacionPredio' => trim(($p->calle_nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia_nombre ?? '')),
+            'terreno' => (float) ($p->urbano_terreno ?? $p->valor_catastral ?? 0),
+            'construccion' => (float) ($p->construccion ?? 0),
+        ];
 
         if ($request->wantsJson()) {
             $predios = $query->paginate(10);
-            $data = $predios->map(fn($p) => [
-                'id' => $p->id_predio,
-                'Clave_predial' => $p->Clave_predial,
-                'cuenta' => $p->contribuyente?->cuenta ?? '—',
-                'contribuyente' => $p->contribuyente?->nombre_completo ?? '—',
-                'colonia' => $p->colonia?->COLONIA ?? '—',
-                'tipo_predio' => $p->tipoPredio?->Tipo_predio ?? '—',
-                'estado' => $p->estadoImpuesto?->DESCRIPCION ?? '—',
-                'ubicacion' => $p->ubicacion ?? '—',
-                'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
-                'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
-                'superficie' => (float) $p->superficie,
-                'ubicacionPredio' => trim(($p->calle?->nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia?->COLONIA ?? '')),
-                'terreno' => (float) ($p->datosUrbano?->valor_catastral_terreno ?? $p->valor_catastral ?? 0),
-                'construccion' => (float) ($p->construccion ?? 0),
-            ]);
+            $data = $predios->map($mapPredio);
             return response()->json([
                 'data' => $data,
                 'total' => $predios->total(),
@@ -158,22 +167,7 @@ class PredioController extends Controller
         }
 
         $predios = $query->paginate(10)->withQueryString();
-        $prediosData = $predios->map(fn($p) => [
-            'id' => $p->id_predio,
-            'Clave_predial' => $p->Clave_predial,
-            'cuenta' => $p->contribuyente?->cuenta ?? '—',
-            'contribuyente' => $p->contribuyente?->nombre_completo ?? '—',
-            'colonia' => $p->colonia?->COLONIA ?? '—',
-            'tipo_predio' => $p->tipoPredio?->Tipo_predio ?? '—',
-            'estado' => $p->estadoImpuesto?->DESCRIPCION ?? '—',
-            'ubicacion' => $p->ubicacion ?? '—',
-            'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
-            'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
-            'superficie' => (float) $p->superficie,
-            'ubicacionPredio' => trim(($p->calle?->nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia?->COLONIA ?? '')),
-            'terreno' => (float) ($p->datosUrbano?->valor_catastral_terreno ?? $p->valor_catastral ?? 0),
-            'construccion' => (float) ($p->construccion ?? 0),
-        ])->values();
+        $prediosData = $predios->map($mapPredio)->values();
 
         $cajero = \App\Models\Cajero::with('caja')->where('usuario_id', auth()->id())->first();
         $cajaAbierta = $cajero ? \App\Models\HistorialCaja::where('cajero_id', $cajero->id_cajero)->whereNull('datetime_cierre')->first() : null;
