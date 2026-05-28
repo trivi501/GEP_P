@@ -176,7 +176,7 @@
         <h1 style="margin-left:70px;">MUNICIPIO DE GUADALUPE, ZACATECAS</h1>
         <p class="subtitle" style="margin-left:70px;">DEPARTAMENTO DE CATASTRO</p>
         <p class="subtitle" style="margin-left:70px;">CEDULA PREDIAL URBANA</p>
-        <div class="clave" style="margin-left:70px;"> CLAVE CATASTRAL {{ $predio->Clave_predial }}</div>
+        <div class="clave" style="margin-left:70px;"> CLAVE CATASTRAL {{ $predio->Clave_predial ?? $predio->Clave_predial }}</div>
     </div>
 
     <table class="two-col">
@@ -200,7 +200,7 @@
                     <div class="section-title">TIPO DE PREDIO {{ $predio->tipoPredio->Tipo_predio ?? '—' }}</div>
                     <div class="section-body">
                         <table class="info">
-                            <tr><td class="label">Clave Catastral:</td><td class="value">{{ $predio->clavePredial->clave_predial_completa ?? '—' }}</td></tr>
+                            <tr><td class="label">Clave Catastral:</td><td class="value">{{ $predio->Clave_predial ?? '—' }}</td></tr>
                             <tr><td class="label">Manzana:</td><td class="value">{{ $predio->clavePredial->id_manzana ?? '—' }}</td></tr>
                             <tr><td class="label">Lote:</td><td class="value">{{ $predio->clavePredial->id_lote ?? '—' }}</td></tr>
                             <tr><td class="label">Régimen Propiedad:</td><td class="value">{{ $predio->regimenPropiedad->REGIMEN ?? '—' }}</td></tr>
