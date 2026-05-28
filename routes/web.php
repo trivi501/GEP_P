@@ -13,6 +13,7 @@ use App\Http\Controllers\OrdenPagoController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\EstadoCuentaMasivoController;
 use App\Http\Controllers\MultiPagosController;
+use App\Http\Controllers\CorteCajaController;
 use App\Http\Controllers\DescuentosController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
