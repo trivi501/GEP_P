@@ -9,6 +9,8 @@ use App\Models\Inpc;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class EstadoCuentaMasivoController extends Controller
 {
@@ -58,84 +60,78 @@ class EstadoCuentaMasivoController extends Controller
     {
         $request->validate(['predios' => 'required|array', 'predios.*' => 'string']);
 
-        $predios = Predio::with([
-            'contribuyente.domicilio', 'contribuyente.tipoContribuyente',
-            'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto',
-            'tituloPropiedad', 'calle', 'colonia', 'clavePredial',
-            'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio',
-            'datosUrbano.estadoFisico', 'datosUrbano.pavimento',
-            'nivelesConstruidos.tipoConstruccion',
-            'nivelesConstruidos.usoConstruccion',
-            'medidasYColindancias.orientacion',
-        ])->whereIn('id_predio', $request->predios)->get();
+        $token = Str::random(40);
+        Cache::put("pdf_predios_{$token}", $request->predios, now()->addMinutes(10));
+        Cache::put("pdf_status_{$token}", 'processing', now()->addMinutes(10));
+        Cache::put("pdf_total_{$token}", count($request->predios), now()->addMinutes(10));
 
-        $calculosController = app(CalculosPrediosController::class);
+        $phpBinary = PHP_BINARY;
+        $artisanPath = base_path('artisan');
+        $execAvailable = function_exists('exec')
+            && !in_array('exec', array_map('trim', explode(',', ini_get('disable_functions') ?? '')));
 
-        $data = [];
-        $granTotal = 0;
-        $totalPredios = 0;
-
-        foreach ($predios as $predio) {
-            $esRustico = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO')
-                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RUSTICO')
-                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
-
-            if ($esRustico) {
-                $calculos = $this->getCalculosRusticos($predio);
+        if ($execAvailable) {
+            if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+                exec("start /B {$phpBinary} {$artisanPath} pdf:estado-cuenta {$token} > NUL 2>&1");
             } else {
-                $calculos = $calculosController->getCalculosAnuales($predio);
+                exec("{$phpBinary} {$artisanPath} pdf:estado-cuenta {$token} > /dev/null 2>&1 &");
             }
-
-            $subtotalPredio = collect($calculos)->sum('total');
-
-            $totalDescuento = 0;
-            $descuento = \App\Models\Descuento::where('idPredio', $predio->id_predio)
-                ->where('activo', true)
-                ->where(function ($q) {
-                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
-                })->first();
-
-            if ($descuento) {
-                $descMulta = 0;
-                $descActualizacion = 0;
-                $descCobranza = 0;
-
-                foreach ($calculos as &$c) {
-                    if (!empty($c['multa']) && $descuento->multas > 0) {
-                        $descMulta += $c['multa'] * (float) $descuento->multas / 100;
-                    }
-                    if (!empty($c['actualizacion']) && $descuento->actualizaciones > 0) {
-                        $descActualizacion += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
-                    }
-                    if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
-                        $descCobranza += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
-                    }
-                }
-                unset($c);
-
-                $totalDescuento = round($descMulta + $descActualizacion + $descCobranza, 2);
-            }
-
-            $subtotalConDescuento = round($subtotalPredio - $totalDescuento, 2);
-            $granTotal += $subtotalConDescuento;
-            $totalPredios++;
-
-            $data[] = [
-                'predio' => $predio,
-                'calculos' => $calculos,
-                'subtotal' => $subtotalConDescuento,
-                'esRustico' => $esRustico,
-                'descuento' => $totalDescuento > 0 ? $totalDescuento : null,
-            ];
+        } else {
+            Cache::put("pdf_status_{$token}", 'error', now()->addMinutes(10));
+            Cache::put("pdf_error_{$token}", 'exec() no disponible — configure un worker de cola', now()->addMinutes(10));
         }
 
-        $pdf = Pdf::loadView('estado-cuenta-masivo.pdf', compact('data', 'granTotal', 'totalPredios'));
-        $pdf->setPaper('a4');
+        return redirect()->route('estado-cuenta-masivo.progress', ['token' => $token]);
+    }
 
-        $contribuyente = $predios->first()->contribuyente;
-        $nombreArchivo = 'Estado_Cuenta_Masivo_' . ($contribuyente->cuenta ?? 'varios') . '.pdf';
+    public function progress($token)
+    {
+        $status = Cache::get("pdf_status_{$token}");
+        $error = Cache::get("pdf_error_{$token}");
 
-        return $pdf->stream($nombreArchivo);
+        if (!$status) {
+            abort(404, 'Token no válido o expirado');
+        }
+
+        if ($status === 'ready') {
+            $path = Cache::get("pdf_path_{$token}");
+            $filename = basename($path);
+            return view('estado-cuenta-masivo.progress', [
+                'token' => $token,
+                'status' => 'ready',
+                'filename' => $filename,
+            ]);
+        }
+
+        if ($status === 'error') {
+            return view('estado-cuenta-masivo.progress', [
+                'token' => $token,
+                'status' => 'error',
+                'error' => $error,
+            ]);
+        }
+
+        return view('estado-cuenta-masivo.progress', [
+            'token' => $token,
+            'status' => 'processing',
+            'totalPredios' => Cache::get("pdf_total_{$token}"),
+        ]);
+    }
+
+    public function download($token)
+    {
+        $status = Cache::get("pdf_status_{$token}");
+        $path = Cache::get("pdf_path_{$token}");
+
+        if ($status !== 'ready' || !$path || !file_exists($path)) {
+            abort(404, 'PDF no disponible');
+        }
+
+        $cleanupPath = $path;
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . basename($path) . '"',
+        ])->deleteFileAfterSend(true);
     }
 
     private function getCalculosRusticos($predio)

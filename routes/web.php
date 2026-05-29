@@ -89,6 +89,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('estado-cuenta-masivo', [EstadoCuentaMasivoController::class, 'index'])->name('estado-cuenta-masivo.index');
     Route::post('estado-cuenta-masivo/search', [EstadoCuentaMasivoController::class, 'search'])->name('estado-cuenta-masivo.search');
     Route::post('estado-cuenta-masivo/pdf', [EstadoCuentaMasivoController::class, 'pdf'])->name('estado-cuenta-masivo.pdf');
+    Route::get('estado-cuenta-masivo/progress/{token}', [EstadoCuentaMasivoController::class, 'progress'])->name('estado-cuenta-masivo.progress');
+    Route::get('estado-cuenta-masivo/download/{token}', [EstadoCuentaMasivoController::class, 'download'])->name('estado-cuenta-masivo.download');
 
     Route::get('multi-pagos-predial', [MultiPagosController::class, 'index'])->name('multi-pagos.index');
     Route::post('multi-pagos-predial/search', [MultiPagosController::class, 'search'])->name('multi-pagos.search');
