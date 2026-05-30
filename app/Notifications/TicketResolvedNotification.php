@@ -16,21 +16,7 @@ class TicketResolvedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($notifiable->phone) {
-            $channels[] = WhatsAppChannel::class;
-        }
-
-        return $channels;
-    }
-
-    public function toWhatsApp(object $notifiable): WhatsAppMessage
-    {
-        $statusText = $this->ticket->status === 'cerrado' ? 'cerrado' : 'resuelto';
-
-        return WhatsAppMessage::create()
-            ->content("✅ Ticket {$statusText}\n\nTu ticket ha sido {$statusText}:\n{$this->ticket->title}\n\nID: #{$this->ticket->id}");
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array

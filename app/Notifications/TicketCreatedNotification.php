@@ -16,19 +16,7 @@ class TicketCreatedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($notifiable->phone) {
-            $channels[] = WhatsAppChannel::class;
-        }
-
-        return $channels;
-    }
-
-    public function toWhatsApp(object $notifiable): WhatsAppMessage
-    {
-        return WhatsAppMessage::create()
-            ->content("🔔 Nuevo ticket de soporte\n\nDe: {$this->ticket->user?->name ?? 'Usuario'}\nAsunto: {$this->ticket->title}\nPrioridad: {$this->ticket->priority}\n\nID: #{$this->ticket->id}");
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array

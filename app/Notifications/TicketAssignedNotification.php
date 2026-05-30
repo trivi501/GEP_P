@@ -16,19 +16,7 @@ class TicketAssignedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
-
-        if ($notifiable->phone) {
-            $channels[] = WhatsAppChannel::class;
-        }
-
-        return $channels;
-    }
-
-    public function toWhatsApp(object $notifiable): WhatsAppMessage
-    {
-        return WhatsAppMessage::create()
-            ->content("📌 Ticket asignado\n\nHas sido asignado al ticket:\n{$this->ticket->title}\nPrioridad: {$this->ticket->priority}\n\nID: #{$this->ticket->id}");
+        return ['database'];
     }
 
     public function toArray(object $notifiable): array
