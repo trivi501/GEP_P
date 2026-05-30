@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\SupportTicket;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class TicketCommentedNotification extends Notification
 {
@@ -16,7 +17,17 @@ class TicketCommentedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject("Nuevo comentario en ticket #{$this->ticket->id}")
+            ->greeting("{$this->commenterName} comentó en un ticket")
+            ->line("Ticket: {$this->ticket->title}")
+            ->line("Comentario: {$this->comment}")
+            ->action('Ver ticket', url("/support-tickets/{$this->ticket->id}"));
     }
 
     public function toArray(object $notifiable): array
