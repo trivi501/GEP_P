@@ -68,6 +68,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'ver recibo pago', 'nombre_mostrar' => 'Ver Recibo de Pago', 'categoria' => 'Pagos'],
             ['name' => 'corte caja', 'nombre_mostrar' => 'Corte de Caja', 'categoria' => 'Pagos'],
             ['name' => 'caja general', 'nombre_mostrar' => 'Caja General', 'categoria' => 'Pagos'],
+            ['name' => 'pagosGeneral', 'nombre_mostrar' => 'Pagos Generales', 'categoria' => 'Pagos'],
 
             // Cálculos Prediales
             ['name' => 'ver calculos prediales', 'nombre_mostrar' => 'Ver Cálculos Prediales', 'categoria' => 'Cálculos Prediales'],

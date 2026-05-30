@@ -76,9 +76,13 @@
         @if ($status === 'processing')
             <div class="spinner"></div>
             <h1>Generando PDF</h1>
-            <p>Estamos procesando {{ $totalPredios ?? 'los' }} predios seleccionados.<br>
-            Esta página se actualizará automáticamente cuando el PDF esté listo.</p>
-            <p style="font-size:0.8rem;color:#9ca3af;">No cierres esta ventana.</p>
+            <p>Estamos procesando {{ $totalPredios ?? 'los' }} predios seleccionados.</p>
+            <p style="font-size:0.9rem;color:#6b7280;">
+                @if(!empty($totalChunks))
+                    Lote {{ $completedChunks ?? 0 }} de {{ $totalChunks }}
+                @endif
+            </p>
+            <p style="font-size:0.8rem;color:#9ca3af;">La página se actualizará automáticamente.</p>
         @elseif ($status === 'ready')
             <div class="check-icon">&#10003;</div>
             <h1>PDF Listo</h1>

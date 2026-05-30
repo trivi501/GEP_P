@@ -7,7 +7,6 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
     const page = usePage();
     const permissions = Array.isArray(page.props.userPermissions) ? page.props.userPermissions : [];
     const can = (permiso) => permissions.includes(permiso);
-    const [search, setSearch] = useState(page.props.search_global ?? '');
     const [columnFilters, setColumnFilters] = useState(filters ?? {});
     const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, predio: null });
     const menuRef = useRef(null);
@@ -51,7 +50,6 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
     const handleSearch = (e) => {
         e.preventDefault();
         const params = {};
-        if (search) params.search_global = search;
         Object.entries(columnFilters).forEach(([key, val]) => {
             if (val) params[key] = val;
         });
@@ -95,24 +93,6 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                     + Crear Predio
                                 </Link>
                             </div>
-
-                            <form onSubmit={handleSearch} className="mb-4">
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        placeholder="Búsqueda global..."
-                                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                    >
-                                        Buscar
-                                    </button>
-                                </div>
-                            </form>
 
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

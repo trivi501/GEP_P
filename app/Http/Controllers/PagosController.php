@@ -1002,6 +1002,29 @@ class PagosController extends Controller
         return $pdf->stream("corte-caja-{$historialCaja->id}.pdf");
     }
 
+    public function pagosGenerales(Request $request)
+    {
+        $filters = $request->only(['search_folio', 'search_nombre', 'search_fecha', 'search_monto', 'search_estatus', 'search_tipo_pago']);
+
+        $pagos = Pago::with([
+                'predio',
+                'formasPagosCada.formaPago',
+                'historialCaja.caja',
+                'ordenPago.secretaria',
+                'incidencia',
+            ])
+            ->when($filters['search_folio'] ?? null, fn($q, $v) => $q->where('folio', 'like', "%{$v}%"))
+            ->when($filters['search_nombre'] ?? null, fn($q, $v) => $q->where('nombre', 'like', "%{$v}%"))
+            ->when($filters['search_fecha'] ?? null, fn($q, $v) => $q->whereDate('fecha', $v))
+            ->when($filters['search_monto'] ?? null, fn($q, $v) => $q->where('monto', 'like', "%{$v}%"))
+            ->when($filters['search_tipo_pago'] ?? null, fn($q, $v) => $q->where('tipo_pago', $v))
+            ->when($filters['search_estatus'] ?? null, fn($q, $v) => $q->where('estatus', $v))
+            ->orderBy('fecha', 'desc')
+            ->paginate(15);
+
+        return Inertia::render('Pagos/PagosGenerales', compact('pagos', 'filters'));
+    }
+
     private function generarQrBase64(string $url): string
     {
         $qrPng = @file_get_contents('https://chart.googleapis.com/chart?chs=80x80&cht=qr&chl=' . urlencode($url));

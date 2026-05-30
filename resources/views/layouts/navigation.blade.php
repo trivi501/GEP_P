@@ -56,6 +56,11 @@
                             <x-dropdown-link :href="route('secretarias.index')">
                                 {{ __('Secretarías') }}
                             </x-dropdown-link>
+                            @can('pagosGeneral')
+                            <x-dropdown-link :href="route('pagos.pagos-generales')">
+                                {{ __('Pagos Generales') }}
+                            </x-dropdown-link>
+                            @endcan
                         </x-slot>
                     </x-dropdown>
                     @role('Super Admin')
@@ -180,6 +185,11 @@
                 <x-responsive-nav-link :href="route('pagos.historial')" :active="request()->routeIs('pagos.historial')">
                     {{ __('Historial de Pagos') }}
                 </x-responsive-nav-link>
+                @can('pagosGeneral')
+                <x-responsive-nav-link :href="route('pagos.pagos-generales')" :active="request()->routeIs('pagos.pagos-generales')">
+                    {{ __('Pagos Generales') }}
+                </x-responsive-nav-link>
+                @endcan
             </div>
             @role('Super Admin')
                 <div class="px-4 text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">Administración</div>

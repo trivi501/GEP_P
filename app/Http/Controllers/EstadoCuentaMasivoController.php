@@ -6,9 +6,12 @@ use App\Models\Predio;
 use App\Models\Contribuyente;
 use App\Models\CatUma;
 use App\Models\Inpc;
+use App\Jobs\FinalizeEstadoCuentaPdf;
+use App\Jobs\GenerateEstadoCuentaChunk;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -61,25 +64,32 @@ class EstadoCuentaMasivoController extends Controller
         $request->validate(['predios' => 'required|array', 'predios.*' => 'string']);
 
         $token = Str::random(40);
-        Cache::put("pdf_predios_{$token}", $request->predios, now()->addMinutes(10));
-        Cache::put("pdf_status_{$token}", 'processing', now()->addMinutes(10));
-        Cache::put("pdf_total_{$token}", count($request->predios), now()->addMinutes(10));
+        $ttl = now()->addMinutes(60);
+        Cache::put("pdf_predios_{$token}", $request->predios, $ttl);
+        Cache::put("pdf_status_{$token}", 'processing', $ttl);
+        Cache::put("pdf_total_{$token}", count($request->predios), $ttl);
 
-        $phpBinary = PHP_BINARY;
-        $artisanPath = base_path('artisan');
-        $execAvailable = function_exists('exec')
-            && !in_array('exec', array_map('trim', explode(',', ini_get('disable_functions') ?? '')));
+        $chunkSize = 50;
+        $chunks = array_chunk($request->predios, $chunkSize);
+        $totalChunks = count($chunks);
 
-        if ($execAvailable) {
-            if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
-                exec("start /B {$phpBinary} {$artisanPath} pdf:estado-cuenta {$token} > NUL 2>&1");
-            } else {
-                exec("{$phpBinary} {$artisanPath} pdf:estado-cuenta {$token} > /dev/null 2>&1 &");
-            }
-        } else {
-            Cache::put("pdf_status_{$token}", 'error', now()->addMinutes(10));
-            Cache::put("pdf_error_{$token}", 'exec() no disponible — configure un worker de cola', now()->addMinutes(10));
+        Cache::put("pdf_total_chunks_{$token}", $totalChunks, $ttl);
+        Cache::put("pdf_progress_{$token}", 0, $ttl);
+
+        $jobs = [];
+        foreach ($chunks as $index => $chunkIds) {
+            $jobs[] = new GenerateEstadoCuentaChunk($chunkIds, $token, $index + 1);
         }
+
+        Bus::batch($jobs)
+            ->finally(function () use ($token, $totalChunks) {
+                FinalizeEstadoCuentaPdf::dispatch($token, $totalChunks);
+            })
+            ->catch(function () use ($token) {
+                Cache::put("pdf_status_{$token}", 'error', now()->addMinutes(60));
+                Cache::put("pdf_error_{$token}", 'Falló uno o más lotes. Revisa los logs.', now()->addMinutes(60));
+            })
+            ->dispatch();
 
         return redirect()->route('estado-cuenta-masivo.progress', ['token' => $token]);
     }
@@ -111,10 +121,14 @@ class EstadoCuentaMasivoController extends Controller
             ]);
         }
 
+        $totalChunks = Cache::get("pdf_total_chunks_{$token}");
+        $completedChunks = Cache::get("pdf_progress_{$token}", 0);
         return view('estado-cuenta-masivo.progress', [
             'token' => $token,
             'status' => 'processing',
             'totalPredios' => Cache::get("pdf_total_{$token}"),
+            'totalChunks' => $totalChunks,
+            'completedChunks' => $completedChunks,
         ]);
     }
 
