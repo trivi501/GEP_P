@@ -6,6 +6,7 @@ use App\Models\SupportTicket;
 use App\Models\TicketComment;
 use App\Models\User;
 use App\Notifications\TicketAssignedNotification;
+use App\Notifications\TicketCommentedNotification;
 use App\Notifications\TicketCreatedNotification;
 use App\Notifications\TicketResolvedNotification;
 use Illuminate\Http\Request;
@@ -113,6 +114,31 @@ class SupportTicketController extends Controller
             'user_id' => auth()->id(),
             'comment' => $validated['comment'],
         ]);
+
+        $notify = collect();
+        $commenterName = auth()->user()->name;
+
+        if ($supportTicket->user && $supportTicket->user_id !== auth()->id()) {
+            $notify->push($supportTicket->user);
+        }
+
+        if ($supportTicket->assignedUser && $supportTicket->assigned_to !== auth()->id()) {
+            $notify->push($supportTicket->assignedUser);
+        }
+
+        $notify = $notify->unique('id');
+
+        if ($notify->isNotEmpty()) {
+            $notification = new TicketCommentedNotification(
+                $supportTicket,
+                $validated['comment'],
+                $commenterName
+            );
+
+            foreach ($notify as $user) {
+                $user->notify($notification);
+            }
+        }
 
         $supportTicket->load('comments.user');
 
