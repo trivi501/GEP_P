@@ -17,6 +17,11 @@
                     <x-nav-link :href="route('predios.index')" :active="request()->routeIs('predios.*')">
                         {{ __('Predios') }}
                     </x-nav-link>
+                    @can('ver tickets')
+                    <x-nav-link :href="route('support-tickets.index')" :active="request()->routeIs('support-tickets.*')">
+                        {{ __('Soporte') }}
+                    </x-nav-link>
+                    @endcan
                     <x-dropdown align="center" width="48">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('cajas.*') || request()->routeIs('cajeros.*') || request()->routeIs('pagos.*') || request()->routeIs('cuentas.*') || request()->routeIs('secretarias.*') || request()->routeIs('ordenes-pago.*') ? 'border-indigo-500 dark:border-indigo-400 text-gray-900 dark:text-gray-100' : '' }}">
@@ -162,10 +167,15 @@
             <x-responsive-nav-link :href="route('contribuyentes.index')" :active="request()->routeIs('contribuyentes.*')">
                 {{ __('Contribuyentes') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('predios.index')" :active="request()->routeIs('predios.*')">
-                {{ __('Predios') }}
-            </x-responsive-nav-link>
-            <div class="pt-2 pb-1">
+                <x-responsive-nav-link :href="route('predios.index')" :active="request()->routeIs('predios.*')">
+                    {{ __('Predios') }}
+                </x-responsive-nav-link>
+                @can('ver tickets')
+                <x-responsive-nav-link :href="route('support-tickets.index')" :active="request()->routeIs('support-tickets.*')">
+                    {{ __('Soporte') }}
+                </x-responsive-nav-link>
+                @endcan
+                <div class="pt-2 pb-1">
                 <div class="px-4 text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">Operaciones</div>
                 <x-responsive-nav-link :href="route('cajas.index')" :active="request()->routeIs('cajas.index')">
                     {{ __('Listado de Cajas') }}

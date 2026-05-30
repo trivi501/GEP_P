@@ -2,6 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import NotificationBell from '@/Components/NotificationBell';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -122,7 +123,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Secretarías
                                     </NavLink>
                                 )}
-                                {can('pagosGeneral') && (
+                                    {can('pagosGeneral') && (
                                     <NavLink href={route('pagos.pagos-generales')} active={route().current('pagos.pagos-generales')}>
                                         Pagos Generales
                                     </NavLink>
@@ -197,9 +198,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Cuentas
                                         </NavLink>
                                     )}
+                                {can('ver tickets') && (
+                                    <NavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
+                                        Soporte
+                                    </NavLink>
+                                )}
                                 </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center sm:gap-2">
+                            <NotificationBell />
                             <button
                                 onClick={() => setDarkMode(prev => !prev)}
                                 className="inline-flex items-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:text-gray-200"
@@ -283,6 +290,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href={route('multi-pagos.index')} active={route().current('multi-pagos.*')}>
                             Multi Pagos Predial
                         </ResponsiveNavLink>
+                        
 
                         <div className="pt-2 pb-1">
                             <div className="px-4 text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">Operaciones</div>
@@ -319,6 +327,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ResponsiveNavLink href={route('secretarias.index')} active={route().current('secretarias.*')}>
                                 Secretarías
                             </ResponsiveNavLink>
+                            
                         </div>
 
 
@@ -336,6 +345,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                             </div>
                         )}
+                        {can('ver tickets') && (
+                            <ResponsiveNavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
+                                Soporte
+                            </ResponsiveNavLink>
+                            )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-700">

@@ -96,6 +96,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'crear descuentos', 'nombre_mostrar' => 'Crear Descuentos', 'categoria' => 'Descuentos'],
             ['name' => 'editar descuentos', 'nombre_mostrar' => 'Editar Descuentos', 'categoria' => 'Descuentos'],
             ['name' => 'eliminar descuentos', 'nombre_mostrar' => 'Eliminar Descuentos', 'categoria' => 'Descuentos'],
+
+            // Tickets de Soporte
+            ['name' => 'ver tickets', 'nombre_mostrar' => 'Ver Tickets', 'categoria' => 'Soporte'],
+            ['name' => 'crear tickets', 'nombre_mostrar' => 'Crear Tickets', 'categoria' => 'Soporte'],
+            ['name' => 'asignar tickets', 'nombre_mostrar' => 'Asignar Tickets', 'categoria' => 'Soporte'],
+            ['name' => 'resolver tickets', 'nombre_mostrar' => 'Resolver Tickets', 'categoria' => 'Soporte'],
         ];
 
         foreach ($permissions as $permission) {

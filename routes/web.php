@@ -15,6 +15,7 @@ use App\Http\Controllers\EstadoCuentaMasivoController;
 use App\Http\Controllers\MultiPagosController;
 use App\Http\Controllers\CorteCajaController;
 use App\Http\Controllers\DescuentosController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -103,6 +104,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('descuentos', [DescuentosController::class, 'store'])->name('descuentos.store');
     Route::put('descuentos/{descuento}', [DescuentosController::class, 'update'])->name('descuentos.update');
     Route::delete('descuentos/{descuento}', [DescuentosController::class, 'destroy'])->name('descuentos.destroy');
+
+    Route::get('support-tickets', [SupportTicketController::class, 'index'])->name('support-tickets.index');
+    Route::get('support-tickets/create', [SupportTicketController::class, 'create'])->name('support-tickets.create');
+    Route::post('support-tickets', [SupportTicketController::class, 'store'])->name('support-tickets.store');
+    Route::get('support-tickets/{supportTicket}', [SupportTicketController::class, 'show'])->name('support-tickets.show');
+    Route::get('notifications', [SupportTicketController::class, 'notifications'])->name('notifications.index');
+    Route::put('notifications/{notification}/read', [SupportTicketController::class, 'markNotification'])->name('notifications.read');
+    Route::put('support-tickets/{supportTicket}', [SupportTicketController::class, 'update'])->name('support-tickets.update');
+    Route::post('support-tickets/{supportTicket}/comment', [SupportTicketController::class, 'comment'])->name('support-tickets.comment');
 });
 
 require __DIR__.'/auth.php';
