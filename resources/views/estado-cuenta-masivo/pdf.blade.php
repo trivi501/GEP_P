@@ -58,7 +58,7 @@
                     <h3 style="font-size: 11pt; margin-top: 4px;"><b>Estado de Cuenta Masivo</b></h3>
                 </td>
                 <td style="font-size: 7.5pt; padding: 4px;" width="25%">
-                    <b>Generado por:</b> {{ auth()->user()->name }}<br>
+                    <b>Generado por:</b> {{ auth()->user()?->name ?? 'Sistema' }}<br>
                     <b>Fecha:</b> {{ now()->format('d/m/Y') }}
                 </td>
             </tr>
