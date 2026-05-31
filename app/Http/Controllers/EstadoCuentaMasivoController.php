@@ -5,13 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Predio;
 use App\Models\Contribuyente;
 use App\Models\CatUma;
-use App\Models\Inpc;
-use App\Jobs\FinalizeEstadoCuentaPdf;
-use App\Jobs\GenerateEstadoCuentaChunk;
+use App\Models\Descuento;
+use App\Http\Controllers\CalculosPrediosController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -65,31 +63,99 @@ class EstadoCuentaMasivoController extends Controller
 
         $token = Str::random(40);
         $ttl = now()->addMinutes(60);
-        Cache::put("pdf_predios_{$token}", $request->predios, $ttl);
+
         Cache::put("pdf_status_{$token}", 'processing', $ttl);
         Cache::put("pdf_total_{$token}", count($request->predios), $ttl);
 
-        $chunkSize = 50;
-        $chunks = array_chunk($request->predios, $chunkSize);
-        $totalChunks = count($chunks);
+        $predios = Predio::with([
+            'contribuyente.domicilio', 'contribuyente.tipoContribuyente',
+            'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto',
+            'tituloPropiedad', 'calle', 'colonia', 'clavePredial',
+            'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio',
+            'datosUrbano.estadoFisico', 'datosUrbano.pavimento',
+            'nivelesConstruidos.tipoConstruccion',
+            'nivelesConstruidos.usoConstruccion',
+            'medidasYColindancias.orientacion',
+        ])->whereIn('id_predio', $request->predios)->get();
 
-        Cache::put("pdf_total_chunks_{$token}", $totalChunks, $ttl);
-        Cache::put("pdf_progress_{$token}", 0, $ttl);
+        $descuentos = Descuento::whereIn('idPredio', $request->predios)
+            ->where('activo', true)
+            ->where(function ($q) {
+                $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
+            })
+            ->get()
+            ->keyBy('idPredio');
 
-        $jobs = [];
-        foreach ($chunks as $index => $chunkIds) {
-            $jobs[] = new GenerateEstadoCuentaChunk($chunkIds, $token, $index + 1);
+        $umas = CatUma::where('activo', 1)->get()->keyBy('anio');
+        $calculosController = app(CalculosPrediosController::class);
+
+        $data = [];
+        $granTotal = 0;
+        $totalPredios = 0;
+
+        foreach ($predios as $predio) {
+            $esRustico = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO')
+                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RUSTICO')
+                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
+
+            if ($esRustico) {
+                $calculos = $this->getCalculosRusticos($predio, $umas);
+            } else {
+                $calculos = $calculosController->getCalculosAnuales($predio);
+            }
+
+            $subtotalPredio = collect($calculos)->sum('total');
+
+            $totalDescuento = 0;
+            $descuento = $descuentos->get($predio->id_predio);
+
+            if ($descuento) {
+                $descMulta = 0;
+                $descActualizacion = 0;
+                $descCobranza = 0;
+
+                foreach ($calculos as &$c) {
+                    if (!empty($c['multa']) && $descuento->multas > 0) {
+                        $descMulta += $c['multa'] * (float) $descuento->multas / 100;
+                    }
+                    if (!empty($c['actualizacion']) && $descuento->actualizaciones > 0) {
+                        $descActualizacion += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
+                    }
+                    if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
+                        $descCobranza += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
+                    }
+                }
+                unset($c);
+
+                $totalDescuento = round($descMulta + $descActualizacion + $descCobranza, 2);
+            }
+
+            $subtotalConDescuento = round($subtotalPredio - $totalDescuento, 2);
+            $granTotal += $subtotalConDescuento;
+            $totalPredios++;
+
+            $data[] = [
+                'predio' => $predio,
+                'calculos' => $calculos,
+                'subtotal' => $subtotalConDescuento,
+                'esRustico' => $esRustico,
+                'descuento' => $totalDescuento > 0 ? $totalDescuento : null,
+            ];
         }
 
-        Bus::batch($jobs)
-            ->finally(function () use ($token, $totalChunks) {
-                FinalizeEstadoCuentaPdf::dispatch($token, $totalChunks);
-            })
-            ->catch(function () use ($token) {
-                Cache::put("pdf_status_{$token}", 'error', now()->addMinutes(60));
-                Cache::put("pdf_error_{$token}", 'Falló uno o más lotes. Revisa los logs.', now()->addMinutes(60));
-            })
-            ->dispatch();
+        $pdf = Pdf::loadView('estado-cuenta-masivo.pdf', compact('data', 'granTotal', 'totalPredios'));
+        $pdf->setPaper('a4');
+
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $path = "{$tempDir}/estado_cuenta_masivo_{$token}.pdf";
+        $pdf->save($path);
+
+        Cache::put("pdf_path_{$token}", $path, $ttl);
+        Cache::put("pdf_status_{$token}", 'ready', $ttl);
 
         return redirect()->route('estado-cuenta-masivo.progress', ['token' => $token]);
     }
@@ -113,22 +179,10 @@ class EstadoCuentaMasivoController extends Controller
             ]);
         }
 
-        if ($status === 'error') {
-            return view('estado-cuenta-masivo.progress', [
-                'token' => $token,
-                'status' => 'error',
-                'error' => $error,
-            ]);
-        }
-
-        $totalChunks = Cache::get("pdf_total_chunks_{$token}");
-        $completedChunks = Cache::get("pdf_progress_{$token}", 0);
         return view('estado-cuenta-masivo.progress', [
             'token' => $token,
-            'status' => 'processing',
-            'totalPredios' => Cache::get("pdf_total_{$token}"),
-            'totalChunks' => $totalChunks,
-            'completedChunks' => $completedChunks,
+            'status' => $status === 'error' ? 'error' : 'processing',
+            'error' => $error,
         ]);
     }
 
@@ -148,10 +202,9 @@ class EstadoCuentaMasivoController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-    private function getCalculosRusticos($predio)
+    private function getCalculosRusticos($predio, $umas = null): array
     {
-        $uma = CatUma::where('anio', now()->year)->where('activo', 1)->first();
-        $valorUma = $uma?->valor ?? 0;
+        $valorUma = $umas?->get(now()->year)?->valor ?? CatUma::where('anio', now()->year)->where('activo', 1)->first()?->valor ?? 0;
         $hectareas = $predio->superficie ?? 0;
         $tipoPredio = $predio->tipoPredio?->Tipo_predio ?? '';
         $esMina = str_contains($tipoPredio, 'MINA');
@@ -161,32 +214,31 @@ class EstadoCuentaMasivoController extends Controller
 
         $calculos = [];
         while ($anhoInicio <= $anhoActual) {
-            $umaAnual = CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
-            $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
+            $umaAnual = $umas?->get($anhoInicio)?->valor ?? CatUma::where('anio', $anhoInicio)->where('activo', 1)->first()?->valor ?? $valorUma;
 
             if ($esMina) {
-                $subtotal = $hectareas * (11 * $valorUmaAnual);
+                $subtotal = $hectareas * (11 * $umaAnual);
             } elseif ($predio->datosRustico?->valor_catastral_casa) {
                 $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
             } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
-                $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $umaAnual);
+                $subtotal = ($hectareas * 6.40) * (2 * $umaAnual) + (2 * $umaAnual);
             } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
                 if ($hectareas < 20) {
-                    $subtotal = (3 * $valorUmaAnual) + ($hectareas * 3);
+                    $subtotal = (3 * $umaAnual) + ($hectareas * 3);
                 } else {
-                    $subtotal = (2 * $valorUmaAnual) + ($hectareas * 6.40);
+                    $subtotal = (2 * $umaAnual) + ($hectareas * 6.40);
                 }
             } else {
                 if ($hectareas < 20) {
-                    $subtotal = ($hectareas * 3) + (3 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                    $subtotal = ($hectareas * 3) + (3 * $umaAnual) + (2 * $umaAnual);
                 } else {
-                    $subtotal = ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                    $subtotal = ($hectareas * 6.40) + (2 * $umaAnual) + (2 * $umaAnual);
                 }
             }
 
             $calculos[] = [
                 'anho' => $anhoInicio,
-                'uma' => $valorUmaAnual,
+                'uma' => $umaAnual,
                 'hectareas' => $hectareas,
                 'subtotal' => $subtotal,
                 'total' => $subtotal,
