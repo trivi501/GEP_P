@@ -7,6 +7,7 @@ use App\Models\CatUma;
 use App\Models\Descuento;
 use App\Http\Controllers\CalculosPrediosController;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
 
 class GenerateEstadoCuentaChunk implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use Batchable, Dispatchable, InteractsWithQueue, Queueable;
 
     public $timeout = 600;
     public $maxExceptions = 1;
