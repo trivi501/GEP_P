@@ -571,6 +571,14 @@ class PredioController extends Controller
         return $pdf->stream("cedula_{$predio->Clave_predial}.pdf");
     }
 
+    public function prescripcion(Predio $predio)
+    {
+        $anioPrescripcion = now()->year - 6;
+        $predio->update(['año_ultimo_pago' => $anioPrescripcion]);
+
+        return redirect()->back()->with('success', "Prescripción aplicada. Año último pago actualizado a {$anioPrescripcion}.");
+    }
+
     public function destroy(Predio $predio)
     {
         $predio->delete();

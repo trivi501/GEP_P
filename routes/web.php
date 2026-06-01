@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('predios/colonia-search', [PredioController::class, 'searchColonia'])->name('predios.colonia-search');
     Route::get('predios/{predio}/pdf', [PredioController::class, 'pdf'])->name('predios.pdf');
     Route::get('predios/{predio}/cedula', [PredioController::class, 'cedula'])->name('predios.cedula');
+    Route::post('predios/{predio}/prescripcion', [PredioController::class, 'prescripcion'])->name('predios.prescripcion');
     Route::resource('predios', PredioController::class);
     Route::resource('cajas', CajasController::class);
     Route::resource('cajeros', CajeroController::class);

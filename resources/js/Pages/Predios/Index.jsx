@@ -241,6 +241,19 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <div className="flex items-center justify-center gap-2">
+                                                            {predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6 && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (confirm('¿Aplicar prescripción a este predio?')) {
+                                                                            router.post(route('predios.prescripcion', predio.id));
+                                                                        }
+                                                                    }}
+                                                                    className="text-orange-600 hover:text-orange-900"
+                                                                    title="Prescripción"
+                                                                >
+                                                                    <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                                </button>
+                                                            )}
                                                             {can('predios-edocuenta') && (
                                                                 <a
                                                                     href={`/calculos-predios/${predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id}`}
@@ -359,6 +372,20 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                             <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Descuento
                         </a>
+                    )}
+                    {contextMenu.predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(contextMenu.predio.año_ultimo_pago)) > 6 && (
+                        <button
+                            onClick={() => {
+                                if (confirm('¿Aplicar prescripción a este predio?')) {
+                                    router.post(route('predios.prescripcion', contextMenu.predio.id));
+                                }
+                                closeContextMenu();
+                            }}
+                            className="flex items-center gap-3 px-4 py-2 w-full text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                            <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            Prescripción
+                        </button>
                     )}
                     <hr className="border-gray-200 dark:border-gray-600" />
                     {can('predio-editar') && (
