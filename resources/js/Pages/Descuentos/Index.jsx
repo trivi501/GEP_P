@@ -34,6 +34,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                             multas: '0',
                             actualizaciones: '0',
                             gastos_cobranza: '0',
+                            recargos: '0',
                             fecha_expiracion: lastDayOfMonth(),
                             activo: true,
                         });
@@ -50,6 +51,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
         multas: '0',
         actualizaciones: '0',
         gastos_cobranza: '0',
+        recargos: '0',
         fecha_expiracion: '',
         activo: true,
     });
@@ -83,7 +85,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
 
     const openCreate = () => {
         setEditing(null);
-        setForm({ idPredio: '', multas: '0', actualizaciones: '0', gastos_cobranza: '0', fecha_expiracion: lastDayOfMonth(), activo: true });
+        setForm({ idPredio: '', multas: '0', actualizaciones: '0', gastos_cobranza: '0', recargos: '0', fecha_expiracion: lastDayOfMonth(), activo: true });
         setSelectedPredio(null);
         setPredioSearch('');
         setShowModal(true);
@@ -96,6 +98,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
             multas: String(d.multas),
             actualizaciones: String(d.actualizaciones),
             gastos_cobranza: String(d.gastos_cobranza),
+            recargos: String(d.recargos),
             fecha_expiracion: formatDate(d.fecha_expiracion) ?? '',
             activo: d.activo ?? true,
         });
@@ -185,6 +188,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Contribuyente</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Multas %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actualizaciones %</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Recargos %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gtos Cobranza %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Expira</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Estado</th>
@@ -199,6 +203,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.predio?.contribuyente?.nombre_completo ?? d.predio?.contribuyente?.nombre_moral ?? '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.multas}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.actualizaciones}%</td>
+                                                <td className="whitespace-nowrap px-6 py-4 text-sm">{d.recargos}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.gastos_cobranza}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.fecha_expiracion ?? '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-center">
@@ -217,7 +222,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                                 </td>
                                             </tr>
                                         )) : (
-                                            <tr><td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">Sin descuentos registrados</td></tr>
+                                            <tr><td colSpan="10" className="px-6 py-4 text-center text-sm text-gray-500">Sin descuentos registrados</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -248,7 +253,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-6">
                         <h3 className="text-lg font-medium mb-4">{editing ? 'Editar Descuento' : 'Nuevo Descuento'}</h3>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4 relative" ref={predioSearchRef}>
@@ -282,7 +287,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 mb-4">
+                            <div className="grid grid-cols-4 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Multas %</label>
                                     <input type="number" step="0.01" min="0" max="100" value={form.multas}
@@ -293,6 +298,12 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Actualizaciones %</label>
                                     <input type="number" step="0.01" min="0" max="100" value={form.actualizaciones}
                                         onChange={(e) => setForm({ ...form, actualizaciones: e.target.value })}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recargos %</label>
+                                    <input type="number" step="0.01" min="0" max="100" value={form.recargos}
+                                        onChange={(e) => setForm({ ...form, recargos: e.target.value })}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required />
                                 </div>
                                 <div>

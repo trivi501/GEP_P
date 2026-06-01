@@ -48,6 +48,7 @@ class DescuentosController extends Controller
             'multas' => 'required|numeric|min:0|max:100',
             'actualizaciones' => 'required|numeric|min:0|max:100',
             'gastos_cobranza' => 'required|numeric|min:0|max:100',
+            'recargos' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
             'activo' => 'boolean',
         ]);
@@ -67,6 +68,7 @@ class DescuentosController extends Controller
             'multas' => 'required|numeric|min:0|max:100',
             'actualizaciones' => 'required|numeric|min:0|max:100',
             'gastos_cobranza' => 'required|numeric|min:0|max:100',
+            'recargos' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
             'activo' => 'boolean',
         ]);

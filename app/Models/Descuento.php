@@ -14,6 +14,7 @@ class Descuento extends Model
         'multas',
         'actualizaciones',
         'gastos_cobranza',
+        'recargos',
         'fecha_expiracion',
         'activo',
     ];
@@ -24,6 +25,7 @@ class Descuento extends Model
             'multas' => 'decimal:2',
             'actualizaciones' => 'decimal:2',
             'gastos_cobranza' => 'decimal:2',
+            'recargos' => 'decimal:2',
             'fecha_expiracion' => 'date',
             'activo' => 'boolean',
         ];

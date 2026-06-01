@@ -190,12 +190,6 @@
                 </table>
             </div>
 
-            @if($item['descuento'] ?? false)
-                <div style="text-align: right; font-size: 7pt; margin-top: 4px; padding-right: 4px;">
-                    <b>Descuento por convenio:</b> -${{ number_format($item['descuento'], 2) }}<br>
-                    <b>Total con descuento:</b> ${{ number_format($item['subtotal'], 2) }}
-                </div>
-            @endif
         @else
             <div class="section">
                 <table class="data">
@@ -229,12 +223,6 @@
                 </table>
             </div>
 
-            @if($item['descuento'] ?? false)
-                <div style="text-align: right; font-size: 7pt; margin-top: 4px; padding-right: 4px;">
-                    <b>Descuento por convenio:</b> -${{ number_format($item['descuento'], 2) }}<br>
-                    <b>Total con descuento:</b> ${{ number_format($item['subtotal'], 2) }}
-                </div>
-            @endif
         @endif
     @endforeach
 

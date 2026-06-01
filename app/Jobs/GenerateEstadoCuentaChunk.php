@@ -77,24 +77,28 @@ class GenerateEstadoCuentaChunk implements ShouldQueue
             $descuento = $descuentos->get($predio->id_predio);
 
             if ($descuento) {
-                $descMulta = 0;
-                $descActualizacion = 0;
-                $descCobranza = 0;
-
                 foreach ($calculos as &$c) {
+                    $descuentoAnual = 0;
                     if (!empty($c['multa']) && $descuento->multas > 0) {
-                        $descMulta += $c['multa'] * (float) $descuento->multas / 100;
+                        $descuentoAnual += $c['multa'] * (float) $descuento->multas / 100;
                     }
                     if (!empty($c['actualizacion']) && $descuento->actualizaciones > 0) {
-                        $descActualizacion += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
+                        $descuentoAnual += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
+                    }
+                    if (!empty($c['recargos']) && $descuento->recargos > 0) {
+                        $descuentoAnual += $c['recargos'] * (float) $descuento->recargos / 100;
                     }
                     if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
-                        $descCobranza += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
+                        $descuentoAnual += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
+                    }
+                    if ($descuentoAnual > 0) {
+                        $descuentoAnual = round($descuentoAnual, 2);
+                        $c['descuento'] = round(($c['descuento'] ?? 0) + $descuentoAnual, 2);
+                        $c['total'] = round($c['total'] - $descuentoAnual, 2);
+                        $totalDescuento += $descuentoAnual;
                     }
                 }
                 unset($c);
-
-                $totalDescuento = round($descMulta + $descActualizacion + $descCobranza, 2);
             }
 
             $subtotalConDescuento = round($subtotalPredio - $totalDescuento, 2);

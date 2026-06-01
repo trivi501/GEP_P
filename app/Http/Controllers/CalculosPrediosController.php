@@ -162,6 +162,31 @@ class CalculosPrediosController extends Controller
 
         $calculos = $this->getCalculosAnuales($predio);
 
+        $descuento = \App\Models\Descuento::where('idPredio', $predio->id_predio)->where('activo', 1)->first();
+        if ($descuento) {
+            foreach ($calculos as &$c) {
+                $descuentoAnual = 0;
+                if (!empty($c['multa']) && $descuento->multas > 0) {
+                    $descuentoAnual += $c['multa'] * (float) $descuento->multas / 100;
+                }
+                if (!empty($c['actualizacion']) && $descuento->actualizaciones > 0) {
+                    $descuentoAnual += $c['actualizacion'] * (float) $descuento->actualizaciones / 100;
+                }
+                if (!empty($c['recargos']) && $descuento->recargos > 0) {
+                    $descuentoAnual += $c['recargos'] * (float) $descuento->recargos / 100;
+                }
+                if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
+                    $descuentoAnual += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
+                }
+                if ($descuentoAnual > 0) {
+                    $descuentoAnual = round($descuentoAnual, 2);
+                    $c['descuento'] = round(($c['descuento'] ?? 0) + $descuentoAnual, 2);
+                    $c['total'] = round($c['total'] - $descuentoAnual, 2);
+                }
+            }
+            unset($c);
+        }
+
         $pdf = Pdf::loadView('calculos-predios.pdf', compact('predio', 'calculos'));
         $pdf->setPaper('a4');
 
