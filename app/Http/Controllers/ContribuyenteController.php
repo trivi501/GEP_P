@@ -102,6 +102,8 @@ return Inertia::render('Contribuyentes/Index', compact('contribuyentes'));
         $validated['id_contribuyente'] = (string) Str::uuid();
         $validated['cuenta'] = $validated['cuenta'] ?? $validated['id_contribuyente'];
         $validated['nombre_completo'] = $validated['nombre_completo'] ?? trim(implode(' ', array_filter([$validated['nombre'] ?? '', $validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? ''])));
+        $validated['fecha_alta'] = now();
+        $validated['id_user_registra'] = auth()->id();
 
         if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad')) {
             $domicilioId = (string) Str::uuid();
