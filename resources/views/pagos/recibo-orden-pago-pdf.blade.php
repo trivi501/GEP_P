@@ -11,11 +11,11 @@
             font-size: 9pt;
             color: #1a1a1a;
             line-height: 1.4;
-            background-image: url("{{ public_path('img/formatoRecibo.jpg') }}");
             background-repeat: no-repeat;
             background-position: center;
             background-size: cover;
         }
+           /* background-image: url("{{ public_path('img/formatoRecibo.jpg') }}"); */
 
         .header { padding: 4px 0; border-bottom: 2px double #333; margin-bottom: 6px; text-align: center; }
         .header h1 { font-size: 11pt; text-transform: uppercase; letter-spacing: 1px; margin: 0; }

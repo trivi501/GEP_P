@@ -1,5 +1,12 @@
 <?php
 
+set_error_handler(function ($severity, $message) {
+    if (str_contains($message, 'tempnam')) {
+        return true;
+    }
+    return false;
+});
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
