@@ -25,7 +25,7 @@ class TicketCreatedNotification extends Notification
         return (new MailMessage)
             ->subject("Nuevo ticket de soporte #{$this->ticket->id}")
             ->greeting("Nuevo ticket de soporte")
-            ->line("Usuario: {$this->ticket->user?->name ?? 'Usuario'}")
+            ->line("Usuario: " . ($this->ticket->user?->name ?? 'Usuario'))
             ->line("Asunto: {$this->ticket->title}")
             ->line("Descripción: {$this->ticket->description}")
             ->line("Prioridad: {$this->ticket->priority}")
