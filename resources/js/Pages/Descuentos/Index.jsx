@@ -124,13 +124,15 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                 alert('Error: ID del descuento no disponible. Recarga la página e intenta de nuevo.');
                 return;
             }
-            axios.post(route('descuentos.update', editing.id), { ...data, _method: 'PUT' }, { headers })
-                .then(() => window.location.reload())
-                .catch((err) => alert(err.response?.data?.message || 'Error al actualizar'));
+            router.put(route('descuentos.update', editing.id), data, {
+                onSuccess: () => setShowModal(false),
+                onError: (err) => alert(Object.values(err).join('\n') || 'Error al actualizar'),
+            });
         } else {
-            axios.post(route('descuentos.store'), data, { headers })
-                .then(() => window.location.reload())
-                .catch((err) => alert(err.response?.data?.message || 'Error al crear'));
+            router.post(route('descuentos.store'), data, {
+                onSuccess: () => setShowModal(false),
+                onError: (err) => alert(Object.values(err).join('\n') || 'Error al crear'),
+            });
         }
     };
 
@@ -141,9 +143,10 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
 
     const confirmDelete = () => {
         if (!deleteTarget?.id) return;
-        axios.post(route('descuentos.destroy', deleteTarget.id), { _method: 'DELETE' }, { headers })
-            .then(() => window.location.reload())
-            .catch(() => alert('Error al eliminar'));
+        router.delete(route('descuentos.destroy', deleteTarget.id), {
+            onSuccess: () => { setShowDeleteModal(false); setDeleteTarget(null); },
+            onError: () => alert('Error al eliminar'),
+        });
     };
 
     return (
