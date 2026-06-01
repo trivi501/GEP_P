@@ -17,6 +17,7 @@ export default function Create({
 }) {
     const { data, setData, post, processing, errors } = useForm({
         id_tipo_contribuyente: '',
+        cuenta: '',
         nombre: '',
         primer_apellido: '',
         segundo_apellido: '',
@@ -76,6 +77,19 @@ export default function Create({
                                             ))}
                                         </select>
                                         <InputError message={errors.id_tipo_contribuyente} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="cuenta" value="Cuenta" />
+                                        <TextInput
+                                            id="cuenta"
+                                            type="text"
+                                            name="cuenta"
+                                            value={data.cuenta}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => setData('cuenta', e.target.value)}
+                                        />
+                                        <InputError message={errors.cuenta} className="mt-2" />
                                     </div>
                                 </div>
 
