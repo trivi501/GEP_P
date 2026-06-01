@@ -41,9 +41,11 @@ class ContribuyenteController extends Controller
 
     public function index(Request $request)
     {
+        $filters = $request->only(['nombre_completo', 'cuenta', 'tipo', 'telefono', 'correo_electronico', 'activo']);
+
         $contribuyentes = Contribuyente::with('tipoContribuyente', 'domicilio')
             ->select(['id_contribuyente', 'nombre_completo', 'cuenta', 'id_tipo_contribuyente', 'telefono', 'correo_electronico', 'activo'])
-            ->when($request->filled('nombre_completo'), fn($q, $v) => $q->where('nombre_completo', 'like', '%' . $request->nombre_completo . '%'))
+            ->when($request->filled('nombre_completo'), fn($q) => $q->where('nombre_completo', 'like', '%' . $request->nombre_completo . '%'))
             ->when($request->filled('cuenta'), fn($q) => $q->where('cuenta', 'like', '%' . $request->cuenta . '%'))
             ->when($request->filled('tipo'), fn($q) => $q->whereHas('tipoContribuyente', fn($q) => $q->where('area_contribuyente', 'like', '%' . $request->tipo . '%')))
             ->when($request->filled('telefono'), fn($q) => $q->where('telefono', 'like', '%' . $request->telefono . '%'))
@@ -53,7 +55,7 @@ class ContribuyenteController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-return Inertia::render('Contribuyentes/Index', compact('contribuyentes'));
+        return Inertia::render('Contribuyentes/Index', compact('contribuyentes', 'filters'));
     }
 
     public function create()

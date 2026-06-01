@@ -1,8 +1,33 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
-export default function Index({ contribuyentes }) {
+export default function Index({ contribuyentes, filters = {} }) {
+    const [search, setSearch] = useState({
+        nombre_completo: filters.nombre_completo || '',
+        cuenta: filters.cuenta || '',
+        tipo: filters.tipo || '',
+        telefono: filters.telefono || '',
+        correo_electronico: filters.correo_electronico || '',
+        activo: filters.activo ?? '',
+    });
+
+    const handleFilter = (key, value) => {
+        const updated = { ...search, [key]: value };
+        setSearch(updated);
+    };
+
+    const applyFilters = (e) => {
+        e?.preventDefault();
+        router.get(route('contribuyentes.index'), search, { preserveState: true, replace: true });
+    };
+
+    const clearFilters = () => {
+        setSearch({ nombre_completo: '', cuenta: '', tipo: '', telefono: '', correo_electronico: '', activo: '' });
+        router.get(route('contribuyentes.index'), {}, { preserveState: true, replace: true });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -17,41 +42,94 @@ export default function Index({ contribuyentes }) {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <div className="mb-6 flex items-center justify-between">
+                            <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     Listado de Contribuyentes
                                 </h3>
-                                <Link
-                                    href={route('contribuyentes.create')}
-                                    className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-500 focus:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-700"
-                                >
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
-                                    Crear Contribuyente
-                                </Link>
+                                <div className="flex gap-2">
+                                    <Link
+                                        href={route('contribuyentes.create')}
+                                        className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-500 focus:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-700"
+                                    >
+                                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                                        Crear Contribuyente
+                                    </Link>
+                                </div>
                             </div>
+
+                            <form onSubmit={applyFilters} className="mb-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Cuenta"
+                                            value={search.cuenta}
+                                            onChange={(e) => handleFilter('cuenta', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Nombre"
+                                            value={search.nombre_completo}
+                                            onChange={(e) => handleFilter('nombre_completo', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Tipo"
+                                            value={search.tipo}
+                                            onChange={(e) => handleFilter('tipo', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Teléfono"
+                                            value={search.telefono}
+                                            onChange={(e) => handleFilter('telefono', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Correo"
+                                            value={search.correo_electronico}
+                                            onChange={(e) => handleFilter('correo_electronico', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        />
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <select
+                                            value={search.activo}
+                                            onChange={(e) => handleFilter('activo', e.target.value)}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs"
+                                        >
+                                            <option value="">Todos</option>
+                                            <option value="1">Activo</option>
+                                            <option value="0">Inactivo</option>
+                                        </select>
+                                        <button type="submit" className="px-3 py-1.5 bg-indigo-600 text-white rounded-md text-xs hover:bg-indigo-500">Buscar</button>
+                                        <button type="button" onClick={clearFilters} className="px-3 py-1.5 bg-gray-300 text-gray-700 rounded-md text-xs hover:bg-gray-400">Limpiar</button>
+                                    </div>
+                                </div>
+                            </form>
 
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Cuenta
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Nombre
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                RFC
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Teléfono
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Activo
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                                Acciones
-                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Cuenta</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Nombre</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">RFC</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Teléfono</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Activo</th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
