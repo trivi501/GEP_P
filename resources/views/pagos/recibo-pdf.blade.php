@@ -126,7 +126,7 @@
                     <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
-                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
+                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ trim(($pago->predio?->contribuyente?->nombre ?? '') . ' ' . ($pago->predio?->contribuyente?->primer_apellido ?? '') . ' ' . ($pago->predio?->contribuyente?->segundo_apellido ?? '')) ?: $pago->predio?->contribuyente?->nombre_completo ?? '—' }}</b></td>
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
             </table>
@@ -223,7 +223,7 @@
                     <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
-                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
+                    <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ trim(($pago->predio?->contribuyente?->nombre ?? '') . ' ' . ($pago->predio?->contribuyente?->primer_apellido ?? '') . ' ' . ($pago->predio?->contribuyente?->segundo_apellido ?? '')) ?: $pago->predio?->contribuyente?->nombre_completo ?? '—' }}</b></td>
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
             </table>
