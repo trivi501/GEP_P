@@ -117,7 +117,7 @@ class GenerateEstadoCuentaChunk implements ShouldQueue
         $pdf = Pdf::loadView('estado-cuenta-masivo.pdf', compact('data', 'granTotal', 'totalPredios'));
         $pdf->setPaper('a4');
 
-        $tempDir = storage_path('app/temp');
+        $tempDir = public_path('recibos');
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }

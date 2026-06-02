@@ -26,7 +26,7 @@ class FinalizeEstadoCuentaPdf implements ShouldQueue
 
     public function handle(): void
     {
-        $tempDir = storage_path('app/temp');
+        $tempDir = public_path('recibos');
 
         $hasPages = false;
         $pdf = new Fpdi();

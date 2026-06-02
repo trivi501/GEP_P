@@ -104,9 +104,7 @@
     </style>
 </head>
 <body>
-    @if ($pago->estatus === 'cancelado')
-        <div class="watermark">Cancelado</div>
-    @endif
+
     @php
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');

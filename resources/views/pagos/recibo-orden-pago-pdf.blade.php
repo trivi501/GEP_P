@@ -84,9 +84,7 @@
     </style>
 </head>
 <body>
-    @if ($pago->estatus === 'cancelado')
-        <div class="watermark">Cancelado</div>
-    @endif
+
     @php
         $ordenPago = $pago->ordenPago;
     @endphp

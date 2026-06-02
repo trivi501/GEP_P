@@ -82,7 +82,7 @@
         <table style="width: 100%;">
             <tr>
                 <td style="font-size: 8pt; padding: 2px 6px;"><b>Cuenta:</b> {{ $contribuyente->cuenta ?? '—' }}</td>
-                <td style="font-size: 8pt; padding: 2px 6px;"><b>Contribuyente:</b> {{ $contribuyente->nombre_completo ?? '—' }}</td>
+                <td style="font-size: 8pt; padding: 2px 6px;"><b>Contribuyente:</b> {{ trim(($contribuyente->nombre ?? '') . ' ' . ($contribuyente->primer_apellido ?? '') . ' ' . ($contribuyente->segundo_apellido ?? '')) ?: $contribuyente->nombre_completo ?? '—' }}</td>
             </tr>
         </table>
     </div>
