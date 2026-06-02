@@ -849,7 +849,7 @@ class PagosController extends Controller
         DB::beginTransaction();
 
         try {
-            $pago->update(['estatus' => 'cancelado']);
+            $pago->update(['estatus' => 'cancelado', 'monto' => 0]);
 
             if ($pago->ordenPago) {
                 $pago->ordenPago->update([
@@ -917,7 +917,8 @@ class PagosController extends Controller
                     'ultimo_bimestre_pago' => $incidencia->ultimo_bimestre_pago_anterior,
                 ]);
 
-            $pago->update(['estatus' => 'cancelado']);
+            $montoOriginal = $pago->monto;
+            $pago->update(['estatus' => 'cancelado', 'monto' => 0]);
 
             if ($pago->ordenPago) {
                 $pago->ordenPago->update([
@@ -927,7 +928,7 @@ class PagosController extends Controller
             }
 
             if ($pago->historialCaja) {
-                $pago->historialCaja->decrement('total_ingreso', $pago->monto);
+                $pago->historialCaja->decrement('total_ingreso', $montoOriginal);
             }
 
             \App\Models\CuentasPagos::where('pago_id', $pago->id)
@@ -975,7 +976,7 @@ class PagosController extends Controller
     {
         $historialCaja->load('caja', 'cajero.usuario', 'pagos.formasPagosCada.formaPago');
 
-        $pagos = $historialCaja->pagos;
+        $pagos = $historialCaja->pagos->where('estatus', '!=', 'cancelado');
 
         $totalRecibos = $pagos->count();
         $totalIngresos = $pagos->sum('monto');
