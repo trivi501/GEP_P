@@ -226,6 +226,46 @@ export default function Show({ predio }) {
                                     </div>
                                 )}
 
+                                {predio.niveles_construidos?.length > 0 && (
+                                    <div className="border rounded-lg p-4">
+                                        <h4 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">Niveles Construidos</h4>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                <thead className="bg-gray-50 dark:bg-gray-700">
+                                                    <tr>
+                                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
+                                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Uso</th>
+                                                        <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Superficie (m²)</th>
+                                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estado</th>
+                                                        <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Calidad</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                                    {predio.niveles_construidos.map((n) => (
+                                                        <tr key={n.id_nivel_construido}>
+                                                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                                                                {n.tipo_construccion?.descripcion ?? '—'}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                                                                {n.uso_construccion?.descripcion ?? '—'}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-right text-gray-900 dark:text-gray-100">
+                                                                {n.superficie_metros_cuadrados ?? '—'}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                                                                {n.estado_construccion ?? '—'}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">
+                                                                {n.calidad_construccion ?? '—'}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {predio.observaciones?.length > 0 && (
                                     <div className="border rounded-lg p-4">
                                         <h4 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">Observaciones</h4>

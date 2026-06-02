@@ -311,7 +311,7 @@ class PredioController extends Controller
 
     public function show(Predio $predio)
     {
-        $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'calculosGenerales', 'medidasYColindancias.orientacion', 'anotaciones', 'observaciones', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
+        $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'calculosGenerales', 'medidasYColindancias.orientacion', 'anotaciones', 'observaciones', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento', 'nivelesConstruidos.tipoConstruccion', 'nivelesConstruidos.usoConstruccion');
         $predio->load(['historico' => fn($q) => $q->orderBy('fecha_modificacion', 'desc'), 'historico.usuarioModifica']);
         return Inertia::render('Predios/Show', compact('predio'));
     }
