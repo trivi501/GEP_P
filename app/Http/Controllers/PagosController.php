@@ -34,9 +34,11 @@ class PagosController extends Controller
                 'multas_pct' => 0,
                 'actualizaciones_pct' => 0,
                 'cobranza_pct' => 0,
+                'recargos_pct' => 0,
                 'descuento_multas' => 0,
                 'descuento_actualizaciones' => 0,
                 'descuento_cobranza' => 0,
+                'descuento_recargos' => 0,
                 'total_descuento' => 0,
             ];
         }
@@ -46,9 +48,11 @@ class PagosController extends Controller
             'multas_pct' => (float) $descuento->multas,
             'actualizaciones_pct' => (float) $descuento->actualizaciones,
             'cobranza_pct' => (float) $descuento->gastos_cobranza,
+            'recargos_pct' => (float) $descuento->recargos,
             'descuento_multas' => 0,
             'descuento_actualizaciones' => 0,
             'descuento_cobranza' => 0,
+            'descuento_recargos' => 0,
             'total_descuento' => 0,
         ];
     }
@@ -428,6 +432,7 @@ class PagosController extends Controller
             $descuentoMulta = 0;
             $descuentoActualizacion = 0;
             $descuentoCobranza = 0;
+            $descuentoRecargos = 0;
 
             foreach ($conceptos as &$c) {
                 if ($c['concepto'] === 'Multa' && $descInfo['multas_pct'] > 0) {
@@ -439,10 +444,13 @@ class PagosController extends Controller
                 if ($c['concepto'] === 'Gastos de Ejecución Predial Urbano' && $descInfo['cobranza_pct'] > 0) {
                     $descuentoCobranza = round($c['monto'] * $descInfo['cobranza_pct'] / 100, 2);
                 }
+                if (in_array($c['concepto'], ['Recargos Anteriores', 'Recargos Actual']) && $descInfo['recargos_pct'] > 0) {
+                    $descuentoRecargos += round($c['monto'] * $descInfo['recargos_pct'] / 100, 2);
+                }
             }
             unset($c);
 
-            $totalDescuento = $descuentoMulta + $descuentoActualizacion + $descuentoCobranza;
+            $totalDescuento = $descuentoMulta + $descuentoActualizacion + $descuentoCobranza + $descuentoRecargos;
             if ($totalDescuento > 0) {
                 $conceptos[] = ['concepto' => 'Descuentos', 'monto' => -$totalDescuento];
                 $total = round($total - $totalDescuento, 2);
