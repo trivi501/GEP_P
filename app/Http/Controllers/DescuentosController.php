@@ -93,12 +93,15 @@ class DescuentosController extends Controller
         if (strlen($q) < 2) return response()->json([]);
 
         $predios = Predio::with('contribuyente')
-            ->whereHas('contribuyente', function ($query) use ($q) {
-                $query->where('cuenta', 'like', "%{$q}%")
-                      ->orWhere('nombre_completo', 'like', "%{$q}%")
-                      ->orWhere('nombre_moral', 'like', "%{$q}%");
+            ->where(function ($query) use ($q) {
+                $query->where('id_predio', 'like', "%{$q}%")
+                      ->orWhere('Clave_predial', 'like', "%{$q}%")
+                      ->orWhereHas('contribuyente', function ($sub) use ($q) {
+                          $sub->where('cuenta', 'like', "%{$q}%")
+                              ->orWhere('nombre_completo', 'like', "%{$q}%")
+                              ->orWhere('nombre_moral', 'like', "%{$q}%");
+                      });
             })
-            ->orWhere('Clave_predial', 'like', "%{$q}%")
             ->take(10)
             ->get()
             ->map(fn($p) => [
