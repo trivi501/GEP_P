@@ -181,6 +181,16 @@ export default function Show({ ticket, users, canAssign }) {
                                             </a>
                                         </div>
                                     )}
+                                    {ticket.image && (
+                                        <div className="sm:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Imagen adjunta</label>
+                                            <img
+                                                src={`/storage/${ticket.image}`}
+                                                alt="Adjunto"
+                                                className="mt-1 max-h-64 rounded border"
+                                            />
+                                        </div>
+                                    )}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Creado</label>
                                         <p className="mt-1 text-sm text-gray-500">{formatDateTime(ticket.created_at)}</p>

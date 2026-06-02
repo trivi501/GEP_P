@@ -44,14 +44,21 @@ class SupportTicketController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'url' => 'nullable|string|max:500',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'priority' => 'required|in:baja,media,alta,urgente',
         ]);
 
-        $ticket = SupportTicket::create([
+        $data = [
             ...$validated,
             'user_id' => auth()->id(),
             'status' => 'abierto',
-        ]);
+        ];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('tickets', 'public');
+        }
+
+        $ticket = SupportTicket::create($data);
 
         $admins = User::role(['Super Admin', 'Admin'])->get();
         foreach ($admins as $admin) {

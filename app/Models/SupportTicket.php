@@ -12,6 +12,7 @@ class SupportTicket extends Model
         'title',
         'description',
         'url',
+        'image',
         'priority',
         'status',
     ];

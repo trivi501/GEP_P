@@ -59,4 +59,9 @@ class Pago extends Model
     {
         return $this->belongsTo(OrdenPago::class, 'orden_pago_id', 'id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_usuario', 'id');
+    }
 }

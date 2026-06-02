@@ -51,11 +51,23 @@
             top: 10px;
         }
 
+        .recibo-header{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 100px;
+        }
         .recibo-copia{
             position: absolute;
             left: 10px;
             right: 10px;
             top: 570px;
+        }
+        .recibo-header-copia{
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 100px;
         }
 
         .footer_recibo_original{
@@ -99,16 +111,21 @@
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');
     @endphp
-    <div class="header">
-       
-        <h3 style="text-align: right">{{ $pago->folio }}</h3>
-    </div>
+
+    
     <div class="recibo-original">
+    <div class="recibo-header">
+        <table style="width: 100%;">
+            <tr>
+                <td style="text-align: right;">{{ $pago->folio }}</td>
+            </tr>
+        </table>
+    </div>
         <div class="section">
             <table width="100%">
                 <tr>
                     <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%"></td>
+                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">/td>
                 </tr>
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
@@ -185,12 +202,7 @@
         </div>
 
 
-        @if (!empty($qrBase64))
-        <div style="text-align: center; margin: 10px 0;">
-            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-        </div>
-        @endif
+     
 
         <div class="footer_recibo_original">
             <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
@@ -199,11 +211,18 @@
         </div>
     </div>
     <div class="recibo-copia">
+        <div class="recibo-header-copia">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="text-align: right;">{{ $pago->folio }}</td>
+                </tr>
+            </table>
+        </div>
         <div class="section">
             <table width="100%">
                 <tr>
                     <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
+                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%"></td>
                 </tr>
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
@@ -272,12 +291,6 @@
         </div>
 
 
-        @if (!empty($qrBase64))
-        <div style="text-align: center; margin: 10px 0;">
-            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="QR" style="width: 80px; height: 80px;" />
-            <p style="font-size: 5pt; color: #888; margin-top: 2px;">Escanea para consultar recibo</p>
-        </div>
-        @endif
 
         <div class="footer_recibo_copia">
             <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
