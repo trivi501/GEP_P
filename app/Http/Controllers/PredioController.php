@@ -21,6 +21,9 @@ use App\Models\CatFormaPredio;
 use App\Models\CatUsoPredioUrbano;
 use App\Models\CatEstadoFisicoPredio;
 use App\Models\CatPavimento;
+use App\Models\CatTipoConstruccion;
+use App\Models\CatUsoConstruccion;
+use App\Models\NivelConstruidoPredioUrbano;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -315,7 +318,7 @@ class PredioController extends Controller
 
     public function edit(Predio $predio)
     {
-        $predio->load('contribuyente', 'clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano');
+        $predio->load('contribuyente', 'clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano', 'nivelesConstruidos.tipoConstruccion', 'nivelesConstruidos.usoConstruccion');
         $tiposPredio = TipoPredio::where('activo', 1)->orderBy('Tipo_predio')->get();
         $regimenesPropiedad = RegimenPropiedad::where('activo', 1)->orderBy('REGIMEN')->get();
         $estadosRenta = EstadoRenta::where('activo', 1)->orderBy('DESCRIPCION')->get();
@@ -329,7 +332,9 @@ class PredioController extends Controller
         $usosPredioUrbano = CatUsoPredioUrbano::where('activo', 1)->orderBy('descripcion')->get();
         $estadosFisicos = CatEstadoFisicoPredio::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $pavimentos = CatPavimento::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        return Inertia::render('Predios/Edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
+        $tiposConstruccion = CatTipoConstruccion::where('activo', 1)->orderBy('descripcion')->get();
+        $usosConstruccion = CatUsoConstruccion::where('activo', 1)->orderBy('descripcion')->get();
+        return Inertia::render('Predios/Edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos', 'tiposConstruccion', 'usosConstruccion'));
     }
 
     public function update(Request $request, Predio $predio)
@@ -441,6 +446,26 @@ class PredioController extends Controller
                         'colinda_con' => $medida['colinda_con'] ?? null,
                         'fecha_alta' => now(),
                         'id_usuario' => auth()->user()->id ?? null,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->has('niveles')) {
+            $predio->nivelesConstruidos()->delete();
+            foreach ($request->niveles as $nivel) {
+                if (!empty($nivel['id_tipo_construccion'])) {
+                    NivelConstruidoPredioUrbano::create([
+                        'id_nivel_construido' => (string) Str::uuid(),
+                        'id_predio' => $predio->id_predio,
+                        'id_tipo_construccion' => $nivel['id_tipo_construccion'],
+                        'id_uso_construccion' => $nivel['id_uso_construccion'] ?? null,
+                        'superficie_metros_cuadrados' => $nivel['superficie_metros_cuadrados'] ?? null,
+                        'estado_construccion' => $nivel['estado_construccion'] ?? null,
+                        'calidad_construccion' => $nivel['calidad_construccion'] ?? null,
+                        'fecha_alta' => now(),
+                        'id_usuario' => auth()->user()->id ?? null,
+                        'activo' => 1,
                     ]);
                 }
             }

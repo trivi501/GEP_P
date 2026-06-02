@@ -17,43 +17,26 @@ class CalculosPrediosController extends Controller
 
     public function index(Request $request)
     {
-        $zonas = [
-            'ZONA I'              => 0.0131,
-            'ZONA II'             => 0.0151,
-            'ZONA III'            => 0.0162,
-            'ZONA IV'             => 0.0237,
-            'ZONA V'              => 0.0340,
-            'ZONA VI'             => 0.0406,
-            'ZONA VII'            => 0.0622,
-            'ZONA VIII'           => 0.0725,
-            'ZONA Urbano-Rural'   => 0.0013,
-            'ZONA Industrial'     => 0.0622,
-        ];
-        $habitacional = [
-            'A' => 0.0384,
-            'B' => 0.0261,
-            'C' => 0.0119,
-            'D' => 0.0072,
-        ];
-        $productos = [
-            'A' => 0.0522,
-            'B' => 0.0384,
-            'C' => 0.0197,
-            'D' => 0.0119,
-        ];
-
-
-
-
-        $calculos = PredioCalculoGeneral::with('predio.contribuyente')
-            ->when($request->filled('id_predio'), fn($q) => $q->where('id_predio', $request->id_predio))
-            ->when($request->filled('año'), fn($q) => $q->where('año', $request->año))
-            ->orderBy('año', 'desc')
-            ->paginate(20);
-
         if ($request->wantsJson()) {
+            $calculos = PredioCalculoGeneral::with('predio.contribuyente')
+                ->when($request->filled('id_predio'), fn($q) => $q->where('id_predio', $request->id_predio))
+                ->when($request->filled('año'), fn($q) => $q->where('año', $request->año))
+                ->orderBy('año', 'desc')
+                ->paginate(20);
             return response()->json($calculos);
         }
+
+        $predio = null;
+        $calculos = [];
+        if ($request->filled('id_predio')) {
+            $predio = \App\Models\Predio::with('contribuyente', 'datosUrbano.zonaUrbana', 'nivelesConstruidos.tipoConstruccion', 'nivelesConstruidos.usoConstruccion')->find($request->id_predio);
+            if ($predio) {
+                $calculos = $this->getCalculosAnuales($predio);
+            }
+        }
+
+        return Inertia::render('CalculosPredios/Index', compact('calculos', 'predio'));
+    }
 
         $predio = null;
         if ($request->filled('id_predio')) {
@@ -350,6 +333,7 @@ class CalculosPrediosController extends Controller
                 'uma'                 => $valorUma,
                 'superficie'          => $superficie,
                 'baldio'          => $imp_baldio,
+                'imp_baldio'      => $imp_baldio,
                 'imp_terreno'         => $superficie * $factorZona * $valorUma,
                 'imp_terreno_baldio'  => $impTerreno,
                 'zona'                => $zona,

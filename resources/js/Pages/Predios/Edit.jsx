@@ -21,6 +21,8 @@ export default function Edit({
     usosPredioUrbano,
     estadosFisicos,
     pavimentos,
+    tiposConstruccion,
+    usosConstruccion,
 }) {
     const urbano = predio.datos_urbano;
 
@@ -73,6 +75,14 @@ export default function Edit({
             medida_en_metros: m.medida_en_metros ?? '',
             colinda_con: m.colinda_con ?? '',
         })),
+        niveles: (predio.niveles_construidos ?? []).map((n) => ({
+            id_nivel_construido: n.id_nivel_construido ?? '',
+            id_tipo_construccion: n.id_tipo_construccion ?? '',
+            id_uso_construccion: n.id_uso_construccion ?? '',
+            superficie_metros_cuadrados: n.superficie_metros_cuadrados ?? '',
+            estado_construccion: n.estado_construccion ?? '',
+            calidad_construccion: n.calidad_construccion ?? '',
+        })),
     });
 
     const [contribuyentes, setContribuyentes] = useState([]);
@@ -112,6 +122,19 @@ export default function Edit({
     const setMedida = (index, field, value) => {
         const updated = data.medidas.map((m, i) => (i === index ? { ...m, [field]: value } : m));
         setData('medidas', updated);
+    };
+
+    const addNivel = () => {
+        setData('niveles', [...data.niveles, { id_nivel_construido: '', id_tipo_construccion: '', id_uso_construccion: '', superficie_metros_cuadrados: '', estado_construccion: '', calidad_construccion: '' }]);
+    };
+
+    const removeNivel = (index) => {
+        setData('niveles', data.niveles.filter((_, i) => i !== index));
+    };
+
+    const setNivel = (index, field, value) => {
+        const updated = data.niveles.map((n, i) => (i === index ? { ...n, [field]: value } : n));
+        setData('niveles', updated);
     };
 
     const submit = (e) => {
@@ -764,6 +787,91 @@ export default function Edit({
                                         className="rounded-md bg-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 transition duration-150 ease-in-out hover:bg-gray-200"
                                     >
                                         + Agregar Medida
+                                    </button>
+                                </div>
+
+                                <div className="border-t pt-4">
+                                    <h4 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Niveles Construidos</h4>
+                                    {data.niveles.map((nivel, index) => (
+                                        <div key={index} className="mb-3 rounded-md border border-gray-200 dark:border-gray-600 p-3">
+                                            <div className="mb-2 flex items-center justify-between">
+                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Nivel {index + 1}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeNivel(index)}
+                                                    className="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white hover:bg-red-400"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                                <div>
+                                                    <InputLabel value="Tipo Construcción" />
+                                                    <select
+                                                        value={nivel.id_tipo_construccion}
+                                                        onChange={(e) => setNivel(index, 'id_tipo_construccion', e.target.value)}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    >
+                                                        <option value="">Seleccione</option>
+                                                        {tiposConstruccion.map((tc) => (
+                                                            <option key={tc.id_tipo_construccion} value={tc.id_tipo_construccion}>
+                                                                {tc.descripcion}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Uso Construcción" />
+                                                    <select
+                                                        value={nivel.id_uso_construccion}
+                                                        onChange={(e) => setNivel(index, 'id_uso_construccion', e.target.value)}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    >
+                                                        <option value="">Seleccione</option>
+                                                        {usosConstruccion.map((uc) => (
+                                                            <option key={uc.id_uso_construccion} value={uc.id_uso_construccion}>
+                                                                {uc.descripcion}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Superficie (m²)" />
+                                                    <TextInput
+                                                        type="number"
+                                                        value={nivel.superficie_metros_cuadrados}
+                                                        className="mt-1 block w-full"
+                                                        onChange={(e) => setNivel(index, 'superficie_metros_cuadrados', e.target.value)}
+                                                        step="0.01"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Estado" />
+                                                    <TextInput
+                                                        type="text"
+                                                        value={nivel.estado_construccion}
+                                                        className="mt-1 block w-full"
+                                                        onChange={(e) => setNivel(index, 'estado_construccion', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Calidad" />
+                                                    <TextInput
+                                                        type="text"
+                                                        value={nivel.calidad_construccion}
+                                                        className="mt-1 block w-full"
+                                                        onChange={(e) => setNivel(index, 'calidad_construccion', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={addNivel}
+                                        className="rounded-md bg-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 transition duration-150 ease-in-out hover:bg-gray-200"
+                                    >
+                                        + Agregar Nivel
                                     </button>
                                 </div>
 
