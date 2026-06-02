@@ -117,7 +117,7 @@
     <div class="recibo-header">
         <table style="width: 100%;">
             <tr>
-                <td style="text-align: right;">{{ $pago->folio }}</td>
+                <td style="text-align: right;"></td>
             </tr>
         </table>
     </div>
@@ -125,7 +125,7 @@
             <table width="100%">
                 <tr>
                     <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">/td>
+                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
@@ -214,7 +214,7 @@
         <div class="recibo-header-copia">
             <table style="width: 100%;">
                 <tr>
-                    <td style="text-align: right;">{{ $pago->folio }}</td>
+                    <td style="text-align: right;"></td>
                 </tr>
             </table>
         </div>
@@ -222,7 +222,7 @@
             <table width="100%">
                 <tr>
                     <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%"></td>
+                    <td class="label" style="font-size: 7.5pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
                 </tr>
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
