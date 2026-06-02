@@ -99,12 +99,16 @@
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');
     @endphp
+    <div class="header">
+       
+        <h3 style="text-align: right">{{ $pago->folio }}</h3>
+    </div>
     <div class="recibo-original">
         <div class="section">
             <table width="100%">
                 <tr>
                     <td class="label"  style="font-size: 9pt;" width="80%">Contribuyente</td>
-                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%">{{ $pago->folio }}</td>
+                    <td class="label" style="font-size: 9pt; text-align: right;" width="20%"></td>
                 </tr>
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ $pago->predio?->contribuyente?->nombre ?? '—' }}</b></td>
