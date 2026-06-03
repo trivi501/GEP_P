@@ -57,6 +57,9 @@ export default function Index({ cuentas }) {
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Importe
                                             </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Total Pagado
+                                            </th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Acciones
                                             </th>
@@ -79,7 +82,10 @@ export default function Index({ cuentas }) {
                                                         {cuenta.descripcion}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                        {cuenta.importe}
+                                                        ${Number(cuenta.importe).toFixed(2)}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        ${Number(cuenta.cuentas_pagos_sum_monto ?? 0).toFixed(2)}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                                         <Link
@@ -106,7 +112,7 @@ export default function Index({ cuentas }) {
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan="6"
+                                                    colSpan="7"
                                                     className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                                                 >
                                                     No hay cuentas registradas.

@@ -11,7 +11,11 @@ class CuentasController extends Controller
 {
     public function index()
     {
-        $cuentas = Cuentas::with('conac', 'cuentaMayor')->orderBy('id')->paginate(10);
+        $cuentas = Cuentas::with('conac', 'cuentaMayor')
+            ->withSum('cuentasPagos', 'monto')
+            ->orderBy('id')
+            ->paginate(10);
+
         return Inertia::render('Cuentas/Index', compact('cuentas'));
     }
 
