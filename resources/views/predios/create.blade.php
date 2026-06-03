@@ -12,21 +12,6 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <x-input-label for="Clave_predial" :value="__('Clave Predial')" />
-                                <x-text-input id="Clave_predial" class="block mt-1 w-full" type="text" name="Clave_predial" :value="old('Clave_predial')" required />
-                                <x-input-error :messages="$errors->get('Clave_predial')" class="mt-2" />
-                            </div>
-                            <div>
-                                <x-input-label for="contribuyente_search" :value="__('Contribuyente')" />
-                                <div class="relative">
-                                    <input id="contribuyente_search" type="text" placeholder="Buscar contribuyente..." value="{{ old('contribuyente_nombre') }}" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" autocomplete="off">
-                                    <input id="id_contribuyente" name="id_contribuyente" type="hidden" value="{{ old('id_contribuyente') }}">
-                                    <div id="contribuyente_results" class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto"></div>
-                                </div>
-                                <x-input-error :messages="$errors->get('id_contribuyente')" class="mt-2" />
-                                <p id="contribuyente_selected" class="text-xs text-green-600 dark:text-green-400 mt-1 {{ old('id_contribuyente') ? '' : 'hidden' }}">✓ Contribuyente seleccionado</p>
-                            </div>
-                            <div>
                                 <x-input-label for="clave_predial_search" :value="__('Clave Predial (catálogo)')" />
                                 <div class="relative flex gap-2">
                                     <div class="relative flex-1">
@@ -50,6 +35,21 @@
                                     <div><span class="text-gray-500">Manzana rústico:</span> <span id="cp_manzana_rustico"></span></div>
                                     <div><span class="text-gray-500">Lote rústico:</span> <span id="cp_lote_rustico"></span></div>
                                 </div>
+                            </div>
+                            <div>
+                                <x-input-label for="Clave_predial" :value="__('Clave Predial')" />
+                                <x-text-input id="Clave_predial" class="block mt-1 w-full" type="text" name="Clave_predial" :value="old('Clave_predial')" readonly required />
+                                <x-input-error :messages="$errors->get('Clave_predial')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="contribuyente_search" :value="__('Contribuyente')" />
+                                <div class="relative">
+                                    <input id="contribuyente_search" type="text" placeholder="Buscar contribuyente..." value="{{ old('contribuyente_nombre') }}" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" autocomplete="off">
+                                    <input id="id_contribuyente" name="id_contribuyente" type="hidden" value="{{ old('id_contribuyente') }}">
+                                    <div id="contribuyente_results" class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto"></div>
+                                </div>
+                                <x-input-error :messages="$errors->get('id_contribuyente')" class="mt-2" />
+                                <p id="contribuyente_selected" class="text-xs text-green-600 dark:text-green-400 mt-1 {{ old('id_contribuyente') ? '' : 'hidden' }}">✓ Contribuyente seleccionado</p>
                             </div>
                             <div>
                                 <x-input-label for="id_tipo_predio" :value="__('Tipo Predio')" />
@@ -593,7 +593,7 @@
                 document.getElementById('cp_lote_rustico').textContent = data.lote_rustico || '—';
             }
             var clavePredialInput = document.getElementById('Clave_predial');
-            if (clavePredialInput && !clavePredialInput.value) {
+            if (clavePredialInput) {
                 clavePredialInput.value = data.clave_predial_completa;
             }
         }

@@ -13,11 +13,6 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <x-input-label for="Clave_predial" :value="__('Clave Predial')" />
-                                <x-text-input id="Clave_predial" class="block mt-1 w-full" type="text" name="Clave_predial" :value="old('Clave_predial', $predio->Clave_predial)" required />
-                                <x-input-error :messages="$errors->get('Clave_predial')" class="mt-2" />
-                            </div>
-                            <div>
                                 <x-input-label for="clave_predial_search" :value="__('Clave Predial (catálogo)')" />
                                 <div class="relative">
                                     <input id="clave_predial_search" type="text" placeholder="Buscar clave predial..." value="{{ old('clave_predial_nombre', $predio->clavePredial->clave_predial_completa ?? '') }}" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" autocomplete="off">
@@ -38,6 +33,11 @@
                                     <div><span class="text-gray-500">Manzana rústico:</span> <span id="cp_manzana_rustico">{{ $predio->clavePredial->manzana_rustico ?? '' }}</span></div>
                                     <div><span class="text-gray-500">Lote rústico:</span> <span id="cp_lote_rustico">{{ $predio->clavePredial->lote_rustico ?? '' }}</span></div>
                                 </div>
+                            </div>
+                            <div>
+                                <x-input-label for="Clave_predial" :value="__('Clave Predial')" />
+                                <x-text-input id="Clave_predial" class="block mt-1 w-full" type="text" name="Clave_predial" :value="old('Clave_predial', $predio->Clave_predial)" readonly required />
+                                <x-input-error :messages="$errors->get('Clave_predial')" class="mt-2" />
                             </div>
                             <div>
                                 <x-input-label for="contribuyente_search" :value="__('Contribuyente')" />
@@ -536,7 +536,7 @@
                 document.getElementById('cp_lote_rustico').textContent = data.lote_rustico || '—';
             }
             var clavePredialInput = document.getElementById('Clave_predial');
-            if (clavePredialInput && !clavePredialInput.value) {
+            if (clavePredialInput) {
                 clavePredialInput.value = data.clave_predial_completa;
             }
         }
