@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('predios', PredioController::class);
     Route::resource('cajas', CajasController::class);
     Route::resource('cajeros', CajeroController::class);
+    Route::get('cuentas/exportar-excel', [CuentasController::class, 'exportarExcel'])->name('cuentas.exportar-excel');
     Route::resource('cuentas', CuentasController::class);
     Route::get('pagos', [PagosController::class, 'index'])->name('pagos.index');
     Route::post('pagos', [PagosController::class, 'store'])->name('pagos.store');

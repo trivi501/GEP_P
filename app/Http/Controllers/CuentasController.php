@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Cuentas;
 use App\Models\Conac;
+use App\Exports\CuentasExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
 class CuentasController extends Controller
@@ -17,6 +19,19 @@ class CuentasController extends Controller
             ->paginate(10);
 
         return Inertia::render('Cuentas/Index', compact('cuentas'));
+    }
+
+    public function exportarExcel(Request $request)
+    {
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+        ]);
+
+        return Excel::download(
+            new CuentasExport($request->fecha_inicio, $request->fecha_fin),
+            'reporte-cuentas-' . $request->fecha_inicio . '-al-' . $request->fecha_fin . '.xlsx'
+        );
     }
 
     public function create()
