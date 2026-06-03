@@ -10,8 +10,10 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithEvents
 {
     protected $fechaInicio;
     protected $fechaFin;
@@ -42,14 +44,13 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
         return [
             ['Reporte de Cuentas - Período: ' . $fechaInicio . ' al ' . $fechaFin],
             [],
-            ['ID', 'Cuenta', 'Subcuenta', 'Descripción', 'Importe', 'Total Pagado'],
+            ['Cuenta', 'Subcuenta', 'Descripción', 'Importe', 'Total Pagado'],
         ];
     }
 
     public function map($cuenta): array
     {
         return [
-            $cuenta->id,
             $cuenta->cuenta,
             $cuenta->subcuenta,
             $cuenta->descripcion,
@@ -61,8 +62,17 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true, 'size' => 14]],
             3 => ['font' => ['bold' => true]],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getDelegate()->mergeCells('A1:E1');
+                $event->sheet->getDelegate()->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+            },
         ];
     }
 }
