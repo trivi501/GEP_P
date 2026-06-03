@@ -30,9 +30,9 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
                 $join->on('cuentas.id', '=', 'cuentas_pagos.cuenta_id')
                     ->whereBetween('cuentas_pagos.fecha_registro', [$this->fechaInicio, $this->fechaFin . ' 23:59:59']);
             })
-            ->select('cuentas.id', 'cuentas.cuenta', 'cuentas.subcuenta', 'cuentas.descripcion', 'cuentas.importe')
+            ->select('cuentas.id', 'cuentas.indetec', 'cuentas.descripcion', 'cuentas.importe')
             ->selectRaw('COALESCE(SUM(cuentas_pagos.monto), 0) as total_pagado')
-            ->groupBy('cuentas.id', 'cuentas.cuenta', 'cuentas.subcuenta', 'cuentas.descripcion', 'cuentas.importe')
+            ->groupBy('cuentas.id', 'cuentas.indetec', 'cuentas.descripcion', 'cuentas.importe')
             ->orderBy('cuentas.id')
             ->get();
     }
@@ -44,15 +44,14 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
         return [
             ['Reporte de Cuentas - Período: ' . $fechaInicio . ' al ' . $fechaFin],
             [],
-            ['Cuenta', 'Subcuenta', 'Descripción', 'Importe', 'Total Pagado'],
+            ['Indetec', 'Descripción', 'Importe', 'Total Pagado'],
         ];
     }
 
     public function map($cuenta): array
     {
         return [
-            $cuenta->cuenta,
-            $cuenta->subcuenta,
+            $cuenta->indetec,
             $cuenta->descripcion,
             '$' . number_format((float) $cuenta->importe, 2),
             '$' . number_format((float) $cuenta->total_pagado, 2),
@@ -70,7 +69,7 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getDelegate()->mergeCells('A1:E1');
+                $event->sheet->getDelegate()->mergeCells('A1:D1');
                 $event->sheet->getDelegate()->getStyle('A1')->getFont()->setBold(true)->setSize(14);
             },
         ];
