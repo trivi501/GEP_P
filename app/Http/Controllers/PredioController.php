@@ -208,7 +208,7 @@ class PredioController extends Controller
             'Clave_predial' => 'required|string|max:25|unique:tb_predio,Clave_predial',
             'id_contribuyente' => 'required|exists:tb_contribuyentes,id_contribuyente',
             'id_tipo_predio' => 'required|exists:cat_tipo_predio,id_tipo_predio',
-            'id_colonia' => 'required|exists:cat_colonia,id_colonia',
+            'id_colonia' => 'nullable|exists:cat_colonia,id_colonia',
             'id_calle' => 'nullable|exists:cat_calle,id_calle',
             'ubicacion' => 'nullable|string|max:65',
             'codigo_postal' => 'nullable|string|max:10',
@@ -217,18 +217,18 @@ class PredioController extends Controller
             'Referencia_entre_calle1' => 'nullable|string|max:250',
             'Referncia_entre_calle2' => 'nullable|string|max:250',
             'id_regimen_propiedad' => 'nullable|exists:cat_regimen_propiedad,id_regimen_propiedad',
-            'id_estado_renta' => 'required|exists:cat_estado_renta,id_estado_renta',
-            'id_estaus_cobro_predial' => 'required|exists:cat_estado_impuesto,id_estaus_cobro_predial',
-            'id_titulo_propiedad' => 'required|exists:cat_titulo_propiedad,id_titulo_propiedad',
+            'id_estado_renta' => 'nullable|exists:cat_estado_renta,id_estado_renta',
+            'id_estaus_cobro_predial' => 'nullable|exists:cat_estado_impuesto,id_estaus_cobro_predial',
+            'id_titulo_propiedad' => 'nullable|exists:cat_titulo_propiedad,id_titulo_propiedad',
             'id_clave_predial' => 'nullable|exists:tb_clave_predial,id_clave_predial',
             'numero_de_escritura' => 'nullable|string|max:50',
-            'valor_catastral' => 'required|numeric',
-            'valor_fiscal' => 'required|numeric',
+            'valor_catastral' => 'nullable|numeric',
+            'valor_fiscal' => 'nullable|numeric',
             'superficie' => 'nullable|numeric',
             'construccion' => 'nullable|numeric',
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
-            'año_ultimo_pago' => 'required|integer|min:1900|max:2100',
+            'año_ultimo_pago' => 'nullable|integer|min:1900|max:2100',
             'observacion' => 'nullable|string|max:5000',
             'id_zona_urbana' => 'nullable|exists:cat_zona_predio,id_zona_urbana',
             'numero_de_pisos_construidos' => 'nullable|integer|min:0|max:255',
@@ -252,6 +252,13 @@ class PredioController extends Controller
         $validated['id_predio'] = (string) Str::uuid();
         $validated['id_zona_catastral'] = $validated['id_zona_catastral'] ?? 1;
         $validated['id_clave_predial'] = $validated['id_clave_predial'] ?? (string) Str::uuid();
+        $validated['id_colonia'] = $validated['id_colonia'] ?? 1;
+        $validated['id_estado_renta'] = $validated['id_estado_renta'] ?? 1;
+        $validated['id_estaus_cobro_predial'] = $validated['id_estaus_cobro_predial'] ?? 1;
+        $validated['id_titulo_propiedad'] = $validated['id_titulo_propiedad'] ?? 1;
+        $validated['valor_catastral'] = $validated['valor_catastral'] ?? 0;
+        $validated['valor_fiscal'] = $validated['valor_fiscal'] ?? 0;
+        $validated['año_ultimo_pago'] = $validated['año_ultimo_pago'] ?? date('Y');
         $validated['fecha_de_alta'] = now();
         $validated['fecha_registro'] = now();
         $validated['id_usuario'] = auth()->user()->id ?? null;
@@ -345,7 +352,7 @@ class PredioController extends Controller
             'Clave_predial' => 'required|string|max:25|unique:tb_predio,Clave_predial,' . $predio->id_predio . ',id_predio',
             'id_contribuyente' => 'required|exists:tb_contribuyentes,id_contribuyente',
             'id_tipo_predio' => 'required|exists:cat_tipo_predio,id_tipo_predio',
-            'id_colonia' => 'required|exists:cat_colonia,id_colonia',
+            'id_colonia' => 'nullable|exists:cat_colonia,id_colonia',
             'id_calle' => 'nullable|exists:cat_calle,id_calle',
             'ubicacion' => 'nullable|string|max:65',
             'codigo_postal' => 'nullable|string|max:10',
@@ -354,18 +361,18 @@ class PredioController extends Controller
             'Referencia_entre_calle1' => 'nullable|string|max:250',
             'Referncia_entre_calle2' => 'nullable|string|max:250',
             'id_regimen_propiedad' => 'nullable|exists:cat_regimen_propiedad,id_regimen_propiedad',
-            'id_estado_renta' => 'required|exists:cat_estado_renta,id_estado_renta',
-            'id_estaus_cobro_predial' => 'required|exists:cat_estado_impuesto,id_estaus_cobro_predial',
-            'id_titulo_propiedad' => 'required|exists:cat_titulo_propiedad,id_titulo_propiedad',
+            'id_estado_renta' => 'nullable|exists:cat_estado_renta,id_estado_renta',
+            'id_estaus_cobro_predial' => 'nullable|exists:cat_estado_impuesto,id_estaus_cobro_predial',
+            'id_titulo_propiedad' => 'nullable|exists:cat_titulo_propiedad,id_titulo_propiedad',
             'id_clave_predial' => 'nullable|exists:tb_clave_predial,id_clave_predial',
             'numero_de_escritura' => 'nullable|string|max:50',
-            'valor_catastral' => 'required|numeric',
-            'valor_fiscal' => 'required|numeric',
+            'valor_catastral' => 'nullable|numeric',
+            'valor_fiscal' => 'nullable|numeric',
             'superficie' => 'nullable|numeric',
             'construccion' => 'nullable|numeric',
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
-            'año_ultimo_pago' => 'required|integer|min:1900|max:2100',
+            'año_ultimo_pago' => 'nullable|integer|min:1900|max:2100',
             'observacion' => 'nullable|string|max:5000',
             'id_zona_urbana' => 'nullable|exists:cat_zona_predio,id_zona_urbana',
             'numero_de_pisos_construidos' => 'nullable|integer|min:0|max:255',
@@ -387,6 +394,13 @@ class PredioController extends Controller
         ]);
 
         $old = $predio->toArray();
+        $validated['id_colonia'] = $validated['id_colonia'] ?? $predio->id_colonia;
+        $validated['id_estado_renta'] = $validated['id_estado_renta'] ?? $predio->id_estado_renta;
+        $validated['id_estaus_cobro_predial'] = $validated['id_estaus_cobro_predial'] ?? $predio->id_estaus_cobro_predial;
+        $validated['id_titulo_propiedad'] = $validated['id_titulo_propiedad'] ?? $predio->id_titulo_propiedad;
+        $validated['valor_catastral'] = $validated['valor_catastral'] ?? $predio->valor_catastral;
+        $validated['valor_fiscal'] = $validated['valor_fiscal'] ?? $predio->valor_fiscal;
+        $validated['año_ultimo_pago'] = $validated['año_ultimo_pago'] ?? $predio->año_ultimo_pago;
         $predio->update($validated);
 
         $urbanoFields = ['id_zona_urbana', 'numero_de_pisos_construidos', 'superficie_terreno_metros_cuadrados', 'Frente_metros', 'Fondo_metros', 'Baldio', 'id_forma_predio', 'id_uso_predio', 'id_estado_fisico', 'servicio_agua', 'servicio_drenaje', 'servicio_energia_electrica', 'servicio_alumbrado', 'id_pavimientacion', 'cuenta_con_banqueta', 'valor_catastral_terreno', 'valor_catastral_construido'];
