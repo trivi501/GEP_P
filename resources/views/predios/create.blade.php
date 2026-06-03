@@ -7,33 +7,52 @@
         <div class="max-w mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form action="{{ route('predios.store') }}" method="POST">
+                    <form id="form-crear-predio" action="{{ route('predios.store') }}" method="POST">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <x-input-label for="clave_predial_search" :value="__('Clave Predial (catálogo)')" />
-                                <div class="relative flex gap-2">
-                                    <div class="relative flex-1">
-                                        <input id="clave_predial_search" type="text" placeholder="Buscar clave predial..." value="{{ old('clave_predial_nombre') }}" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" autocomplete="off">
-                                        <input id="id_clave_predial" name="id_clave_predial" type="hidden" value="{{ old('id_clave_predial') }}">
-                                        <div id="clave_predial_results" class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto"></div>
+                            <div class="md:col-span-3">
+                                <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Clave Predial (Catálogo)</h4>
+                                    <input id="id_clave_predial" name="id_clave_predial" type="hidden" value="{{ old('id_clave_predial') }}">
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <x-input-label value="Prefijo" />
+                                            <x-text-input id="cp_prefijo" class="block mt-1 w-full cp-input" type="text" maxlength="6" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Población (ID)" />
+                                            <x-text-input id="cp_poblacion" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Sección (ID)" />
+                                            <x-text-input id="cp_seccion" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Manzana (ID)" />
+                                            <x-text-input id="cp_manzana" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Lote (ID)" />
+                                            <x-text-input id="cp_lote" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="SubLote" />
+                                            <x-text-input id="cp_subLote" class="block mt-1 w-full cp-input" type="text" maxlength="2" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Parcela" />
+                                            <x-text-input id="cp_Parcela" class="block mt-1 w-full cp-input" type="text" maxlength="6" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Manzana Rústico" />
+                                            <x-text-input id="cp_manzana_rustico" class="block mt-1 w-full cp-input" type="text" maxlength="3" oninput="autoFillClave()" />
+                                        </div>
+                                        <div>
+                                            <x-input-label value="Lote Rústico" />
+                                            <x-text-input id="cp_lote_rustico" class="block mt-1 w-full cp-input" type="text" maxlength="2" oninput="autoFillClave()" />
+                                        </div>
                                     </div>
-                                    <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'crear-clave-predial' }))" class="mt-1 inline-flex items-center px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">+ Nueva</button>
-                                </div>
-                                <x-input-error :messages="$errors->get('id_clave_predial')" class="mt-2" />
-                                <p id="clave_predial_selected" class="text-xs text-green-600 dark:text-green-400 mt-1 {{ old('id_clave_predial') ? '' : 'hidden' }}">✓ Clave predial seleccionada</p>
-                                <div id="clave_predial_details" class="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-xs space-y-1 {{ old('id_clave_predial') ? '' : 'hidden' }}">
-                                    <div><span class="text-gray-500">Completa:</span> <span id="cp_completa" class="font-medium"></span></div>
-                                    <div><span class="text-gray-500">Población:</span> <span id="cp_poblacion"></span></div>
-                                    <div><span class="text-gray-500">Sección:</span> <span id="cp_seccion"></span></div>
-                                    <div><span class="text-gray-500">Manzana:</span> <span id="cp_manzana"></span></div>
-                                    <div><span class="text-gray-500">Lote:</span> <span id="cp_lote"></span></div>
-                                    <div><span class="text-gray-500">SubLote:</span> <span id="cp_subLote"></span></div>
-                                    <div><span class="text-gray-500">Parcela:</span> <span id="cp_Parcela"></span></div>
-                                    <div><span class="text-gray-500">Prefijo:</span> <span id="cp_prefijo"></span></div>
-                                    <div><span class="text-gray-500">Manzana rústico:</span> <span id="cp_manzana_rustico"></span></div>
-                                    <div><span class="text-gray-500">Lote rústico:</span> <span id="cp_lote_rustico"></span></div>
                                 </div>
                             </div>
                             <div>
@@ -399,79 +418,17 @@
         </div>
     </div>
 
-    <x-modal name="crear-clave-predial" maxWidth="lg">
-        <div class="p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Nueva Clave Predial') }}</h3>
-            <form id="form-crear-clave-predial" class="space-y-4">
-                @csrf
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <x-input-label value="Clave Predial Completa" />
-                        <x-text-input id="cp_modal_completa" class="block mt-1 w-full" type="text" maxlength="18" required />
-                    </div>
-                    <div>
-                        <x-input-label value="Tipo Predio" />
-                        <select id="cp_modal_tipo_predio" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                            <option value="">Seleccionar...</option>
-                            @foreach ($tiposPredio as $t)
-                                <option value="{{ $t->id_tipo_predio }}">{{ $t->Tipo_predio }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <x-input-label value="Población (ID)" />
-                        <x-text-input id="cp_modal_poblacion" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Sección (ID)" />
-                        <x-text-input id="cp_modal_seccion" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Manzana (ID)" />
-                        <x-text-input id="cp_modal_manzana" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Lote (ID)" />
-                        <x-text-input id="cp_modal_lote" class="block mt-1 w-full cp-input" type="number" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="SubLote" />
-                        <x-text-input id="cp_modal_subLote" class="block mt-1 w-full cp-input" type="text" maxlength="2" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Parcela" />
-                        <x-text-input id="cp_modal_Parcela" class="block mt-1 w-full cp-input" type="text" maxlength="6" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Prefijo" />
-                        <x-text-input id="cp_modal_prefijo" class="block mt-1 w-full cp-input" type="text" maxlength="6" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Manzana Rústico" />
-                        <x-text-input id="cp_modal_manzana_rustico" class="block mt-1 w-full cp-input" type="text" maxlength="3" oninput="autoFillClave()" />
-                    </div>
-                    <div>
-                        <x-input-label value="Lote Rústico" />
-                        <x-text-input id="cp_modal_lote_rustico" class="block mt-1 w-full cp-input" type="text" maxlength="2" oninput="autoFillClave()" />
-                    </div>
-                </div>
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" x-on:click="$dispatch('close-modal', 'crear-clave-predial')" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">Cancelar</button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </x-modal>
+
 
     <script>
     function autoFillClave() {
-        var parts = ['cp_modal_prefijo', 'cp_modal_poblacion', 'cp_modal_seccion', 'cp_modal_manzana', 'cp_modal_lote', 'cp_modal_subLote', 'cp_modal_Parcela', 'cp_modal_manzana_rustico', 'cp_modal_lote_rustico'];
+        var parts = ['cp_prefijo', 'cp_poblacion', 'cp_seccion', 'cp_manzana', 'cp_lote', 'cp_subLote', 'cp_Parcela', 'cp_manzana_rustico', 'cp_lote_rustico'];
         var values = parts.map(function(id) {
             var el = document.getElementById(id);
             return el ? el.value : '';
         });
         var completa = values.filter(function(v) { return v !== ''; }).join('');
-        document.getElementById('cp_modal_completa').value = completa;
+        document.getElementById('Clave_predial').value = completa;
     }
 
     (function() {
@@ -561,94 +518,60 @@
     })();
 
     (function() {
-        var searchInput = document.getElementById('clave_predial_search');
+        var form = document.getElementById('form-crear-predio');
         var hiddenInput = document.getElementById('id_clave_predial');
-        var resultsDiv = document.getElementById('clave_predial_results');
-        var selectedP = document.getElementById('clave_predial_selected');
-        var debounceTimer;
 
-        if (!searchInput) return;
-
-        function hideResults() {
-            resultsDiv.classList.add('hidden');
+        function getCpData() {
+            return {
+                clave_predial_completa: document.getElementById('Clave_predial').value,
+                id_tipo_predio: document.getElementById('id_tipo_predio').value,
+                id_poblacion: document.getElementById('cp_poblacion').value || null,
+                id_seccion: document.getElementById('cp_seccion').value || null,
+                id_manzana: document.getElementById('cp_manzana').value || null,
+                id_lote: document.getElementById('cp_lote').value || null,
+                subLote: document.getElementById('cp_subLote').value || null,
+                Parcela: document.getElementById('cp_Parcela').value || null,
+                prefijo: document.getElementById('cp_prefijo').value || null,
+                manzana_rustico: document.getElementById('cp_manzana_rustico').value || null,
+                lote_rustico: document.getElementById('cp_lote_rustico').value || null,
+            };
         }
 
-        window.selectClavePredial = function selectClavePredial(id, data) {
-            hiddenInput.value = id;
-            searchInput.value = data.clave_predial_completa;
-            selectedP.classList.remove('hidden');
-            hideResults();
-            var det = document.getElementById('clave_predial_details');
-            if (det) {
-                det.classList.remove('hidden');
-                document.getElementById('cp_completa').textContent = data.clave_predial_completa || '—';
-                document.getElementById('cp_poblacion').textContent = data.id_poblacion || '—';
-                document.getElementById('cp_seccion').textContent = data.id_seccion || '—';
-                document.getElementById('cp_manzana').textContent = data.id_manzana || '—';
-                document.getElementById('cp_lote').textContent = data.id_lote || '—';
-                document.getElementById('cp_subLote').textContent = data.subLote || '—';
-                document.getElementById('cp_Parcela').textContent = data.Parcela || '—';
-                document.getElementById('cp_prefijo').textContent = data.prefijo || '—';
-                document.getElementById('cp_manzana_rustico').textContent = data.manzana_rustico || '—';
-                document.getElementById('cp_lote_rustico').textContent = data.lote_rustico || '—';
-            }
-            var clavePredialInput = document.getElementById('Clave_predial');
-            if (clavePredialInput) {
-                clavePredialInput.value = data.clave_predial_completa;
-            }
-        }
-
-        searchInput.addEventListener('input', function () {
-            clearTimeout(debounceTimer);
-            var q = this.value.trim();
-            if (q.length < 2) {
-                hideResults();
-                return;
-            }
-            debounceTimer = setTimeout(function () {
-                var url = '{{ route("predios.clave-predial-search") }}' + '?q=' + encodeURIComponent(q);
-                console.log('Fetching clave:', url);
-                fetch(url)
-                    .then(function (r) {
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
-                        return r.json();
-                    })
-                    .then(function (data) {
-                        resultsDiv.innerHTML = '';
-                        if (data.length === 0) {
-                            resultsDiv.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Sin resultados</div>';
-                        } else {
-                            data.forEach(function (c) {
-                                var div = document.createElement('div');
-                                div.className = 'px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 border-b border-gray-100 dark:border-gray-600 last:border-b-0';
-                                div.textContent = c.clave_predial_completa;
-                                div.dataset.id = c.id_clave_predial;
-                                div.dataset.data = JSON.stringify(c);
-                                div.addEventListener('click', function () {
-                                    selectClavePredial(this.dataset.id, JSON.parse(this.dataset.data));
-                                });
-                                resultsDiv.appendChild(div);
-                            });
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                var cpData = getCpData();
+                if (!cpData.clave_predial_completa) return;
+                if (hiddenInput.value) return;
+                e.preventDefault();
+                fetch('{{ route("clave-predial.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(cpData),
+                })
+                .then(function(r) {
+                    if (!r.ok) return r.json().then(function(err) {
+                        var msg = err.message || 'Error al guardar clave predial';
+                        if (err.errors) {
+                            var details = Object.values(err.errors).flat().join('; ');
+                            if (details) msg += ': ' + details;
                         }
-                        resultsDiv.classList.remove('hidden');
-                    })
-                    .catch(function (err) {
-                        console.error('Search error:', err);
-                        resultsDiv.innerHTML = '<div class="px-3 py-2 text-sm text-red-500">Error: ' + err.message + '</div>';
-                        resultsDiv.classList.remove('hidden');
+                        throw new Error(msg);
                     });
-            }, 300);
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('#clave_predial_search') && !e.target.closest('#clave_predial_results')) {
-                hideResults();
-            }
-        });
-
-        searchInput.addEventListener('blur', function () {
-            setTimeout(hideResults, 200);
-        });
+                    return r.json();
+                })
+                .then(function(clave) {
+                    hiddenInput.value = clave.id_clave_predial;
+                    form.submit();
+                })
+                .catch(function(err) {
+                    alert('Error: ' + err.message);
+                });
+            });
+        }
     })();
 
     (function() {

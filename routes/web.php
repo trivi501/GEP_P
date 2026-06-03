@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('contribuyentes/search', [ContribuyenteController::class, 'search'])->name('contribuyentes.search');
     Route::resource('contribuyentes', ContribuyenteController::class);
     Route::post('clave-predial/store', [ClavePredialController::class, 'store'])->name('clave-predial.store');
+    Route::put('clave-predial/{clavePredial}/update', [ClavePredialController::class, 'update'])->name('clave-predial.update');
     Route::get('predios/clave-predial-search', [PredioController::class, 'searchClavePredial'])->name('predios.clave-predial-search');
     Route::get('predios/calle-search', [PredioController::class, 'searchCalle'])->name('predios.calle-search');
     Route::get('predios/colonia-search', [PredioController::class, 'searchColonia'])->name('predios.colonia-search');
