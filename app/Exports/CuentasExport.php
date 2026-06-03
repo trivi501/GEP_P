@@ -17,6 +17,7 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
 {
     protected $fechaInicio;
     protected $fechaFin;
+    protected $data;
 
     public function __construct($fechaInicio, $fechaFin)
     {
@@ -26,7 +27,7 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function collection()
     {
-        return Cuentas::leftJoin('cuentas_pagos', function ($join) {
+        $this->data = Cuentas::leftJoin('cuentas_pagos', function ($join) {
                 $join->on('cuentas.id', '=', 'cuentas_pagos.cuenta_id')
                     ->whereBetween('cuentas_pagos.fecha_registro', [$this->fechaInicio, $this->fechaFin . ' 23:59:59']);
             })
@@ -35,6 +36,8 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
             ->groupBy('cuentas.id', 'cuentas.indetec', 'cuentas.descripcion', 'cuentas.importe')
             ->orderBy('cuentas.id')
             ->get();
+
+        return $this->data;
     }
 
     public function headings(): array
@@ -69,8 +72,26 @@ class CuentasExport implements FromCollection, WithHeadings, WithMapping, WithSt
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getDelegate()->mergeCells('A1:D1');
-                $event->sheet->getDelegate()->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+                $sheet = $event->sheet->getDelegate();
+                $sheet->mergeCells('A1:D1');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+
+                $sumImporte = 0;
+                $sumPagado = 0;
+
+                foreach ($this->data as $cuenta) {
+                    if ($cuenta->indetec === '8') continue;
+                    $sumImporte += (float) $cuenta->importe;
+                    $sumPagado += (float) $cuenta->total_pagado;
+                }
+
+                $totalRow = 4 + $this->data->count();
+                $sheet->setCellValue('A' . $totalRow, 'TOTAL (sin descuentos)');
+                $sheet->getStyle('A' . $totalRow)->getFont()->setBold(true);
+                $sheet->setCellValue('C' . $totalRow, '$' . number_format($sumImporte, 2));
+                $sheet->getStyle('C' . $totalRow)->getFont()->setBold(true);
+                $sheet->setCellValue('D' . $totalRow, '$' . number_format($sumPagado, 2));
+                $sheet->getStyle('D' . $totalRow)->getFont()->setBold(true);
             },
         ];
     }
