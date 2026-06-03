@@ -103,7 +103,8 @@ class ContribuyenteController extends Controller
         $validated['exento'] = $validated['exento'] ?? 0;
         $validated['id_contribuyente'] = (string) Str::uuid();
         $validated['cuenta'] = $validated['cuenta'] ?? $validated['id_contribuyente'];
-        $validated['nombre_completo'] = $validated['nombre_completo'] ?? trim(implode(' ', array_filter([$validated['nombre'] ?? '', $validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? ''])));
+        $parts = array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? '']);
+        $validated['nombre_completo'] = $validated['nombre_completo'] ?? trim(implode(' ', $parts));
         $validated['fecha_alta'] = now();
         $validated['id_user_registra'] = auth()->id();
 
@@ -197,6 +198,8 @@ class ContribuyenteController extends Controller
 
         $validated['activo'] = $validated['activo'] ?? 0;
         $validated['exento'] = $validated['exento'] ?? 0;
+        $parts = array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? '']);
+        $validated['nombre_completo'] = trim(implode(' ', $parts));
 
         $contribuyente->update($validated);
 
