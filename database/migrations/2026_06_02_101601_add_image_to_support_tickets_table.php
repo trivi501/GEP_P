@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('support_tickets', function (Blueprint $table) {
-            $table->string('image')->nullable()->after('url');
-        });
+        if (!Schema::hasColumn('support_tickets', 'image')) {
+            Schema::table('support_tickets', function (Blueprint $table) {
+                $table->string('image')->nullable()->after('url');
+            });
+        }
     }
 
     public function down(): void
