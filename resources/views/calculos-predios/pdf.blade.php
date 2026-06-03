@@ -88,7 +88,7 @@
         <table class="grid-2" style="border-collapse: collapse;">
             <tr>
                     <td width="12%" style="font-size: 6.5pt; border: 1px solid black; padding: 3px; text-align: right;"><b>Clave Predial:</b><br><b>Ubicación:</b></td>
-                    <td width="65%" style="font-size: 6.5pt; border: 1px solid black; padding: 3px;"> <b>{{ $predio->clavePredial?->clave_predial_completa ?? '—' }}</b> <br> <b>{{ $predio->ubicacion_completa }}</b> </td>
+                    <td width="65%" style="font-size: 6.5pt; border: 1px solid black; padding: 3px;"> <b>{{ $predio->Clave_predial ?? '—' }}</b> <br> <b>{{ $predio->ubicacion_completa }}</b> </td>
                     <td width="10%" style="font-size: 6.5pt; border: 1px solid black; padding: 3px; text-align: right;"><b>ZONA:</b> <br> <b>Tipo Pred:</b></td>
                     <td width="10%" style="font-size: 6.5pt; border: 1px solid black; padding: 3px;"> <b>{{ $predio->datosUrbano->zonaUrbana->descripcion ?? '—' }}</b> <br> <b>{{ $predio->tipoPredio->Tipo_predio ?? '—' }}</b></td>
             </tr>  
