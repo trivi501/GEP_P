@@ -250,6 +250,7 @@ class PredioController extends Controller
         ]);
 
         $validated['id_predio'] = (string) Str::uuid();
+        $validated['id_zona_catastral'] = $validated['id_zona_catastral'] ?? 1;
         $validated['fecha_de_alta'] = now();
         $validated['fecha_registro'] = now();
         $validated['id_usuario'] = auth()->user()->id ?? null;
