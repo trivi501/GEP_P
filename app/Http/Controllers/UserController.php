@@ -62,16 +62,23 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
             'secretaria_id' => 'nullable|exists:secretarias,id',
             'roles' => 'nullable|array',
             'roles.*' => 'integer|exists:roles,id',
         ]);
 
-        $user->update([
+        $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
             'secretaria_id' => $validated['secretaria_id'] ?? null,
-        ]);
+        ];
+
+        if (!empty($validated['password'])) {
+            $data['password'] = bcrypt($validated['password']);
+        }
+
+        $user->update($data);
 
         $user->syncRoles(!empty($validated['roles']) ? Role::whereIn('id', $validated['roles'])->get() : []);
 
