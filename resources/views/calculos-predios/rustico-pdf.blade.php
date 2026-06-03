@@ -94,7 +94,7 @@
         <table class="grid-2" style="border-collapse: collapse;">
             <tr>
                 <td width="12%" style="font-size: 6.5pt;  border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px;"><b>Superficie:</b></td>
-                <td width="45%" style="font-size: 6.5pt;  border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px;"><b>{{ number_format($predio->superficie ?? 0, 4) }} ha)</b></td>
+                <td width="45%" style="font-size: 6.5pt;  border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px;"><b>{{ number_format($predio->superficie ?? 0, 4) }} ha</b></td>
                 <td width="15%" style="font-size: 6.5pt;  border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px; text-align: right;"><b>Construccion:</b></td>
                 <td width="35%" style="font-size: 6.5pt;  border-left: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px;"><b>{{ number_format($predio->construccion ?? 0, 2) }} m²</b></td>
             </tr>
