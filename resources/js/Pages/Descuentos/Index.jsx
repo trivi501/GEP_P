@@ -205,7 +205,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.actualizaciones}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.recargos}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.gastos_cobranza}%</td>
-                                                <td className="whitespace-nowrap px-6 py-4 text-sm">{d.fecha_expiracion ?? '—'}</td>
+                                                <td className="whitespace-nowrap px-6 py-4 text-sm">{formatDate(d.fecha_expiracion) || '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-center">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${d.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                         {d.activo ? 'Activo' : 'Inactivo'}
