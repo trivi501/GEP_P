@@ -241,7 +241,9 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <div className="flex items-center justify-center gap-2">
-                                                            {predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6 && (
+                                                            
+                                                            {can('predios-prescripcion') && (predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6) && (
+                                                                
                                                                 <button
                                                                     onClick={() => {
                                                                         if (confirm('¿Aplicar prescripción a este predio?')) {
@@ -363,7 +365,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         </a>
                     )}
                     
-                    {can('crear descuentos') && (
+                    {can('predios-descuentos') && (
                         <a
                             href={`/descuentos?id_predio=${contextMenu.predio.id}`}
                             onClick={closeContextMenu}
