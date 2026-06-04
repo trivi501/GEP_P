@@ -116,6 +116,7 @@
                     <th>Actualiz.</th>
                     <th>Cobranza</th>
                     <th>Multa</th>
+                    <th>Descuento</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -130,6 +131,7 @@
                     <td>${{ number_format($c['actualizacion'], 2) }}</td>
                     <td>${{ number_format($c['cobranza'], 2) }}</td>
                     <td>${{ number_format($c['multa'], 2) }}</td>
+                    <td>${{ number_format($c['descuento'], 2) }}</td>
                     <td>${{ number_format($c['total'], 2) }}</td>
                 </tr>
                 @endforeach
@@ -141,6 +143,7 @@
                     $actualizacionRustico = $coll->sum('actualizacion');
                     $cobranzaRustico = $coll->sum('cobranza');
                     $multaRustico = $coll->sum('multa');
+                    $descuentoRustico = $coll->sum('descuento');
                     $totalRustico = $coll->sum('total');
                 @endphp
                 <tr class="total-row" style="font-size: 6.5pt;">
@@ -152,16 +155,18 @@
                     <td><b>${{ number_format($actualizacionRustico, 2) }}</b></td>
                     <td><b>${{ number_format($cobranzaRustico, 2) }}</b></td>
                     <td><b>${{ number_format($multaRustico, 2) }}</b></td>
+                    <td><b>${{ number_format($descuentoRustico, 2) }}</b></td>
                     <td><b>${{ number_format($totalRustico, 2) }}</b></td>
                 </tr>
                 <tr>
-                    <td colspan="9" style="padding-top: 8px; font-size: 6.5pt;">
+                    <td colspan="10" style="padding-top: 8px; font-size: 6.5pt;">
                         <b>Años pendientes de pago en predio:</b> {{ count($calculos) }} &nbsp;&nbsp;&nbsp;
                         <b>SubTotal Predio:</b> ${{ number_format($subtotalRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Recargos:</b> ${{ number_format($recargosRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Actualización:</b> ${{ number_format($actualizacionRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Cobranza:</b> ${{ number_format($cobranzaRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Multa:</b> ${{ number_format($multaRustico, 2) }} &nbsp;&nbsp;&nbsp;
+                        <b>Descuento:</b> ${{ number_format($descuentoRustico, 2) }} &nbsp;&nbsp;&nbsp;
                         <b>Total Predio:</b> ${{ number_format($totalRustico, 2) }}
                     </td>
                 </tr>

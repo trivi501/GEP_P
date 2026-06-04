@@ -355,7 +355,31 @@ class CalculosPrediosController extends Controller
                 };
             }
 
-            $total = $subtotal + $recargos + $actualizacion + $cobranza + $multa;
+            $descuentoDb = 0;
+            $descuentoModel = \App\Models\Descuento::where('idPredio', $predio->id_predio)
+                ->where('activo', true)
+                ->where(function ($q) {
+                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
+                })
+                ->first();
+
+            if ($descuentoModel) {
+                if ($descuentoModel->multas > 0 && $multa > 0) {
+                    $descuentoDb += $multa * (float) $descuentoModel->multas / 100;
+                }
+                if ($descuentoModel->actualizaciones > 0 && $actualizacion > 0) {
+                    $descuentoDb += $actualizacion * (float) $descuentoModel->actualizaciones / 100;
+                }
+                if ($descuentoModel->recargos > 0 && $recargos > 0) {
+                    $descuentoDb += $recargos * (float) $descuentoModel->recargos / 100;
+                }
+                if ($descuentoModel->gastos_cobranza > 0 && $cobranza > 0) {
+                    $descuentoDb += $cobranza * (float) $descuentoModel->gastos_cobranza / 100;
+                }
+            }
+
+            $descuentoTotal = $descuento + $descuentoDb;
+            $total = $subtotal + $recargos + $actualizacion + $cobranza + $multa - $descuentoTotal;
 
             $calculos[] = [
                 'anho'          => $anhoInicio,
@@ -367,7 +391,7 @@ class CalculosPrediosController extends Controller
                 'actualizacion' => $actualizacion,
                 'cobranza'      => $cobranza,
                 'multa'         => $multa,
-                'descuento'     => $descuento,
+                'descuento'     => $descuentoTotal,
                 'total'         => $total,
             ];
 

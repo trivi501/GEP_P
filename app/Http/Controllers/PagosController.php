@@ -410,6 +410,21 @@ class PagosController extends Controller
                 $anhoInicio++;
             }
 
+            $totalDescuentoRustico = 0;
+            $descRustico = \App\Models\Descuento::where('idPredio', $predio->id_predio)
+                ->where('activo', true)
+                ->where(function ($q) {
+                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
+                })
+                ->first();
+            if ($descRustico) {
+                $pctSum = (float) $descRustico->multas + (float) $descRustico->actualizaciones
+                    + (float) $descRustico->recargos + (float) $descRustico->gastos_cobranza;
+                if ($pctSum > 0) {
+                    $totalDescuentoRustico = round($predialRustico * $pctSum / 100, 2);
+                }
+            }
+
             if ($predialRusticoAnt > 0) {
                 $conceptos[] = ['concepto' => 'Predial Rústico Anterior', 'monto' => round($predialRusticoAnt, 2)];
             }
@@ -419,7 +434,10 @@ class PagosController extends Controller
             if ($predialRusticoAnt == 0 && $predialRusticoAct == 0 && $predialRustico > 0) {
                 $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($predialRustico, 2)];
             }
-            $total = round($predialRustico, 2);
+            if ($totalDescuentoRustico > 0) {
+                $conceptos[] = ['concepto' => 'Descuentos', 'monto' => -$totalDescuentoRustico];
+            }
+            $total = round($predialRustico - $totalDescuentoRustico, 2);
         } else {
             $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
