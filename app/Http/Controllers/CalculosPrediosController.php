@@ -295,7 +295,7 @@ class CalculosPrediosController extends Controller
                 $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
             } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
                 $tipoCalculo = 'Riego por gravedad';
-                $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $umaAnual);
+                    $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
             } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
                 if ($hectareas < 20) {
                     $tipoCalculo = 'Temporal menor a 20 ha';

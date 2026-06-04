@@ -300,7 +300,124 @@ class PagosController extends Controller
         $multa_total = 0;
         $cobranza_total = 0;
 
-        if ($predio->datosUrbano) {
+        $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
+
+        if ($esRustico) {
+            $predio->load('datosRustico');
+            $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
+            $valorUma = $uma?->valor ?? 0;
+            $hectareas = $predio->superficie ?? 0;
+            $esMina = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
+
+            $anhoInicio = ($predio->año_ultimo_pago ?? now()->year) + 1;
+            $anhoActual = now()->year;
+            $primerAnioCalc = $anhoInicio;
+            $predialRustico = 0;
+            $predialRusticoAnt = 0;
+            $predialRusticoAct = 0;
+            $recargosRustico = 0;
+            $recargosRusticoAct = 0;
+            $actualizacionRustico = 0;
+            $actualizacionRusticoAct = 0;
+            $multaRustico = 0;
+            $cobranzaRustico = 0;
+
+            while ($anhoInicio <= $anhoActual) {
+                $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
+                $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
+
+                if ($esMina) {
+                    $subtotal = $hectareas * (11 * $valorUmaAnual);
+                } elseif ($predio->datosRustico?->valor_catastral_casa) {
+                    $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
+                } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
+                    $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
+                    $subtotal = $hectareas < 20
+                        ? (3 * $valorUmaAnual) + ($hectareas * 3)
+                        : (2 * $valorUmaAnual) + ($hectareas * 6.40);
+                } else {
+                    $subtotal = $hectareas < 20
+                        ? ($hectareas * 3) + (3 * $valorUmaAnual) + (2 * $valorUmaAnual)
+                        : ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
+                }
+
+                $meses = 0;
+                if ($anhoInicio < $anhoActual) {
+                    $meses = (12 - 3) + ($anhoActual - $anhoInicio - 1) * 12 + now()->month;
+                } elseif ($anhoInicio == $anhoActual && now()->month > 3) {
+                    $meses = now()->month - 3;
+                }
+                $recargosAnual = $subtotal * 0.027 * $meses;
+
+                $actualizacionAnual = 0;
+                $inpc_in = \App\Models\Inpc::where('year', $anhoInicio)->where('month', 3)->first();
+                $inpc_fin = \App\Models\Inpc::orderBy('id', 'desc')->first();
+                if ($inpc_in && $inpc_fin) {
+                    $factorActualizacion = max(1, $inpc_fin->value / $inpc_in->value) - 1;
+                    $actualizacionAnual = $factorActualizacion * $subtotal;
+                }
+
+                $cobranzaAnual = 0;
+                if ($predio->año_ultimo_pago && ($predio->año_ultimo_pago + 1) == $anhoActual) {
+                    $cobranzaAnual = 0;
+                } elseif ($primerAnioCalc > ($anhoActual - 5)) {
+                    if ($anhoInicio == $primerAnioCalc) {
+                        $cobranzaAnual = 678.84;
+                    }
+                } else {
+                    if ($anhoInicio == ($anhoActual - 5)) {
+                        $cobranzaAnual = 678.84;
+                    }
+                }
+
+                $multaAnual = $anhoInicio < $anhoActual ? 1875 : 0;
+
+                if ($anhoInicio < $anhoActual) {
+                    $predialRusticoAnt += $subtotal;
+                    $recargosRustico += $recargosAnual;
+                    $actualizacionRustico += $actualizacionAnual;
+                } else {
+                    $predialRusticoAct += $subtotal;
+                    $recargosRusticoAct += $recargosAnual;
+                    $actualizacionRusticoAct += $actualizacionAnual;
+                }
+                $predialRustico += $subtotal;
+                $multaRustico += $multaAnual;
+                $cobranzaRustico += $cobranzaAnual;
+                $anhoInicio++;
+            }
+
+            if ($predialRusticoAnt > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico Anterior', 'monto' => round($predialRusticoAnt, 2)];
+            }
+            if ($predialRusticoAct > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico Actual', 'monto' => round($predialRusticoAct, 2)];
+            }
+            if ($predialRusticoAnt == 0 && $predialRusticoAct == 0 && $predialRustico > 0) {
+                $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($predialRustico, 2)];
+            }
+            if ($recargosRustico > 0) {
+                $conceptos[] = ['concepto' => 'Recargos Anteriores', 'monto' => round($recargosRustico, 2)];
+            }
+            if ($recargosRusticoAct > 0) {
+                $conceptos[] = ['concepto' => 'Recargos Actual', 'monto' => round($recargosRusticoAct, 2)];
+            }
+            if ($actualizacionRustico > 0) {
+                $conceptos[] = ['concepto' => 'Actualización Anterior', 'monto' => round($actualizacionRustico, 2)];
+            }
+            if ($actualizacionRusticoAct > 0) {
+                $conceptos[] = ['concepto' => 'Actualización Actual', 'monto' => round($actualizacionRusticoAct, 2)];
+            }
+            if ($multaRustico > 0) {
+                $conceptos[] = ['concepto' => 'Multa', 'monto' => round($multaRustico, 2)];
+            }
+            if ($cobranzaRustico > 0) {
+                $conceptos[] = ['concepto' => 'Gastos de Ejecución Predial Urbano', 'monto' => round($cobranzaRustico, 2)];
+            }
+
+            $total = round($predialRustico + $recargosRustico + $recargosRusticoAct + $actualizacionRustico + $actualizacionRusticoAct + $multaRustico + $cobranzaRustico, 2);
+        } elseif ($predio->datosUrbano) {
             try {
                 $calculosController = new CalculosPrediosController(app(CalculoPredialUrbanoService::class));
                 $calculosAnuales = $calculosController->getCalculosAnuales($predio);
@@ -362,88 +479,10 @@ class PagosController extends Controller
             } catch (\Exception $e) {
                 $conceptos[] = ['concepto' => 'Error al calcular: ' . $e->getMessage(), 'monto' => 0];
             }
-        } elseif ($predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA')) {
-            $predio->load('datosRustico');
-            $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
-            $valorUma = $uma?->valor ?? 0;
-            $hectareas = $predio->superficie ?? 0;
-            $esMina = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
-
-            $anhoInicio = $predio->año_ultimo_pago ?? now()->year;
-            $anhoActual = now()->year;
-            $predialRustico = 0;
-            $predialRusticoAnt = 0;
-            $predialRusticoAct = 0;
-            $recargosRustico = 0;
-            $actualizacionRustico = 0;
-            $multaRustico = 0;
-            $cobranzaRustico = 0;
-            $anhoInicio = $anhoInicio + 1;
-            $cobranzaRustico = 0;
-
-            while ($anhoInicio <= $anhoActual) {
-                $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
-                $valorUmaAnual = $umaAnual?->valor ?? $valorUma;
-
-                if ($esMina) {
-                    $subtotal = $hectareas * (11 * $valorUmaAnual);
-                } elseif ($predio->datosRustico?->valor_catastral_casa) {
-                    $subtotal = ($predio->datosRustico->valor_catastral_casa ?? 0) * 0.015;
-                } elseif ($predio->datosRustico?->valor_catastral_superficie_riego) {
-                    $subtotal = ($hectareas * 6.40) * (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
-                } elseif ($predio->datosRustico?->valor_catastral_superficie_temporal) {
-                    $subtotal = $hectareas < 20
-                        ? (3 * $valorUmaAnual) + ($hectareas * 3)
-                        : (2 * $valorUmaAnual) + ($hectareas * 6.40);
-                } else {
-                    $subtotal = $hectareas < 20
-                        ? ($hectareas * 3) + (3 * $valorUmaAnual) + (2 * $valorUmaAnual)
-                        : ($hectareas * 6.40) + (2 * $valorUmaAnual) + (2 * $valorUmaAnual);
-                }
-
-                if ($anhoInicio < $anhoActual) {
-                    $predialRusticoAnt += $subtotal;
-                } else {
-                    $predialRusticoAct += $subtotal;
-                }
-                $predialRustico += $subtotal;
-                $anhoInicio++;
-            }
-
-            $totalDescuentoRustico = 0;
-            $descRustico = \App\Models\Descuento::where('idPredio', $predio->id_predio)
-                ->where('activo', true)
-                ->where(function ($q) {
-                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
-                })
-                ->first();
-            if ($descRustico) {
-                $pctSum = (float) $descRustico->multas + (float) $descRustico->actualizaciones
-                    + (float) $descRustico->recargos + (float) $descRustico->gastos_cobranza;
-                if ($pctSum > 0) {
-                    $totalDescuentoRustico = round($predialRustico * $pctSum / 100, 2);
-                }
-            }
-
-            if ($predialRusticoAnt > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico Anterior', 'monto' => round($predialRusticoAnt, 2)];
-            }
-            if ($predialRusticoAct > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico Actual', 'monto' => round($predialRusticoAct, 2)];
-            }
-            if ($predialRusticoAnt == 0 && $predialRusticoAct == 0 && $predialRustico > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($predialRustico, 2)];
-            }
-            if ($totalDescuentoRustico > 0) {
-                $conceptos[] = ['concepto' => 'Descuentos', 'monto' => -$totalDescuentoRustico];
-            }
-            $total = round($predialRustico - $totalDescuentoRustico, 2);
         } else {
             $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
         }
-
-        $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
 
         $descInfo = $this->getDescuentosPredio($predio->id_predio);
         if ($descInfo['aplica']) {
