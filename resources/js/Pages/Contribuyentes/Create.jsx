@@ -87,7 +87,9 @@ export default function Create({
                                             name="cuenta"
                                             value={data.cuenta}
                                             className="mt-1 block w-full"
+                                            placeholder="Ej: 12345A"
                                             onChange={(e) => setData('cuenta', e.target.value)}
+                                            required
                                         />
                                         <InputError message={errors.cuenta} className="mt-2" />
                                     </div>

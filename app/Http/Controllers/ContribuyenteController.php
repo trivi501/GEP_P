@@ -83,7 +83,7 @@ class ContribuyenteController extends Controller
             'rfc' => 'nullable|string|max:15',
             'id_tipo_persona' => 'nullable|integer',
             'nombre_moral' => 'nullable|string|max:300',
-            'cuenta' => 'nullable|string|max:36|unique:tb_contribuyentes,cuenta',
+            'cuenta' => 'required|string|max:25|unique:tb_contribuyentes,cuenta',
             'exento' => 'nullable|boolean',
             'nombre_completo' => 'nullable|string|max:500',
             'nivel_gobierno' => 'nullable|string|max:50',
@@ -102,7 +102,6 @@ class ContribuyenteController extends Controller
         $validated['activo'] = $validated['activo'] ?? 0;
         $validated['exento'] = $validated['exento'] ?? 0;
         $validated['id_contribuyente'] = (string) Str::uuid();
-        $validated['cuenta'] = $validated['cuenta'] ?? $validated['id_contribuyente'];
         $parts = array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? '']);
         $validated['nombre_completo'] = $validated['nombre_completo'] ?? trim(implode(' ', $parts));
         $validated['fecha_alta'] = now();
