@@ -118,6 +118,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('support-tickets/{supportTicket}/comment', [SupportTicketController::class, 'comment'])->name('support-tickets.comment');
 
     Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->name('logs.index');
+    Route::get('logs/download', function () {
+        $path = storage_path('logs/laravel.log.zip');
+        if (!file_exists($path)) {
+            abort(404);
+        }
+        return response()->download($path, 'laravel.log.zip');
+    })->name('logs.download');
 });
 
 require __DIR__.'/auth.php';
