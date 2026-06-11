@@ -15,7 +15,7 @@ const historicoFieldLabels = {
     Numero_interior: 'Núm. Interior',
     id_regimen_propiedad: 'Régimen Propiedad',
     id_estado_renta: 'Estado Renta',
-    id_estaus_cobro_predial: 'Estado Impuesto',
+    id_estaus_cobro_predial: 'Estatus Cobro Predial',
     id_titulo_propiedad: 'Título Propiedad',
     numero_de_escritura: 'Núm. Escritura',
     valor_catastral: 'Valor Catastral',
@@ -125,8 +125,7 @@ export default function Show({ predio }) {
                                     <InfoField label="Cuenta">{predio.contribuyente?.cuenta}</InfoField>
                                     <InfoField label="Régimen Propiedad">{predio.regimen_propiedad?.REGIMEN}</InfoField>
                                     <InfoField label="Estado Renta">{predio.estado_renta?.DESCRIPCION}</InfoField>
-                                    <InfoField label="Estado Impuesto">{predio.estado_impuesto?.DESCRIPCION}</InfoField>
-                                    <InfoField label="Estatus Cobro Predial">{predio.id_estaus_cobro_predial}</InfoField>
+                                    <InfoField label="Estatus Cobro Predial">{predio.estado_impuesto?.DESCRIPCION}</InfoField>
                                     <InfoField label="Título Propiedad">{predio.titulo_propiedad?.DESCRIPCION}</InfoField>
                                     <InfoField label="Núm. Escritura">{predio.numero_de_escritura}</InfoField>
                                 </InfoGroup>
