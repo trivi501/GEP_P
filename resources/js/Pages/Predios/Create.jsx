@@ -41,7 +41,7 @@ export default function Create({
         valor_fiscal: '',
         id_regimen_propiedad: '',
         id_estado_renta: '',
-        id_estaus_cobro_predial: '',
+        id_estaus_cobro_predial: 1,
         id_titulo_propiedad: '',
         numero_de_escritura: '',
         año_ultimo_pago: '',
@@ -514,7 +514,7 @@ export default function Create({
                                         </div>
 
                                         <div>
-                                            <InputLabel htmlFor="id_estaus_cobro_predial" value="Estado Impuesto" />
+                                            <InputLabel htmlFor="id_estaus_cobro_predial" value="Estatus Cobro Predial" />
                                             <select
                                                 id="id_estaus_cobro_predial"
                                                 name="id_estaus_cobro_predial"

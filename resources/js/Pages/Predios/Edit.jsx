@@ -474,7 +474,7 @@ export default function Edit({
                                         </div>
 
                                         <div>
-                                            <InputLabel htmlFor="id_estaus_cobro_predial" value="Estado Impuesto" />
+                                            <InputLabel htmlFor="id_estaus_cobro_predial" value="Estatus Cobro Predial" />
                                             <select
                                                 id="id_estaus_cobro_predial"
                                                 name="id_estaus_cobro_predial"
