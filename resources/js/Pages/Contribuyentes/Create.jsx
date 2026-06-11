@@ -17,7 +17,6 @@ export default function Create({
 }) {
     const { data, setData, post, processing, errors } = useForm({
         id_tipo_contribuyente: '',
-        cuenta: '',
         nombre: '',
         primer_apellido: '',
         segundo_apellido: '',
@@ -81,16 +80,9 @@ export default function Create({
 
                                     <div>
                                         <InputLabel htmlFor="cuenta" value="Cuenta" />
-                                        <TextInput
-                                            id="cuenta"
-                                            type="text"
-                                            name="cuenta"
-                                            value={data.cuenta}
-                                            className="mt-1 block w-full"
-                                            placeholder="Ej: 12345A"
-                                            onChange={(e) => setData('cuenta', e.target.value)}
-                                            required
-                                        />
+                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                            Se generará automáticamente (5 dígitos + inicial del apellido)
+                                        </p>
                                         <InputError message={errors.cuenta} className="mt-2" />
                                     </div>
                                 </div>
