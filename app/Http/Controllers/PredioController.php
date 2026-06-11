@@ -31,6 +31,11 @@ use Illuminate\Support\Str;
 
 class PredioController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:predio-editar')->only(['edit', 'update']);
+    }
+
     public function searchClavePredial(Request $request)
     {
         $q = $request->get('q', '');
