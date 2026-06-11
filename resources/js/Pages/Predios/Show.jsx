@@ -126,6 +126,7 @@ export default function Show({ predio }) {
                                     <InfoField label="Régimen Propiedad">{predio.regimen_propiedad?.REGIMEN}</InfoField>
                                     <InfoField label="Estado Renta">{predio.estado_renta?.DESCRIPCION}</InfoField>
                                     <InfoField label="Estado Impuesto">{predio.estado_impuesto?.DESCRIPCION}</InfoField>
+                                    <InfoField label="Estatus Cobro Predial">{predio.id_estaus_cobro_predial}</InfoField>
                                     <InfoField label="Título Propiedad">{predio.titulo_propiedad?.DESCRIPCION}</InfoField>
                                     <InfoField label="Núm. Escritura">{predio.numero_de_escritura}</InfoField>
                                 </InfoGroup>
