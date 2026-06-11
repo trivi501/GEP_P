@@ -34,7 +34,7 @@ export default function Create({
         id_municipio: '',
         codigo_postal: '',
         fact_id_regimen_fiscal: '',
-        activo: false,
+        activo: true,
     });
 
     const submit = (e) => {
