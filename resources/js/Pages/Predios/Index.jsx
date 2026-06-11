@@ -250,7 +250,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <div className="flex items-center justify-center gap-2">
                                                             
-                                                            {can('predios-prescripcion') && (predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6) && (
+                                                            {esNormal(predio) && can('predios-prescripcion') && (predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6) && (
                                                                 
                                                                 <button
                                                                     onClick={() => {
@@ -383,7 +383,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                             Descuento
                         </a>
                     )}
-                    {contextMenu.predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(contextMenu.predio.año_ultimo_pago)) > 6 && (
+                    {esNormal(contextMenu.predio) && contextMenu.predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(contextMenu.predio.año_ultimo_pago)) > 6 && (
                         <button
                             onClick={() => {
                                 if (confirm('¿Aplicar prescripción a este predio?')) {

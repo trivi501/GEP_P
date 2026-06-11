@@ -149,6 +149,7 @@ class PredioController extends Controller
             'colonia' => $p->colonia_nombre ?? '—',
             'tipo_predio' => $p->tipo_predio_nombre ?? '—',
             'estado' => $p->estado_descripcion ?? '—',
+            'id_estatus' => $p->id_estaus_cobro_predial,
             'ubicacion' => $p->ubicacion ?? '—',
             'año_ultimo_pago' => $p->año_ultimo_pago ?? '—',
             'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
@@ -614,6 +615,9 @@ class PredioController extends Controller
 
     public function prescripcion(Predio $predio)
     {
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL, no se puede aplicar prescripción.');
+        }
         $anioPrescripcion = now()->year - 6;
         $predio->update(['año_ultimo_pago' => $anioPrescripcion]);
 
