@@ -595,6 +595,9 @@ class PredioController extends Controller
 
     public function pdf(Predio $predio)
     {
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL.');
+        }
         $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'medidasYColindancias.orientacion', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
 
         $pdf = Pdf::loadView('predios.pdf', compact('predio'));
@@ -605,6 +608,9 @@ class PredioController extends Controller
 
     public function cedula(Predio $predio)
     {
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL.');
+        }
         $predio->load('contribuyente', 'tipoPredio', 'calle', 'colonia', 'clavePredial', 'datosUrbano');
 
         $pdf = Pdf::loadView('predios.cedula', compact('predio'));

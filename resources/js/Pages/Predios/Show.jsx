@@ -101,6 +101,7 @@ export default function Show({ predio }) {
                                         Estado de Cuenta
                                     </a>
                                     )}
+                                    {predio.id_estaus_cobro_predial === 1 && (
                                     <a
                                         href={route('predios.pdf', predio.id_predio)}
                                         target="_blank"
@@ -109,6 +110,7 @@ export default function Show({ predio }) {
                                     >
                                         Cédula
                                     </a>
+                                    )}
                                     <Link
                                         href={route('predios.edit', predio.id_predio)}
                                         className="inline-flex items-center rounded-md border border-transparent bg-yellow-500 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-yellow-400 focus:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 active:bg-yellow-600"
