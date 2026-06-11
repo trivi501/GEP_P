@@ -91,6 +91,7 @@ export default function Show({ predio }) {
                                     </p>
                                 </div>
                                 <div className="flex gap-2">
+                                    {predio.id_estaus_cobro_predial === 1 && (
                                     <a
                                         href={`/calculos-predios/${predio.tipo_predio?.Tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id_predio}`}
                                         target="_blank"
@@ -99,6 +100,7 @@ export default function Show({ predio }) {
                                     >
                                         Estado de Cuenta
                                     </a>
+                                    )}
                                     <a
                                         href={route('predios.pdf', predio.id_predio)}
                                         target="_blank"

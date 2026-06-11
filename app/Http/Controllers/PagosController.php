@@ -160,6 +160,13 @@ class PagosController extends Controller
 
         $predioId = $request->query('id_predio');
 
+        if ($predioId) {
+            $predio = \App\Models\Predio::find($predioId);
+            if ($predio && $predio->id_estaus_cobro_predial !== 1) {
+                return redirect()->route('pagos.index')->with('error', 'El predio no tiene estatus NORMAL, no se puede cobrar.');
+            }
+        }
+
         return Inertia::render('Pagos/Cobrar', compact('cajaAbierta', 'formasPago', 'predioId'));
     }
 
@@ -285,6 +292,10 @@ class PagosController extends Controller
 
         if (!$predio) {
             return response()->json(null, 404);
+        }
+
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return response()->json(['error' => 'El predio no tiene estatus NORMAL.'], 400);
         }
 
         $total = 0;
@@ -567,6 +578,11 @@ class PagosController extends Controller
 
         if (!$cajaAbierta) {
             return response()->json(['error' => 'No tienes una caja abierta.'], 400);
+        }
+
+        $predioGuardar = \App\Models\Predio::find($validated['id_predio']);
+        if ($predioGuardar && $predioGuardar->id_estaus_cobro_predial !== 1) {
+            return response()->json(['error' => 'El predio no tiene estatus NORMAL, no se puede cobrar.'], 400);
         }
 
         DB::beginTransaction();

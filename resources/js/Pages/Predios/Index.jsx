@@ -67,6 +67,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
     };
 
     const inputClass = "block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1";
+const esNormal = (predio) => predio.id_estatus === 1;
 
     return (
         <AuthenticatedLayout
@@ -108,6 +109,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Superficie</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Terreno</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Construcción</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estatus</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
                                         </tr>
                                         <tr className="border-t border-gray-200 dark:border-gray-600">
@@ -203,6 +205,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                 />
                                             </th>
                                             <th className="px-2 py-2"></th>
+                                            <th className="px-2 py-2"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
@@ -240,6 +243,11 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                         ${parseFloat(predio.construccion).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                                                     </td>
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
+                                                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${esNormal(predio) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                            {predio.estado}
+                                                        </span>
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <div className="flex items-center justify-center gap-2">
                                                             
                                                             {can('predios-prescripcion') && (predio.año_ultimo_pago !== '—' && (new Date().getFullYear() - parseInt(predio.año_ultimo_pago)) > 6) && (
@@ -256,7 +264,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                                     <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                                 </button>
                                                             )}
-                                                            {can('predios-edocuenta') && (
+                                                            {esNormal(predio) && can('predios-edocuenta') && (
                                                                 <a
                                                                     href={`/calculos-predios/${predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id}`}
                                                                     target="_blank"
@@ -265,44 +273,44 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                                                                     title="Estado de Cuenta"
                                                             >
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                                            </a>
-                                                            )}
-                                                            {can('predios-cedula') && (
-                                                            <a
-                                                                href={route('predios.pdf', predio.id)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-600 hover:text-blue-900"
-                                                                title="Cédula"
-                                                            >
-                                                                <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
-                                                            </a>
-                                                            )}
-                                                            {can('predios-descuentos') && (
-                                                                <a
-                                                                    href={`/descuentos?id_predio=${predio.id}`}
-                                                                    className="text-purple-600 hover:text-purple-900"
-                                                                    title="Descuento"
-                                                                >
-                                                                    <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                                 </a>
-                                                            )}
-                                                            <Link
-                                                                href={route('predios.show', predio.id)}
-                                                                className="text-indigo-600 hover:text-indigo-900"
-                                                                title="Ver"
-                                                            >
-                                                                <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                                            </Link>
-                                                            {can('predios-show') && (
-                                                            <Link
-                                                                href={route('predios.edit', predio.id)}
-                                                                className="text-yellow-600 hover:text-yellow-900"
-                                                                title="Editar"
-                                                            >
-                                                                <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                                            </Link>
-                                                            )}
+                                                                )}
+                                                                {can('predios-cedula') && (
+                                                                <a
+                                                                    href={route('predios.pdf', predio.id)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-900"
+                                                                    title="Cédula"
+                                                                >
+                                                                    <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                                                                </a>
+                                                                )}
+                                                                {esNormal(predio) && can('predios-descuentos') && (
+                                                                    <a
+                                                                        href={`/descuentos?id_predio=${predio.id}`}
+                                                                        className="text-purple-600 hover:text-purple-900"
+                                                                        title="Descuento"
+                                                                    >
+                                                                        <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                                    </a>
+                                                                )}
+                                                                <Link
+                                                                    href={route('predios.show', predio.id)}
+                                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                                    title="Ver"
+                                                                >
+                                                                    <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                                </Link>
+                                                                {can('predios-show') && (
+                                                                <Link
+                                                                    href={route('predios.edit', predio.id)}
+                                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                                    title="Editar"
+                                                                >
+                                                                    <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                                </Link>
+                                                                )}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -330,7 +338,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                     className="fixed z-50 w-44 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 border border-gray-200 dark:border-gray-600 py-1 text-sm"
                     style={{ left: contextMenu.x, top: contextMenu.y }}
                 >
-                    {can('predios-edocuenta') && (
+                    {esNormal(contextMenu.predio) && can('predios-edocuenta') && (
                         <a
                             href={`/calculos-predios/${contextMenu.predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${contextMenu.predio.id}`}
                             target="_blank"
@@ -354,7 +362,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         Cédula
                     </a>
                     )}
-                    {(cajaAbierta && can('predios-pay')) && (
+                    {esNormal(contextMenu.predio) && cajaAbierta && can('predios-pay') && (
                         <a
                             href={`/pagos/cobrar?id_predio=${contextMenu.predio.id}`}
                             onClick={closeContextMenu}
@@ -365,7 +373,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
                         </a>
                     )}
                     
-                    {can('predios-descuentos') && (
+                    {esNormal(contextMenu.predio) && can('predios-descuentos') && (
                         <a
                             href={`/descuentos?id_predio=${contextMenu.predio.id}`}
                             onClick={closeContextMenu}

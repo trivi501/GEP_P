@@ -51,6 +51,10 @@ class CalculosPrediosController extends Controller
             'medidasYColindancias.orientacion',
         ])->findOrFail($request->id_predio);
 
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL, no se puede generar estado de cuenta.');
+        }
+
         $calculos = $this->getCalculosAnuales($predio);
 
         $descuento = \App\Models\Descuento::where('idPredio', $predio->id_predio)->where('activo', 1)->first();
@@ -269,6 +273,10 @@ class CalculosPrediosController extends Controller
         $predio = \App\Models\Predio::with([
             'contribuyente', 'tipoPredio', 'datosRustico',
         ])->findOrFail($request->id_predio);
+
+        if ($predio->id_estaus_cobro_predial !== 1) {
+            return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL, no se puede generar estado de cuenta.');
+        }
 
         $uma = \App\Models\CatUma::where('anio', now()->year)->where('activo', 1)->first();
         $valorUma = $uma?->valor ?? 0;
