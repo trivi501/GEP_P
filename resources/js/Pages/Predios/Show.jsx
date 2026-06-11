@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 const historicoFieldLabels = {
@@ -48,6 +48,8 @@ function InfoField({ label, children }) {
 }
 
 export default function Show({ predio }) {
+    const page = usePage();
+    const can = (permiso) => Array.isArray(page.props.userPermissions) && page.props.userPermissions.includes(permiso);
     const urbano = predio.datos_urbano;
     const historico = predio.historico ?? [];
     const [histPage, setHistPage] = useState(1);
@@ -111,12 +113,14 @@ export default function Show({ predio }) {
                                         Cédula
                                     </a>
                                     )}
+                                    {can('predio-editar') && (
                                     <Link
                                         href={route('predios.edit', predio.id_predio)}
                                         className="inline-flex items-center rounded-md border border-transparent bg-yellow-500 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-yellow-400 focus:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 active:bg-yellow-600"
                                     >
                                         Editar
                                     </Link>
+                                    )}
                                     
                                 </div>
                             </div>
