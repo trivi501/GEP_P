@@ -108,6 +108,7 @@
     @php
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');
+        $esRusticoRecibo = str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO') || str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'RUSTICO') || str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'MINA');
     @endphp
 
     
@@ -158,7 +159,7 @@
                         <tr>
                             <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
                             <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
+                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0) / 10000, 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
                             <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
                         </tr>
                     </table>
@@ -255,7 +256,7 @@
                         <tr>
                             <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
                             <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ number_format($pago->predio?->superficie ?? 0, 2) }} m²</td>
+                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0) / 10000, 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
                             <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
                         </tr>
                     </table>
