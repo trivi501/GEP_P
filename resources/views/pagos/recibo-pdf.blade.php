@@ -108,7 +108,8 @@
     @php
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');
-        $esRusticoRecibo = str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO') || str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'RUSTICO') || str_contains($pago->predio?->tipoPredio?->Tipo_predio ?? '', 'MINA');
+        $tipoPredioRecibo = mb_strtolower($pago->predio?->tipoPredio?->Tipo_predio ?? '');
+        $esRusticoRecibo = str_contains($tipoPredioRecibo, 'rústico') || str_contains($tipoPredioRecibo, 'rustico') || str_contains($tipoPredioRecibo, 'mina');
     @endphp
 
     
