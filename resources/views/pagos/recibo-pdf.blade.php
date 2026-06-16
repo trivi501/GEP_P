@@ -160,7 +160,7 @@
                         <tr>
                             <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
                             <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0) / 10000, 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
+                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0), 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
                             <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
                         </tr>
                     </table>
@@ -257,7 +257,7 @@
                         <tr>
                             <td class="value" style="width:100px">{{ $pago->predio?->datosUrbano?->zonaUrbana?->descripcion ?? '—' }}</td>
                             <td class="value" style="width:100px">{{ $pago->predio?->tipoPredio?->Tipo_predio ?? $pago->predio?->tipoPredio?->nombre ?? '—' }}</td>
-                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0) / 10000, 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
+                            <td class="value" style="width:100px">{{ $esRusticoRecibo ? number_format(($pago->predio?->superficie ?? 0), 4) . ' ha' : number_format($pago->predio?->superficie ?? 0, 2) . ' m²' }}</td>
                             <td class="value" style="width:100px">{{ number_format($pago->predio?->construccion ?? 0, 2) }} m²</td>
                         </tr>
                     </table>
