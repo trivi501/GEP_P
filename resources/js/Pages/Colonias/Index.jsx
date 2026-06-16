@@ -1,8 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import Pagination from '@/Components/Pagination';
+import { useState } from 'react';
 
 export default function Index({ colonias }) {
+    const params = new URLSearchParams(window.location.search);
+    const [search, setSearch] = useState(params.get('search') ?? '');
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+            router.get(route('colonias.index'), search ? { search } : {}, { preserveState: true, replace: true });
+        }
+    };
+
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">Colonias</h2>}>
             <Head title="Colonias" />
@@ -13,6 +23,16 @@ export default function Index({ colonias }) {
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-medium">Listado de Colonias</h3>
                                 <Link href={route('colonias.create')} className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-indigo-500">+ Nueva Colonia</Link>
+                            </div>
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    onKeyDown={handleSearch}
+                                    placeholder="Buscar por colonia... (Enter)"
+                                    className="block w-full max-w-md rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

@@ -16,9 +16,10 @@ class CatColoniaController extends Controller
         $this->middleware('permission:colonias-delete')->only('destroy');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $colonias = CatColonia::orderBy('COLONIA')->paginate(15);
+        $query = CatColonia::when($request->filled('search'), fn($q) => $q->where('COLONIA', 'like', '%' . $request->search . '%'));
+        $colonias = $query->orderBy('COLONIA')->paginate(15)->withQueryString();
         return Inertia::render('Colonias/Index', compact('colonias'));
     }
 

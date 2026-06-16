@@ -17,9 +17,13 @@ class CatCalleController extends Controller
         $this->middleware('permission:calles-delete')->only('destroy');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $calles = CatCalle::with('colonia')->orderBy('CALLE')->paginate(15);
+        $query = CatCalle::with('colonia')
+            ->when($request->filled('search'), fn($q) => $q->where('CALLE', 'like', '%' . $request->search . '%')
+                ->orWhereHas('colonia', fn($sq) => $sq->where('COLONIA', 'like', '%' . $request->search . '%')));
+
+        $calles = $query->orderBy('CALLE')->paginate(15)->withQueryString();
         return Inertia::render('Calles/Index', compact('calles'));
     }
 
