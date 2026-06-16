@@ -6,6 +6,8 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PredioController;
 use App\Http\Controllers\CajasController;
 use App\Http\Controllers\CajeroController;
+use App\Http\Controllers\CatCalleController;
+use App\Http\Controllers\CatColoniaController;
 use App\Http\Controllers\CalculosPrediosController;
 use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\SecretariaController;
@@ -61,6 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('predios', PredioController::class);
     Route::resource('cajas', CajasController::class);
     Route::resource('cajeros', CajeroController::class);
+    Route::resource('calles', CatCalleController::class);
+    Route::resource('colonias', CatColoniaController::class);
     Route::get('cuentas/exportar-excel', [CuentasController::class, 'exportarExcel'])->name('cuentas.exportar-excel');
     Route::resource('cuentas', CuentasController::class);
     Route::get('pagos', [PagosController::class, 'index'])->name('pagos.index');

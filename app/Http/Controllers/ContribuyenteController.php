@@ -177,7 +177,7 @@ class ContribuyenteController extends Controller
             'rfc' => 'nullable|string|max:15',
             'id_tipo_persona' => 'nullable|integer',
             'nombre_moral' => 'nullable|string|max:300',
-            'cuenta' => 'required|string|max:36|unique:tb_contribuyentes,cuenta,' . $contribuyente->id_contribuyente . ',id_contribuyente',
+            'cuenta' => 'nullable|string|max:25|unique:tb_contribuyentes,cuenta,' . $contribuyente->id_contribuyente . ',id_contribuyente',
             'exento' => 'nullable|boolean',
             'nombre_completo' => 'nullable|string|max:500',
             'nivel_gobierno' => 'nullable|string|max:50',

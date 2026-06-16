@@ -8,7 +8,18 @@ class CatColonia extends Model
 {
     protected $table = 'cat_colonia';
     protected $primaryKey = 'id_colonia';
+    public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = ['id_colonia', 'COLONIA', 'fecha_alta', 'ID_USUARIO', 'Activo', 'id_poblacion', 'id_cat_zona_predio'];
+
+    public function getRouteKeyName()
+    {
+        return 'id_colonia';
+    }
+
+    public function calles()
+    {
+        return $this->hasMany(CatCalle::class, 'ID_COLONIA', 'id_colonia');
+    }
 }

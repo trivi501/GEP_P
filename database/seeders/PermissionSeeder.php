@@ -102,6 +102,18 @@ class PermissionSeeder extends Seeder
             ['name' => 'crear tickets', 'nombre_mostrar' => 'Crear Tickets', 'categoria' => 'Soporte'],
             ['name' => 'asignar tickets', 'nombre_mostrar' => 'Asignar Tickets', 'categoria' => 'Soporte'],
             ['name' => 'resolver tickets', 'nombre_mostrar' => 'Resolver Tickets', 'categoria' => 'Soporte'],
+
+            // Calles
+            ['name' => 'calles-index', 'nombre_mostrar' => 'Ver Calles', 'categoria' => 'Catastro'],
+            ['name' => 'calles-create', 'nombre_mostrar' => 'Crear Calles', 'categoria' => 'Catastro'],
+            ['name' => 'calles-edit', 'nombre_mostrar' => 'Editar Calles', 'categoria' => 'Catastro'],
+            ['name' => 'calles-delete', 'nombre_mostrar' => 'Eliminar Calles', 'categoria' => 'Catastro'],
+
+            // Colonias
+            ['name' => 'colonias-index', 'nombre_mostrar' => 'Ver Colonias', 'categoria' => 'Catastro'],
+            ['name' => 'colonias-create', 'nombre_mostrar' => 'Crear Colonias', 'categoria' => 'Catastro'],
+            ['name' => 'colonias-edit', 'nombre_mostrar' => 'Editar Colonias', 'categoria' => 'Catastro'],
+            ['name' => 'colonias-delete', 'nombre_mostrar' => 'Eliminar Colonias', 'categoria' => 'Catastro'],
         ];
 
         foreach ($permissions as $permission) {

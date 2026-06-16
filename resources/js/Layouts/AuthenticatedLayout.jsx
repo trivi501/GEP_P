@@ -198,6 +198,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Cuentas
                                         </NavLink>
                                     )}
+                                    <NavLink href={route('colonias.index')} active={route().current('colonias.*')}>
+                                        Colonias
+                                    </NavLink>
+                                    <NavLink href={route('calles.index')} active={route().current('calles.*')}>
+                                        Calles
+                                    </NavLink>
                                 {can('ver tickets') && (
                                     <NavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
                                         Soporte
@@ -308,6 +314,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('cuentas.index')} active={route().current('cuentas.*')}>
                                 Cuentas
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('colonias.index')} active={route().current('colonias.*')}>
+                                Colonias
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('calles.index')} active={route().current('calles.*')}>
+                                Calles
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
                                 Órdenes de Pago
