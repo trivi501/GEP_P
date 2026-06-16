@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import SearchSelect from '@/Components/SearchSelect';
 
 export default function Edit({ colonia, poblaciones, zonasPredio }) {
     const { data, setData, patch, processing, errors } = useForm({
@@ -31,18 +32,12 @@ export default function Edit({ colonia, poblaciones, zonasPredio }) {
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div>
                                         <InputLabel htmlFor="id_poblacion" value="Población" />
-                                        <select id="id_poblacion" value={data.id_poblacion} onChange={(e) => setData('id_poblacion', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                            <option value="">Seleccione una población</option>
-                                            {poblaciones.map((p) => <option key={p.id_poblacion} value={p.id_poblacion}>{p.POBLACION}</option>)}
-                                        </select>
+                                        <SearchSelect value={data.id_poblacion} onChange={(v) => setData('id_poblacion', v)} options={poblaciones} valueKey="id_poblacion" labelKey="POBLACION" placeholder="Seleccione una población" />
                                         <InputError message={errors.id_poblacion} className="mt-2" />
                                     </div>
                                     <div>
                                         <InputLabel htmlFor="id_cat_zona_predio" value="Zona Predio" />
-                                        <select id="id_cat_zona_predio" value={data.id_cat_zona_predio} onChange={(e) => setData('id_cat_zona_predio', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                            <option value="">Seleccione una zona</option>
-                                            {zonasPredio.map((z) => <option key={z.id_zona_urbana} value={z.id_zona_urbana}>{z.descripcion}</option>)}
-                                        </select>
+                                        <SearchSelect value={data.id_cat_zona_predio} onChange={(v) => setData('id_cat_zona_predio', v)} options={zonasPredio} valueKey="id_zona_urbana" labelKey="descripcion" placeholder="Seleccione una zona" />
                                         <InputError message={errors.id_cat_zona_predio} className="mt-2" />
                                     </div>
                                 </div>

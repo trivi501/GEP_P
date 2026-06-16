@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
+import SearchSelect from '@/Components/SearchSelect';
 
 export default function Edit({ calle, colonias }) {
     const { data, setData, patch, processing, errors } = useForm({
@@ -29,10 +30,7 @@ export default function Edit({ calle, colonias }) {
                                 </div>
                                 <div>
                                     <InputLabel htmlFor="ID_COLONIA" value="Colonia" />
-                                    <select id="ID_COLONIA" value={data.ID_COLONIA} onChange={(e) => setData('ID_COLONIA', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                                        <option value="">Seleccione una colonia</option>
-                                        {colonias.map((c) => <option key={c.id_colonia} value={c.id_colonia}>{c.COLONIA}</option>)}
-                                    </select>
+                                    <SearchSelect value={data.ID_COLONIA} onChange={(v) => setData('ID_COLONIA', v)} options={colonias} valueKey="id_colonia" labelKey="COLONIA" placeholder="Seleccione una colonia" />
                                     <InputError message={errors.ID_COLONIA} className="mt-2" />
                                 </div>
                                 <div className="flex items-center gap-2">
