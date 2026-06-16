@@ -105,6 +105,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 Descuentos
                                             </Dropdown.Link>
                                             )}
+                                            {can('colonias-index') && (
+                                            <Dropdown.Link href={route('colonias.index')}>
+                                                Colonias
+                                            </Dropdown.Link>
+                                            )}
+                                            {can('calles-index') && (
+                                            <Dropdown.Link href={route('calles.index')}>
+                                                Calles
+                                            </Dropdown.Link>
+                                            )}
                                         </Dropdown.Content>
                                     </Dropdown>
                                 )}
@@ -198,12 +208,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Cuentas
                                         </NavLink>
                                     )}
-                                    <NavLink href={route('colonias.index')} active={route().current('colonias.*')}>
-                                        Colonias
-                                    </NavLink>
-                                    <NavLink href={route('calles.index')} active={route().current('calles.*')}>
-                                        Calles
-                                    </NavLink>
+                                    
                                 {can('ver tickets') && (
                                     <NavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
                                         Soporte
