@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CatColonia;
+use App\Models\CatPoblacion;
+use App\Models\CatZonaPredio;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,7 +27,9 @@ class CatColoniaController extends Controller
 
     public function create()
     {
-        return Inertia::render('Colonias/Create');
+        $poblaciones = CatPoblacion::where('Activo', 1)->orderBy('POBLACION')->get();
+        $zonasPredio = CatZonaPredio::where('activo', 1)->orderBy('descripcion')->get();
+        return Inertia::render('Colonias/Create', compact('poblaciones', 'zonasPredio'));
     }
 
     public function store(Request $request)
@@ -55,7 +59,9 @@ class CatColoniaController extends Controller
 
     public function edit(CatColonia $colonia)
     {
-        return Inertia::render('Colonias/Edit', ['colonia' => $colonia]);
+        $poblaciones = CatPoblacion::where('Activo', 1)->orderBy('POBLACION')->get();
+        $zonasPredio = CatZonaPredio::where('activo', 1)->orderBy('descripcion')->get();
+        return Inertia::render('Colonias/Edit', compact('colonia', 'poblaciones', 'zonasPredio'));
     }
 
     public function update(Request $request, CatColonia $colonia)
