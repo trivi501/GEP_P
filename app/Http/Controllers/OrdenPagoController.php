@@ -64,12 +64,13 @@ class OrdenPagoController extends Controller
         }
 
         $secretariaId = auth()->user()->secretaria_id;
-        $prefijo = Secretaria::where('id', $secretariaId)->value('prefijo') ?? 'GEN';
+        $prefijo = strtoupper($secretariaId ? (Secretaria::where('id', $secretariaId)->value('prefijo') ?? 'GEN') : 'GEN');
         $year = now()->format('Y');
-        $ultimoFolio = OrdenPago::whereYear('created_at', $year)
-            ->whereHas('secretaria', fn($q) => $q->where('prefijo', $prefijo))
-            ->count();
-        $folio = strtoupper($prefijo) . '-' . $year . '-' . str_pad($ultimoFolio + 1, 4, '0', STR_PAD_LEFT);
+        $ultimoFolio = OrdenPago::where('folio', 'like', "{$prefijo}-{$year}-%")
+            ->orderBy('folio', 'desc')
+            ->value('folio');
+        $numero = $ultimoFolio ? ((int) substr($ultimoFolio, -4)) + 1 : 1;
+        $folio = $prefijo . '-' . $year . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);
 
         $orden = OrdenPago::create([
             'folio' => $folio,
