@@ -45,7 +45,7 @@ class RegenerateCuentasContribuyentes extends Command
         foreach (array_chunk($rows, 500) as $chunk) {
             foreach ($chunk as $r) {
                 $letra = 'X';
-                $ref = trim($r->nombre_moral ?? $r->primer_apellido ?? '');
+                $ref = trim($r->primer_apellido ?? $r->nombre_moral ?? '');
                 if ($ref !== '') {
                     $first = mb_strtoupper(mb_substr($ref, 0, 1));
                     if (preg_match('/[A-Z]/u', $first)) {
