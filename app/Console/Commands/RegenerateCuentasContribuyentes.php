@@ -8,48 +8,59 @@ use Illuminate\Console\Command;
 class RegenerateCuentasContribuyentes extends Command
 {
     protected $signature = 'cuentas:regenerate';
-    protected $description = 'Regenera todas las cuentas de contribuyentes que están en 00000 o vacías';
+    protected $description = 'Regenera cuentas inválidas (00000, vacías) en tb_contribuyentes';
 
     public function handle()
     {
-        $contribuyentes = Contribuyente::where('cuenta', '00000')
-            ->orWhereNull('cuenta')
-            ->orWhere('cuenta', '')
-            ->get();
+        $this->info('Iniciando regeneración de cuentas...');
 
-        $total = $contribuyentes->count();
-        $this->info("{$total} contribuyentes con cuenta inválida encontrados.");
+        $invalidos = Contribuyente::where(function ($q) {
+            $q->where('cuenta', '00000')
+              ->orWhereNull('cuenta')
+              ->orWhere('cuenta', '');
+        })->select('id_contribuyente', 'cuenta', 'nombre_moral', 'primer_apellido')->get();
 
-        $cuentasExistentes = Contribuyente::whereNotIn('cuenta', ['00000', '', null])->pluck('cuenta')->toArray();
+        $total = $invalidos->count();
+        if ($total === 0) {
+            $this->info('No se encontraron cuentas inválidas.');
+            return;
+        }
+
+        $this->info("{$total} cuentas inválidas encontradas. Regenerando...");
+
+        $existentes = Contribuyente::whereNot('cuenta', '00000')
+            ->whereNotNull('cuenta')
+            ->where('cuenta', '!=', '')
+            ->pluck('cuenta')
+            ->toArray();
+
+        $this->info(count($existentes) . ' cuentas válidas existentes.');
 
         $bar = $this->output->createProgressBar($total);
-        $bar->start();
-
         $generadas = 0;
-        foreach ($contribuyentes as $contribuyente) {
-            $ref = $contribuyente->nombre_moral
-                ?? $contribuyente->primer_apellido
-                ?? $contribuyente->nombre_completo
-                ?? 'X';
 
-            $letra = strtoupper(substr(trim($ref), 0, 1));
-            if (!preg_match('/[A-Z]/', $letra)) {
-                $letra = 'X';
+        foreach ($invalidos as $c) {
+            $letra = 'X';
+            $ref = trim($c->nombre_moral ?? $c->primer_apellido ?? '');
+            if ($ref !== '') {
+                $first = mb_strtoupper(mb_substr($ref, 0, 1));
+                if (preg_match('/[A-Z]/u', $first)) {
+                    $letra = $first;
+                }
             }
 
             do {
                 $cuenta = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT) . $letra;
-            } while (in_array($cuenta, $cuentasExistentes));
+            } while (in_array($cuenta, $existentes, true));
 
-            $contribuyente->update(['cuenta' => $cuenta]);
-            $cuentasExistentes[] = $cuenta;
+            Contribuyente::where('id_contribuyente', $c->id_contribuyente)->update(['cuenta' => $cuenta]);
+            $existentes[] = $cuenta;
             $generadas++;
-
             $bar->advance();
         }
 
         $bar->finish();
         $this->newLine();
-        $this->info("{$generadas} cuentas regeneradas exitosamente.");
+        $this->info("{$generadas} cuentas regeneradas.");
     }
 }
