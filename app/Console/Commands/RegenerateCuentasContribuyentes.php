@@ -14,7 +14,7 @@ class RegenerateCuentasContribuyentes extends Command
     {
         $this->info('Iniciando...');
 
-        $rows = DB::select("SELECT id_contribuyente, nombre_moral, primer_apellido FROM tb_contribuyentes WHERE cuenta = '00000' OR cuenta IS NULL OR cuenta = ''");
+        $rows = DB::select("SELECT id_contribuyente, nombre_completo, primer_apellido FROM tb_contribuyentes WHERE cuenta = '00000' OR cuenta IS NULL OR cuenta = ''");
 
         $total = count($rows);
         $this->info("{$total} registros con cuenta inválida.");
@@ -45,7 +45,7 @@ class RegenerateCuentasContribuyentes extends Command
         foreach (array_chunk($rows, 500) as $chunk) {
             foreach ($chunk as $r) {
                 $letra = 'X';
-                $ref = trim($r->primer_apellido ?? $r->nombre_moral ?? '');
+                $ref = trim($r->primer_apellido ?? $r->nombre_completo ?? '');
                 if ($ref !== '') {
                     $first = mb_strtoupper(mb_substr($ref, 0, 1));
                     if (preg_match('/[A-Z]/u', $first)) {
