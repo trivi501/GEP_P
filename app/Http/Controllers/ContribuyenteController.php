@@ -29,6 +29,8 @@ class ContribuyenteController extends Controller
             ->where(function ($query) use ($q) {
                 $query->where('nombre_completo', 'like', $q . '%')
                       ->orWhere('nombre_completo', 'like', '%' . $q . '%')
+                      ->orWhere('nombre_moral', 'like', $q . '%')
+                      ->orWhere('nombre_moral', 'like', '%' . $q . '%')
                       ->orWhere('cuenta', 'like', $q . '%');
             })
             ->orderByRaw('CASE WHEN nombre_completo LIKE ? THEN 0 WHEN cuenta LIKE ? THEN 1 ELSE 2 END', [$q . '%', $q . '%'])
@@ -45,7 +47,10 @@ class ContribuyenteController extends Controller
 
         $contribuyentes = Contribuyente::with('tipoContribuyente', 'domicilio')
             ->select(['id_contribuyente', 'nombre_completo', 'cuenta', 'id_tipo_contribuyente', 'telefono', 'correo_electronico', 'activo'])
-            ->when($request->filled('nombre_completo'), fn($q) => $q->where('nombre_completo', 'like', '%' . $request->nombre_completo . '%'))
+            ->when($request->filled('nombre_completo'), fn($q) => $q->where(function($q) use ($request) {
+                $q->where('nombre_completo', 'like', '%' . $request->nombre_completo . '%')
+                  ->orWhere('nombre_moral', 'like', '%' . $request->nombre_completo . '%');
+            }))
             ->when($request->filled('cuenta'), fn($q) => $q->where('cuenta', 'like', '%' . $request->cuenta . '%'))
             ->when($request->filled('tipo'), fn($q) => $q->whereHas('tipoContribuyente', fn($q) => $q->where('area_contribuyente', 'like', '%' . $request->tipo . '%')))
             ->when($request->filled('telefono'), fn($q) => $q->where('telefono', 'like', '%' . $request->telefono . '%'))
@@ -102,9 +107,19 @@ class ContribuyenteController extends Controller
         $validated['activo'] = $validated['activo'] ?? 0;
         $validated['exento'] = $validated['exento'] ?? 0;
         $validated['id_contribuyente'] = (string) Str::uuid();
-        $parts = array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? '']);
-        $validated['nombre_completo'] = $validated['nombre_completo'] ?? trim(implode(' ', $parts));
-        $letra = strtoupper(substr($validated['primer_apellido'] ?? 'X', 0, 1));
+
+        $esMoral = ($validated['id_tipo_contribuyente'] ?? null) && \App\Models\TipoContribuyente::find($validated['id_tipo_contribuyente'])?->area_contribuyente === 'MORAL';
+
+        if (empty($validated['nombre_completo'])) {
+            $validated['nombre_completo'] = $validated['nombre_moral']
+                ?? trim(implode(' ', array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? ''])));
+        }
+
+        $letra = strtoupper(substr(
+            $validated['nombre_moral'] ?? $validated['primer_apellido'] ?? 'X',
+            0,
+            1
+        ));
         do {
             $validated['cuenta'] = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT) . $letra;
         } while (Contribuyente::where('cuenta', $validated['cuenta'])->exists());
