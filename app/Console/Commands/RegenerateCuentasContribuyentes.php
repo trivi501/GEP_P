@@ -2,65 +2,70 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Contribuyente;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RegenerateCuentasContribuyentes extends Command
 {
     protected $signature = 'cuentas:regenerate';
-    protected $description = 'Regenera cuentas inválidas (00000, vacías) en tb_contribuyentes';
+    protected $description = 'Regenera cuentas inválidas (00000) en tb_contribuyentes';
 
     public function handle()
     {
-        $this->info('Iniciando regeneración de cuentas...');
+        $this->info('Iniciando...');
 
-        $invalidos = Contribuyente::where(function ($q) {
-            $q->where('cuenta', '00000')
-              ->orWhereNull('cuenta')
-              ->orWhere('cuenta', '');
-        })->select('id_contribuyente', 'cuenta', 'nombre_moral', 'primer_apellido')->get();
+        $rows = DB::select("SELECT id_contribuyente, nombre_moral, primer_apellido FROM tb_contribuyentes WHERE cuenta = '00000' OR cuenta IS NULL OR cuenta = ''");
 
-        $total = $invalidos->count();
+        $total = count($rows);
+        $this->info("{$total} registros con cuenta inválida.");
+
         if ($total === 0) {
-            $this->info('No se encontraron cuentas inválidas.');
+            $this->info('Nada que regenerar.');
             return;
         }
 
-        $this->info("{$total} cuentas inválidas encontradas. Regenerando...");
-
-        $existentes = Contribuyente::whereNot('cuenta', '00000')
+        $existentes = [];
+        DB::table('tb_contribuyentes')
+            ->where('cuenta', '!=', '00000')
             ->whereNotNull('cuenta')
             ->where('cuenta', '!=', '')
-            ->pluck('cuenta')
-            ->toArray();
+            ->select('cuenta')
+            ->orderBy('id_contribuyente')
+            ->chunk(5000, function ($chunk) use (&$existentes) {
+                foreach ($chunk as $c) {
+                    $existentes[$c->cuenta] = true;
+                }
+            });
 
-        $this->info(count($existentes) . ' cuentas válidas existentes.');
+        $this->info(count($existentes) . ' cuentas válidas.');
 
         $bar = $this->output->createProgressBar($total);
-        $generadas = 0;
+        $gen = 0;
 
-        foreach ($invalidos as $c) {
-            $letra = 'X';
-            $ref = trim($c->nombre_moral ?? $c->primer_apellido ?? '');
-            if ($ref !== '') {
-                $first = mb_strtoupper(mb_substr($ref, 0, 1));
-                if (preg_match('/[A-Z]/u', $first)) {
-                    $letra = $first;
+        foreach (array_chunk($rows, 500) as $chunk) {
+            foreach ($chunk as $r) {
+                $letra = 'X';
+                $ref = trim($r->nombre_moral ?? $r->primer_apellido ?? '');
+                if ($ref !== '') {
+                    $first = mb_strtoupper(mb_substr($ref, 0, 1));
+                    if (preg_match('/[A-Z]/u', $first)) {
+                        $letra = $first;
+                    }
                 }
+
+                do {
+                    $cuenta = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT) . $letra;
+                } while (isset($existentes[$cuenta]));
+
+                DB::update("UPDATE tb_contribuyentes SET cuenta = ? WHERE id_contribuyente = ?", [$cuenta, $r->id_contribuyente]);
+                $existentes[$cuenta] = true;
+                $gen++;
+                $bar->advance();
             }
-
-            do {
-                $cuenta = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT) . $letra;
-            } while (in_array($cuenta, $existentes, true));
-
-            Contribuyente::where('id_contribuyente', $c->id_contribuyente)->update(['cuenta' => $cuenta]);
-            $existentes[] = $cuenta;
-            $generadas++;
-            $bar->advance();
         }
 
         $bar->finish();
         $this->newLine();
-        $this->info("{$generadas} cuentas regeneradas.");
+        $this->info("{$gen} cuentas regeneradas.");
     }
 }
