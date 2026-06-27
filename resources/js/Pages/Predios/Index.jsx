@@ -68,6 +68,7 @@ export default function Index({ predios, prediosData, filters, cajaAbierta }) {
 
     const inputClass = "block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1";
 const esNormal = (predio) => predio.id_estatus === 1;
+const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus === 7;
 
     return (
         <AuthenticatedLayout
@@ -264,7 +265,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                                                                     <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                                 </button>
                                                             )}
-                                                            {esNormal(predio) && can('predios-edocuenta') && (
+                                                            {puedeImprimir(predio) && can('predios-edocuenta') && (
                                                                 <a
                                                                     href={`/calculos-predios/${predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${predio.id}`}
                                                                     target="_blank"
@@ -275,7 +276,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                                                                 <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                                 </a>
                                                                 )}
-                                                                {esNormal(predio) && can('predios-cedula') && (
+                                                                {puedeImprimir(predio) && can('predios-cedula') && (
                                                                 <a
                                                                     href={route('predios.pdf', predio.id)}
                                                                     target="_blank"
@@ -338,7 +339,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                     className="fixed z-50 w-44 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 border border-gray-200 dark:border-gray-600 py-1 text-sm"
                     style={{ left: contextMenu.x, top: contextMenu.y }}
                 >
-                    {esNormal(contextMenu.predio) && can('predios-edocuenta') && (
+                    {puedeImprimir(contextMenu.predio) && can('predios-edocuenta') && (
                         <a
                             href={`/calculos-predios/${contextMenu.predio.tipo_predio?.toLowerCase().includes('rústico') ? 'pdf-rustico' : 'pdf'}?id_predio=${contextMenu.predio.id}`}
                             target="_blank"
@@ -350,7 +351,7 @@ const esNormal = (predio) => predio.id_estatus === 1;
                             Estado de Cuenta
                         </a>
                     )}
-                    {esNormal(contextMenu.predio) && can('predios-cedula') && (
+                    {puedeImprimir(contextMenu.predio) && can('predios-cedula') && (
                     <a
                         href={route('predios.pdf', contextMenu.predio.id)}
                         target="_blank"

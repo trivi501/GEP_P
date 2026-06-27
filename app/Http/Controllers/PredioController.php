@@ -354,6 +354,9 @@ class PredioController extends Controller
 
     public function update(Request $request, Predio $predio)
     {
+        if ($predio->id_estaus_cobro_predial === 7) {
+            return redirect()->back()->with('error', 'El predio tiene nota marginal. Contacte al administrador.');
+        }
         $validated = $request->validate([
             'Clave_predial' => 'required|string|max:25|unique:tb_predio,Clave_predial,' . $predio->id_predio . ',id_predio',
             'id_contribuyente' => 'required|exists:tb_contribuyentes,id_contribuyente',
@@ -600,7 +603,7 @@ class PredioController extends Controller
 
     public function pdf(Predio $predio)
     {
-        if ($predio->id_estaus_cobro_predial !== 1) {
+        if (!in_array($predio->id_estaus_cobro_predial, [1, 7])) {
             return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL.');
         }
         $predio->load('contribuyente.domicilio', 'contribuyente.tipoContribuyente', 'tipoPredio', 'regimenPropiedad', 'estadoRenta', 'estadoImpuesto', 'tituloPropiedad', 'calle', 'colonia', 'clavePredial', 'medidasYColindancias.orientacion', 'datosUrbano.zonaUrbana', 'datosUrbano.formaPredio', 'datosUrbano.usoPredio', 'datosUrbano.estadoFisico', 'datosUrbano.pavimento');
@@ -613,7 +616,7 @@ class PredioController extends Controller
 
     public function cedula(Predio $predio)
     {
-        if ($predio->id_estaus_cobro_predial !== 1) {
+        if (!in_array($predio->id_estaus_cobro_predial, [1, 7])) {
             return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL.');
         }
         $predio->load('contribuyente', 'tipoPredio', 'calle', 'colonia', 'clavePredial', 'datosUrbano');

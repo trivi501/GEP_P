@@ -51,7 +51,7 @@ class CalculosPrediosController extends Controller
             'medidasYColindancias.orientacion',
         ])->findOrFail($request->id_predio);
 
-        if ($predio->id_estaus_cobro_predial !== 1) {
+        if (!in_array($predio->id_estaus_cobro_predial, [1, 7])) {
             return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL, no se puede generar estado de cuenta.');
         }
 
@@ -274,7 +274,7 @@ class CalculosPrediosController extends Controller
             'contribuyente', 'tipoPredio', 'datosRustico',
         ])->findOrFail($request->id_predio);
 
-        if ($predio->id_estaus_cobro_predial !== 1) {
+        if (!in_array($predio->id_estaus_cobro_predial, [1, 7])) {
             return redirect()->back()->with('error', 'El predio no tiene estatus NORMAL, no se puede generar estado de cuenta.');
         }
 
