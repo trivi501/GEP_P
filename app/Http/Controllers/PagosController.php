@@ -963,7 +963,7 @@ class PagosController extends Controller
 
     public function recibo($id)
     {
-        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia', 'incidencia', 'ordenPago.secretaria', 'ordenPago.user', 'formasPagosCada.formaPago'])->findOrFail($id);
+        $pago = Pago::with(['cuentasPagos.cuenta', 'predio.tipoPredio', 'predio.contribuyente', 'predio.datosUrbano.zonaUrbana', 'predio.calle', 'predio.colonia', 'incidencia', 'ordenPago.secretaria', 'ordenPago.user', 'user', 'formasPagosCada.formaPago'])->findOrFail($id);
         $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
 
         if ($pago->url_file && file_exists(public_path($pago->url_file))) {

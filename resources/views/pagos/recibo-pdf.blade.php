@@ -131,6 +131,10 @@
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ trim(($pago->predio?->contribuyente?->nombre ?? '') . ' ' . ($pago->predio?->contribuyente?->primer_apellido ?? '') . ' ' . ($pago->predio?->contribuyente?->segundo_apellido ?? '')) ?: $pago->predio?->contribuyente?->nombre_completo ?? '—' }}</b></td>
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
+                <tr>
+                    <td></td>
+                    <td width="30%" style="text-align: right; font-size: 6.5pt;">Cajero: {{ $pago->user?->username ?? $pago->user?->name ?? '—' }}</td>
+                </tr>
             </table>
             <table class="info-table">
                 
@@ -227,6 +231,10 @@
                 <tr>
                     <td class="value" width = "80%" style="font-weight: bold; font-size: 9pt;"><b>{{ trim(($pago->predio?->contribuyente?->nombre ?? '') . ' ' . ($pago->predio?->contribuyente?->primer_apellido ?? '') . ' ' . ($pago->predio?->contribuyente?->segundo_apellido ?? '')) ?: $pago->predio?->contribuyente?->nombre_completo ?? '—' }}</b></td>
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td width="30%" style="text-align: right; font-size: 6.5pt;">Cajero: {{ $pago->user?->username ?? $pago->user?->name ?? '—' }}</td>
                 </tr>
             </table>
             <table class="info-table">
