@@ -50,6 +50,7 @@ class OrdenPagoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'monto' => 'nullable|numeric|min:0',
+            'descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
             'cuentas' => 'nullable|array',
             'cuentas.*.IdCuenta' => 'required_with:cuentas|exists:cuentas,id',
             'cuentas.*.monto' => 'required_with:cuentas|numeric|min:0',
@@ -72,11 +73,15 @@ class OrdenPagoController extends Controller
         $numero = $ultimoFolio ? ((int) substr($ultimoFolio, -4)) + 1 : 1;
         $folio = $prefijo . '-' . $year . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);
 
+        $descuentoPct = (float) ($validated['descuento_porcentaje'] ?? 0);
+        $montoFinal = $montoCalculado * (1 - $descuentoPct / 100);
+
         $orden = OrdenPago::create([
             'folio' => $folio,
             'nombre' => $validated['nombre'],
             'descripcion' => $validated['descripcion'],
-            'monto' => $montoCalculado,
+            'monto' => $montoFinal,
+            'descuento_porcentaje' => $descuentoPct,
             'fecha' => now()->format('Y-m-d'),
             'fecha_vencimiento' => now()->addDays(15)->format('Y-m-d'),
             'secretaria_id' => auth()->user()->secretaria_id,
@@ -122,6 +127,7 @@ class OrdenPagoController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'monto' => 'nullable|numeric|min:0',
+            'descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
             'cuentas' => 'nullable|array',
             'cuentas.*.IdCuenta' => 'required_with:cuentas|exists:cuentas,id',
             'cuentas.*.monto' => 'required_with:cuentas|numeric|min:0',
@@ -135,10 +141,14 @@ class OrdenPagoController extends Controller
             }
         }
 
+        $descuentoPct = (float) ($validated['descuento_porcentaje'] ?? 0);
+        $montoFinal = $montoCalculado * (1 - $descuentoPct / 100);
+
         $ordenPago->update([
             'nombre' => $validated['nombre'],
             'descripcion' => $validated['descripcion'],
-            'monto' => $montoCalculado,
+            'monto' => $montoFinal,
+            'descuento_porcentaje' => $descuentoPct,
             'fecha' => now()->format('Y-m-d'),
             'secretaria_id' => $ordenPago->secretaria_id,
         ]);

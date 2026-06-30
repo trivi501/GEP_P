@@ -10,6 +10,7 @@ export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) 
         nombre: '',
         descripcion: '',
         monto: '',
+        descuento_porcentaje: '',
         secretaria_id: userSecretariaId ?? '',
         fecha: hoy ?? '',
         cuentas: [],
@@ -21,6 +22,8 @@ export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) 
     };
 
     const totalCalculado = data.cuentas.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
+    const descuentoPct = parseFloat(data.descuento_porcentaje) || 0;
+    const montoFinal = totalCalculado * (1 - descuentoPct / 100);
 
     const addCuenta = () => {
         setData('cuentas', [...data.cuentas, { IdCuenta: '', monto: '', cantidad: 1 }]);
@@ -28,14 +31,18 @@ export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) 
 
     const removeCuenta = (index) => {
         const updated = data.cuentas.filter((_, i) => i !== index);
+        const newTotal = updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
+        const pct = parseFloat(data.descuento_porcentaje) || 0;
         setData('cuentas', updated);
-        setData('monto', updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0));
+        setData('monto', newTotal * (1 - pct / 100));
     };
 
     const updateCuenta = (index, field, value) => {
         const updated = data.cuentas.map((c, i) => (i === index ? { ...c, [field]: value } : c));
+        const newTotal = updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
+        const pct = parseFloat(data.descuento_porcentaje) || 0;
         setData('cuentas', updated);
-        setData('monto', updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0));
+        setData('monto', newTotal * (1 - pct / 100));
     };
 
     const selectedIds = data.cuentas.map((c) => c.IdCuenta).filter(Boolean);
@@ -103,6 +110,29 @@ export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) 
                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm opacity-70 cursor-not-allowed font-bold"
                                         />
                                         <InputError message={errors.monto} className="mt-2" />
+                                    </div>
+
+                                    <div>
+                                        <InputLabel htmlFor="descuento_porcentaje" value="Descuento %" />
+                                        <input
+                                            id="descuento_porcentaje"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            max="100"
+                                            value={data.descuento_porcentaje}
+                                            onChange={(e) => {
+                                                const pct = e.target.value;
+                                                setData('descuento_porcentaje', pct);
+                                                setData('monto', totalCalculado * (1 - (parseFloat(pct) || 0) / 100));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        />
+                                        {descuentoPct > 0 && (
+                                            <p className="mt-1 text-xs text-green-600">
+                                                Monto final: ${montoFinal.toFixed(2)}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>

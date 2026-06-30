@@ -13,6 +13,7 @@ class OrdenPago extends Model
         'nombre',
         'descripcion',
         'monto',
+        'descuento_porcentaje',
         'pagado',
         'fecha_pago',
         'fecha',
