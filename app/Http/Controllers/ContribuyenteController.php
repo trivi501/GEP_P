@@ -29,12 +29,14 @@ class ContribuyenteController extends Controller
             ->where(function ($query) use ($q) {
                 $query->where('nombre_completo', 'like', $q . '%')
                       ->orWhere('nombre_completo', 'like', '%' . $q . '%')
+                      ->orWhere('nombre_moral', 'like', $q . '%')
+                      ->orWhere('nombre_moral', 'like', '%' . $q . '%')
                       ->orWhere('cuenta', 'like', $q . '%');
             })
-            ->orderByRaw('CASE WHEN nombre_completo LIKE ? THEN 0 WHEN cuenta LIKE ? THEN 1 ELSE 2 END', [$q . '%', $q . '%'])
+            ->orderByRaw('CASE WHEN nombre_completo LIKE ? OR nombre_moral LIKE ? THEN 0 WHEN cuenta LIKE ? THEN 1 ELSE 2 END', [$q . '%', $q . '%', $q . '%'])
             ->orderBy('nombre_completo')
             ->limit(20)
-            ->get(['id_contribuyente', 'nombre_completo', 'cuenta']);
+            ->get(['id_contribuyente', 'nombre_completo', 'nombre_moral', 'cuenta']);
 
         return response()->json($contribuyentes);
     }
