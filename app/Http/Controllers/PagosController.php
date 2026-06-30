@@ -879,31 +879,31 @@ class PagosController extends Controller
             DB::commit();
 
             try {
-                $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago']);
-                $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
-                $pdf = Pdf::loadView('pagos.recibo-orden-pago-pdf', compact('pago', 'qrBase64'));
-                $pdfDir = public_path('recibos');
-                if (!is_dir($pdfDir)) {
-                    mkdir($pdfDir, 0755, true);
-                }
-                $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
-                $pdf->save(public_path($pdfPath));
-                $pago->update(['url_file' => $pdfPath]);
-            } catch (\Exception $e) {
-                // PDF generation failed but payment was saved
+            $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago', 'user']);
+            $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
+            $pdf = Pdf::loadView('pagos.recibo-orden-pago-pdf', compact('pago', 'qrBase64'));
+            $pdfDir = public_path('recibos');
+            if (!is_dir($pdfDir)) {
+                mkdir($pdfDir, 0755, true);
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Pago registrado exitosamente.',
-                'pago_id' => $pago->id,
-                'folio' => $folio,
-                'redirect' => route('pagos.caja-general.show', $pago->id),
-            ]);
+            $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
+            $pdf->save(public_path($pdfPath));
+            $pago->update(['url_file' => $pdfPath]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => 'Error al registrar el pago: ' . $e->getMessage()], 500);
+            // PDF generation failed but payment was saved
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pago registrado exitosamente.',
+            'pago_id' => $pago->id,
+            'folio' => $folio,
+            'redirect' => route('pagos.caja-general.show', $pago->id),
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Error al registrar el pago: ' . $e->getMessage()], 500);
+    }
     }
 
     public function cajaGeneralShow(Pago $pago)
@@ -912,7 +912,7 @@ class PagosController extends Controller
             return redirect()->route('pagos.caja-general')->with('error', 'Este pago no pertenece a Caja General.');
         }
 
-        $pago->load('ordenPago.cuentasOrdenesPago.cuenta', 'ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago');
+        $pago->load('ordenPago.cuentasOrdenesPago.cuenta', 'ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago', 'user');
 
         return Inertia::render('Pagos/CajaGeneral/Show', compact('pago'));
     }
@@ -944,7 +944,7 @@ class PagosController extends Controller
             DB::commit();
 
             try {
-                $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago']);
+                $pago->load(['ordenPago.secretaria', 'ordenPago.user', 'cuentasPagos.cuenta', 'formasPagosCada.formaPago', 'user']);
                 $qrBase64 = $this->generarQrBase64(route('pagos.recibo', $pago->id));
                 $pdf = Pdf::loadView('pagos.recibo-orden-pago-pdf', compact('pago', 'qrBase64'));
                 $pdfPath = "recibos/recibo-{$pago->folio}.pdf";
