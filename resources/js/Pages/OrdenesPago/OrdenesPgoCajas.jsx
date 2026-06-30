@@ -123,6 +123,7 @@ export default function Index({ ordenes, formasPago, filters: initialFilters }) 
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Fecha</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Vence</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Monto</th>
+                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Desc. %</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estatus</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Usuario</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Cuentas</th>
@@ -164,6 +165,7 @@ export default function Index({ ordenes, formasPago, filters: initialFilters }) 
                                                     className="block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                 />
                                             </th>
+                                            <th className="px-2 py-2"></th>
                                             <th className="px-2 py-2"></th>
                                             <th className="px-2 py-2"></th>
                                             <th className="px-2 py-2">
@@ -235,6 +237,12 @@ export default function Index({ ordenes, formasPago, filters: initialFilters }) 
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
                                                         ${parseFloat(orden.monto).toFixed(2)}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
+                                                        {(() => {
+                                                            const maxDesc = Math.max(0, ...(orden.cuentas_ordenes_pago?.map(c => parseFloat(c.descuento) || 0) || [0]));
+                                                            return maxDesc > 0 ? maxDesc + '%' : '—';
+                                                        })()}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-center">
                                                         {orden.pagado ? (
@@ -333,29 +341,35 @@ export default function Index({ ordenes, formasPago, filters: initialFilters }) 
                                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
                                              <thead className="bg-gray-50 dark:bg-gray-700">
                                                  <tr>
-                                                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Indetec</th>
-                                                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Cuenta</th>
-                                                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Monto</th>
-                                                     <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Cant.</th>
-                                                     <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Subtotal</th>
+                                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Indetec</th>
+                                                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Cuenta</th>
+                                                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Monto</th>
+                                                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Cant.</th>
+                                                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Desc. %</th>
+                                                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Subtotal</th>
                                                  </tr>
                                              </thead>
                                              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
-                                                 {pagarModal.cuentas_ordenes_pago.map((c) => (
-                                                     <tr key={c.id}>
-                                                         <td className="px-4 py-2 text-sm font-mono">{c.cuenta?.indetec ?? '—'}</td>
-                                                         <td className="px-4 py-2 text-sm">{c.cuenta?.descripcion ?? ('Cuenta #' + c.IdCuenta)}</td>
-                                                         <td className="px-4 py-2 text-right text-sm">${parseFloat(c.monto).toFixed(2)}</td>
-                                                         <td className="px-4 py-2 text-center text-sm">{c.cantidad}</td>
-                                                         <td className="px-4 py-2 text-right text-sm font-medium">
-                                                             ${(parseFloat(c.monto) * parseFloat(c.cantidad)).toFixed(2)}
-                                                         </td>
-                                                     </tr>
-                                                 ))}
+                                                  {pagarModal.cuentas_ordenes_pago.map((c) => {
+                                                      const subtotalCrudo = parseFloat(c.monto) * parseFloat(c.cantidad);
+                                                      const descPct = parseFloat(c.descuento) || 0;
+                                                      const subtotalDesc = subtotalCrudo * (1 - descPct / 100);
+                                                      return (
+                                                      <tr key={c.id}>
+                                                          <td className="px-4 py-2 text-sm font-mono">{c.cuenta?.indetec ?? '—'}</td>
+                                                          <td className="px-4 py-2 text-sm">{c.cuenta?.descripcion ?? ('Cuenta #' + c.IdCuenta)}</td>
+                                                          <td className="px-4 py-2 text-right text-sm">${parseFloat(c.monto).toFixed(2)}</td>
+                                                          <td className="px-4 py-2 text-center text-sm">{c.cantidad}</td>
+                                                          <td className="px-4 py-2 text-center text-sm">{descPct > 0 ? descPct + '%' : '—'}</td>
+                                                          <td className="px-4 py-2 text-right text-sm font-medium">
+                                                              ${subtotalDesc.toFixed(2)}
+                                                          </td>
+                                                      </tr>
+                                                  )})}
                                              </tbody>
                                              <tfoot className="bg-gray-50 dark:bg-gray-700">
                                                  <tr>
-                                                     <td colSpan="4" className="px-4 py-2 text-right text-sm font-medium">Total:</td>
+                                                      <td colSpan="5" className="px-4 py-2 text-right text-sm font-medium">Total:</td>
                                                      <td className="px-4 py-2 text-right text-sm font-bold">
                                                          ${parseFloat(pagarModal.monto).toFixed(2)}
                                                      </td>
