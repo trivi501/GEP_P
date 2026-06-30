@@ -10,44 +10,52 @@ export default function Edit({ ordenPago, cuentas, secretarias, userSecretariaId
         nombre: ordenPago.nombre,
         descripcion: ordenPago.descripcion ?? '',
         monto: ordenPago.monto,
-        descuento_porcentaje: ordenPago.descuento_porcentaje ?? '',
         secretaria_id: ordenPago.secretaria_id ?? '',
         fecha: hoy ?? ordenPago.fecha ?? '',
         cuentas: ordenPago.cuentas_ordenes_pago?.map((c) => ({
             IdCuenta: c.IdCuenta,
             monto: c.monto,
             cantidad: c.cantidad,
+            descuento: c.descuento ?? '',
         })) ?? [],
     });
 
-    const totalCalculado = data.cuentas.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
-    const descuentoPct = parseFloat(data.descuento_porcentaje) || 0;
-    const montoFinal = totalCalculado * (1 - descuentoPct / 100);
+    const totalCalculado = data.cuentas.reduce((sum, c) => {
+        const subtotal = (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0);
+        const desc = parseFloat(c.descuento) || 0;
+        return sum + subtotal * (1 - desc / 100);
+    }, 0);
 
     const submit = (e) => {
         e.preventDefault();
-        setData('monto', montoFinal);
+        setData('monto', totalCalculado);
         patch(route('ordenes-pago.update', ordenPago.id));
     };
 
     const addCuenta = () => {
-        setData('cuentas', [...data.cuentas, { IdCuenta: '', monto: '', cantidad: 1 }]);
+        setData('cuentas', [...data.cuentas, { IdCuenta: '', monto: '', cantidad: 1, descuento: '' }]);
     };
 
     const removeCuenta = (index) => {
         const updated = data.cuentas.filter((_, i) => i !== index);
-        const newTotal = updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
-        const pct = parseFloat(data.descuento_porcentaje) || 0;
+        const newTotal = updated.reduce((sum, c) => {
+            const subtotal = (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0);
+            const desc = parseFloat(c.descuento) || 0;
+            return sum + subtotal * (1 - desc / 100);
+        }, 0);
         setData('cuentas', updated);
-        setData('monto', newTotal * (1 - pct / 100));
+        setData('monto', newTotal);
     };
 
     const updateCuenta = (index, field, value) => {
         const updated = data.cuentas.map((c, i) => (i === index ? { ...c, [field]: value } : c));
-        const newTotal = updated.reduce((sum, c) => sum + (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0), 0);
-        const pct = parseFloat(data.descuento_porcentaje) || 0;
+        const newTotal = updated.reduce((sum, c) => {
+            const subtotal = (parseFloat(c.monto) || 0) * (parseFloat(c.cantidad) || 0);
+            const desc = parseFloat(c.descuento) || 0;
+            return sum + subtotal * (1 - desc / 100);
+        }, 0);
         setData('cuentas', updated);
-        setData('monto', newTotal * (1 - pct / 100));
+        setData('monto', newTotal);
     };
 
     const selectedIds = data.cuentas.map((c) => String(c.IdCuenta)).filter(Boolean);
@@ -114,29 +122,6 @@ export default function Edit({ ordenPago, cuentas, secretarias, userSecretariaId
                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm opacity-70 cursor-not-allowed font-bold"
                                         />
                                         <InputError message={errors.monto} className="mt-2" />
-                                    </div>
-
-                                    <div>
-                                        <InputLabel htmlFor="descuento_porcentaje" value="Descuento %" />
-                                        <input
-                                            id="descuento_porcentaje"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            max="100"
-                                            value={data.descuento_porcentaje}
-                                            onChange={(e) => {
-                                                const pct = e.target.value;
-                                                setData('descuento_porcentaje', pct);
-                                                setData('monto', totalCalculado * (1 - (parseFloat(pct) || 0) / 100));
-                                            }}
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        {descuentoPct > 0 && (
-                                            <p className="mt-1 text-xs text-green-600">
-                                                Monto final: ${montoFinal.toFixed(2)}
-                                            </p>
-                                        )}
                                     </div>
 
                                     <div>
@@ -231,6 +216,18 @@ export default function Edit({ ordenPago, cuentas, secretarias, userSecretariaId
                                                             onChange={(e) => updateCuenta(index, 'cantidad', e.target.value)}
                                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                             required
+                                                        />
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <InputLabel value="Desc. %" />
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            max="100"
+                                                            value={cuenta.descuento}
+                                                            onChange={(e) => updateCuenta(index, 'descuento', e.target.value)}
+                                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                                         />
                                                     </div>
                                                     <button
