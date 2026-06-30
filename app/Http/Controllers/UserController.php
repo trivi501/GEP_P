@@ -27,6 +27,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'nullable|string|max:50|unique:users,username',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'secretaria_id' => 'nullable|exists:secretarias,id',
@@ -36,6 +37,7 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'username' => $validated['username'] ?? null,
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'secretaria_id' => $validated['secretaria_id'] ?? null,
@@ -61,6 +63,7 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'secretaria_id' => 'nullable|exists:secretarias,id',
@@ -70,6 +73,7 @@ class UserController extends Controller
 
         $data = [
             'name' => $validated['name'],
+            'username' => $validated['username'] ?? null,
             'email' => $validated['email'],
             'secretaria_id' => $validated['secretaria_id'] ?? null,
         ];

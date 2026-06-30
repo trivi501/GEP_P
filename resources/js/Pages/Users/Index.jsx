@@ -37,6 +37,9 @@ export default function Index({ users }) {
                                                 Nombre
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                Usuario
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Email
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -56,6 +59,9 @@ export default function Index({ users }) {
                                                 <tr key={user.id} className="hover:bg-gray-50 dark:bg-gray-700">
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                                                         {user.name}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {user.username ?? '—'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {user.email}
@@ -79,7 +85,7 @@ export default function Index({ users }) {
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan="5"
+                                                    colSpan="6"
                                                     className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                                                 >
                                                     No hay usuarios registrados.

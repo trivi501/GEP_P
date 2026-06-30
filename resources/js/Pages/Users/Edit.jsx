@@ -8,6 +8,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function Edit({ user, roles, secretarias }) {
     const { data, setData, patch, processing, errors } = useForm({
         name: user.name,
+        username: user.username ?? '',
         email: user.email,
         password: '',
         password_confirmation: '',
@@ -55,6 +56,24 @@ export default function Edit({ user, roles, secretarias }) {
                                     />
                                     <InputError
                                         message={errors.name}
+                                        className="mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="username" value="Usuario" />
+                                    <TextInput
+                                        id="username"
+                                        type="text"
+                                        name="username"
+                                        value={data.username}
+                                        className="mt-1 block w-full"
+                                        onChange={(e) =>
+                                            setData('username', e.target.value)
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.username}
                                         className="mt-2"
                                     />
                                 </div>

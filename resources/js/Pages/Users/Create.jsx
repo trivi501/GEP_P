@@ -8,6 +8,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function Create({ roles, secretarias }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        username: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -55,6 +56,24 @@ export default function Create({ roles, secretarias }) {
                                     />
                                     <InputError
                                         message={errors.name}
+                                        className="mt-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="username" value="Usuario" />
+                                    <TextInput
+                                        id="username"
+                                        type="text"
+                                        name="username"
+                                        value={data.username}
+                                        className="mt-1 block w-full"
+                                        onChange={(e) =>
+                                            setData('username', e.target.value)
+                                        }
+                                    />
+                                    <InputError
+                                        message={errors.username}
                                         className="mt-2"
                                     />
                                 </div>
