@@ -100,7 +100,6 @@
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
                 <tr>
-                    <td></td>
                     <td width="30%" style="text-align: right; font-size: 6.5pt;">Cajero: {{ $pago->user?->username ?? $pago->user?->name ?? '—' }}</td>
                 </tr>
             </table>
@@ -185,7 +184,6 @@
                     <td width="30%" style="text-align: right; font-size: 7pt;">Fecha: {{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y H:i') }}</td>
                 </tr>
                 <tr>
-                    <td></td>
                     <td width="30%" style="text-align: right; font-size: 6.5pt;">Cajero: {{ $pago->user?->username ?? $pago->user?->name ?? '—' }}</td>
                 </tr>
             </table>
