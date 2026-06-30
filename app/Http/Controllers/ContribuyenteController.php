@@ -207,7 +207,7 @@ class ContribuyenteController extends Controller
         $validated['activo'] = $validated['activo'] ?? 0;
         $validated['exento'] = $validated['exento'] ?? 0;
         $parts = array_filter([$validated['primer_apellido'] ?? '', $validated['segundo_apellido'] ?? '', $validated['nombre'] ?? '']);
-        $validated['nombre_completo'] = trim(implode(' ', $parts));
+        $validated['nombre_completo'] = trim(implode(' ', $parts)) ?: ($validated['nombre_moral'] ?? '');
 
         $contribuyente->update($validated);
 
