@@ -48,7 +48,8 @@ class RegenerateCuentasContribuyentes extends Command
                 $ref = trim($r->primer_apellido ?? $r->nombre_completo ?? '');
                 if ($ref !== '') {
                     $first = mb_strtoupper(mb_substr($ref, 0, 1));
-                    if (preg_match('/[A-Z]/u', $first)) {
+                    $first = iconv('UTF-8', 'ASCII//TRANSLIT', $first) ?: $first;
+                    if (preg_match('/[A-Z]/', $first)) {
                         $letra = $first;
                     }
                 }
