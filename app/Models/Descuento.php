@@ -13,8 +13,9 @@ class Descuento extends Model
         'idUser',
         'multas',
         'actualizaciones',
-        'gastos_cobranza',
         'recargos',
+        'aseo_publico',
+        'gastos_cobranza',
         'fecha_expiracion',
         'activo',
     ];
@@ -24,8 +25,9 @@ class Descuento extends Model
         return [
             'multas' => 'decimal:2',
             'actualizaciones' => 'decimal:2',
-            'gastos_cobranza' => 'decimal:2',
             'recargos' => 'decimal:2',
+            'aseo_publico' => 'decimal:2',
+            'gastos_cobranza' => 'decimal:2',
             'fecha_expiracion' => 'date',
             'activo' => 'boolean',
         ];

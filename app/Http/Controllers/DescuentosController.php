@@ -47,8 +47,9 @@ class DescuentosController extends Controller
             'idPredio' => 'required|string',
             'multas' => 'required|numeric|min:0|max:100',
             'actualizaciones' => 'required|numeric|min:0|max:100',
-            'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'recargos' => 'required|numeric|min:0|max:100',
+            'aseo_publico' => 'required|numeric|min:0|max:100',
+            'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
             'activo' => 'boolean',
         ]);
@@ -67,8 +68,9 @@ class DescuentosController extends Controller
         $validated = $request->validate([
             'multas' => 'required|numeric|min:0|max:100',
             'actualizaciones' => 'required|numeric|min:0|max:100',
-            'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'recargos' => 'required|numeric|min:0|max:100',
+            'aseo_publico' => 'required|numeric|min:0|max:100',
+            'gastos_cobranza' => 'required|numeric|min:0|max:100',
             'fecha_expiracion' => 'nullable|date',
             'activo' => 'boolean',
         ]);

@@ -35,6 +35,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                             actualizaciones: '0',
                             gastos_cobranza: '0',
                             recargos: '0',
+                            aseo_publico: '0',
                             fecha_expiracion: lastDayOfMonth(),
                             activo: true,
                         });
@@ -50,8 +51,9 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
         idPredio: '',
         multas: '0',
         actualizaciones: '0',
-        gastos_cobranza: '0',
         recargos: '0',
+        aseo_publico: '0',
+        gastos_cobranza: '0',
         fecha_expiracion: '',
         activo: true,
     });
@@ -85,7 +87,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
 
     const openCreate = () => {
         setEditing(null);
-        setForm({ idPredio: '', multas: '0', actualizaciones: '0', gastos_cobranza: '0', recargos: '0', fecha_expiracion: lastDayOfMonth(), activo: true });
+        setForm({ idPredio: '', multas: '0', actualizaciones: '0', recargos: '0', aseo_publico: '0', gastos_cobranza: '0', fecha_expiracion: lastDayOfMonth(), activo: true });
         setSelectedPredio(null);
         setPredioSearch('');
         setShowModal(true);
@@ -97,8 +99,9 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
             idPredio: d.idPredio,
             multas: String(d.multas),
             actualizaciones: String(d.actualizaciones),
-            gastos_cobranza: String(d.gastos_cobranza),
             recargos: String(d.recargos),
+            aseo_publico: String(d.aseo_publico),
+            gastos_cobranza: String(d.gastos_cobranza),
             fecha_expiracion: formatDate(d.fecha_expiracion) ?? '',
             activo: d.activo ?? true,
         });
@@ -189,6 +192,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Multas %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actualizaciones %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Recargos %</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">A.P. %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gtos Cobranza %</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Expira</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Estado</th>
@@ -204,6 +208,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.multas}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.actualizaciones}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.recargos}%</td>
+                                                <td className="whitespace-nowrap px-6 py-4 text-sm">{d.aseo_publico}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.gastos_cobranza}%</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{formatDate(d.fecha_expiracion) || '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-center">
@@ -287,7 +292,7 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-4 gap-4 mb-4">
+                            <div className="grid grid-cols-5 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Multas %</label>
                                     <input type="number" step="0.01" min="0" max="100" value={form.multas}
@@ -307,7 +312,13 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gastos Cobranza %</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">A.P. %</label>
+                                    <input type="number" step="0.01" min="0" max="100" value={form.aseo_publico}
+                                        onChange={(e) => setForm({ ...form, aseo_publico: e.target.value })}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gtos Cobranza %</label>
                                     <input type="number" step="0.01" min="0" max="100" value={form.gastos_cobranza}
                                         onChange={(e) => setForm({ ...form, gastos_cobranza: e.target.value })}
                                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" required />

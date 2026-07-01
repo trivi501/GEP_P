@@ -70,6 +70,9 @@ class CalculosPrediosController extends Controller
                 if (!empty($c['recargos']) && $descuento->recargos > 0) {
                     $descuentoAnual += $c['recargos'] * (float) $descuento->recargos / 100;
                 }
+                if (!empty($c['aseo_publico']) && $descuento->aseo_publico > 0) {
+                    $descuentoAnual += $c['aseo_publico'] * (float) $descuento->aseo_publico / 100;
+                }
                 if (!empty($c['cobranza']) && $descuento->gastos_cobranza > 0) {
                     $descuentoAnual += $c['cobranza'] * (float) $descuento->gastos_cobranza / 100;
                 }
