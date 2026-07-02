@@ -64,4 +64,9 @@ class Contribuyente extends Model
     {
         return $this->hasMany(Predio::class, 'id_contribuyente', 'id_contribuyente');
     }
+
+    public function convenios()
+    {
+        return $this->hasMany(ConvenioMaster::class, 'id_contribuyente', 'id_contribuyente');
+    }
 }
