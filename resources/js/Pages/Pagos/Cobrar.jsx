@@ -9,6 +9,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const [showResults, setShowResults] = useState(false);
     const [selectedPredio, setSelectedPredio] = useState(null);
     const [conceptos, setConceptos] = useState([]);
+    const [anios, setAnios] = useState([]);
+    const [selectedAnios, setSelectedAnios] = useState([]);
     const [total, setTotal] = useState(0);
     const [contribuyenteData, setContribuyenteData] = useState({});
     const [formasPagosData, setFormasPagosData] = useState([{ forma_pago_id: '1', monto: '' }]);
@@ -57,10 +59,13 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                 if (data.predio) {
                     const rustico = data.predio.es_rustico ?? false;
                     setEsRustico(rustico);
-                    setSelectedPredio({ id: predioId, clave_catastral: data.predio.clave_catastral ?? '', contribuyente: data.predio.contribuyente ?? '' });
+                    setSelectedPredio({ id: predioId, clave_catastral: data.predio.clave_catastral ?? '', contribuyente: data.predio.contribuyente ?? '', cuenta: data.predio.cuenta, domicilio: data.predio.domicilio, ultimo_pago: data.predio.ultimo_pago });
                     setSearch(`${data.predio.clave_catastral ?? ''} - ${data.predio.contribuyente ?? ''}`);
                     const items = data.conceptos.filter((c) => c.concepto !== 'TOTAL');
                     setConceptos(items);
+                    const yrs = data.anios || [];
+                    setAnios(yrs);
+                    setSelectedAnios(yrs.map((a) => a.anho));
                     setTotal(data.total);
                     setContribuyenteData({
                         id_contribuyente: data.predio.id_contribuyente,
@@ -81,6 +86,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         setSearch(`${p.clave_catastral} - ${p.contribuyente}`);
         setShowResults(false);
         setConceptos([]);
+        setAnios([]);
+        setSelectedAnios([]);
         setTotal(0);
         setError(null);
         setFormasPagosData([]);
@@ -93,6 +100,9 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                     setEsRustico(data.predio.es_rustico ?? false);
                     const items = data.conceptos.filter((c) => c.concepto !== 'TOTAL');
                     setConceptos(items);
+                    const yrs = data.anios || [];
+                    setAnios(yrs);
+                    setSelectedAnios(yrs.map((a) => a.anho));
                     setTotal(data.total);
                     setContribuyenteData({
                         id_contribuyente: data.predio.id_contribuyente,
@@ -108,6 +118,23 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             })
             .catch(() => setError('Error al obtener cálculo'));
     };
+
+    const toggleAnio = (anho) => {
+        setSelectedAnios((prev) => {
+            const next = prev.includes(anho) ? prev.filter((a) => a !== anho) : [...prev, anho];
+            return next.sort((a, b) => a - b);
+        });
+    };
+
+    const conceptosSeleccionados = (() => {
+        const sel = [];
+        anios.forEach((a) => {
+            if (selectedAnios.includes(a.anho)) a.conceptos.forEach((c) => sel.push(c));
+        });
+        return sel;
+    })();
+
+    const totalSeleccionado = anios.reduce((sum, a) => selectedAnios.includes(a.anho) ? sum + (parseFloat(a.total) || 0) : sum, 0);
 
     const addFormaPagoRow = () => {
         setFormasPagosData((prev) => [...prev, { forma_pago_id: '', monto: '' }]);
@@ -128,19 +155,19 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     );
 
     const descuentoMonto = selectedDescuento
-        ? conceptos.filter((c) => c.concepto === 'Impuesto Predial Actual' || c.concepto === 'Predial Rústico Actual').reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
+        ? conceptosSeleccionados.filter((c) => c.concepto.includes('Predial') && c.concepto.includes(String(new Date().getFullYear()))).reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
         : 0;
     const conceptosConDescuento = selectedDescuento && descuentoMonto > 0
-        ? [...conceptos, { concepto: 'Descuento', monto: -descuentoMonto }]
-        : conceptos;
-    const totalConDescuento = total - descuentoMonto;
+        ? [...conceptosSeleccionados, { concepto: 'Descuento', monto: -descuentoMonto }]
+        : conceptosSeleccionados;
+    const totalConDescuento = totalSeleccionado - descuentoMonto;
 
     const formasValidas = formasPagosData.every((row) => row.forma_pago_id && parseFloat(row.monto) > 0);
     const suficiente = sumaFormasPagos >= totalConDescuento - 0.01;
     const cambio = Math.max(0, sumaFormasPagos - totalConDescuento);
 
     const abrirConfirmacion = () => {
-        if (!selectedPredio || conceptos.length === 0) {
+        if (!selectedPredio || selectedAnios.length === 0) {
             alert('Selecciona un predio y espera el cálculo.');
             return;
         }
@@ -172,6 +199,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             forma_pago: formasPagosData[0]?.forma_pago_id || '',
             tipo_pago: esRustico ? 'predial_rustico' : 'predial_urbano',
             conceptos: conceptosConDescuento,
+            anios_pagados: selectedAnios,
             formas_pagos: formasPagosData.map((row) => ({
                 forma_pago_id: parseInt(row.forma_pago_id),
                 monto: parseFloat(row.monto),
@@ -283,35 +311,59 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                 </div>
 
                                 <div className="lg:col-span-1">
-                                    {conceptos.length > 0 && (
+                                    {anios.length > 0 && (
                                         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <h4 className="text-sm font-semibold mb-3">Cálculo del Predial</h4>
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr className="border-b border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">
-                                                        <th className="text-left py-1 pr-2">Concepto</th>
-                                                        <th className="text-right py-1 pl-2">Monto</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {conceptosConDescuento.map((c, i) => (
-                                                        <tr key={i} className="border-b border-gray-200 dark:border-gray-700">
-                                                            <td className="py-1 pr-2">{c.concepto}</td>
-                                                            <td className={`text-right py-1 pl-2 ${c.monto < 0 ? 'text-red-500' : ''}`}>${parseFloat(c.monto).toFixed(2)}</td>
+                                            <h4 className="text-sm font-semibold mb-3">Años a pagar</h4>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs">
+                                                    <thead>
+                                                        <tr className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
+                                                            <th className="text-left py-1 pr-2">Año</th>
+                                                            <th className="text-right py-1 px-1">Subtotal</th>
+                                                            <th className="text-right py-1 px-1">Recargos</th>
+                                                            <th className="text-right py-1 px-1">Actualiz.</th>
+                                                            <th className="text-right py-1 px-1">Multa</th>
+                                                            <th className="text-right py-1 px-1">Ejecución</th>
+                                                            <th className="text-right py-1 px-1">Total</th>
+                                                            <th className="text-center py-1 pl-2">Pagar</th>
                                                         </tr>
-                                                    ))}
-                                                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                                                        <td className="py-1 pr-2 font-bold">Total</td>
-                                                        <td className="text-right py-1 pl-2 font-bold">${totalConDescuento.toFixed(2)}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+                                                    <tbody>
+                                                        {anios.map((a) => {
+                                                            const c = {};
+                                                            a.conceptos.forEach((x) => {
+                                                                if (x.concepto.includes('Predial') || x.concepto.includes('Rústico') || x.concepto.includes('Aseo')) {
+                                                                    if (x.concepto.includes('Aseo')) c.aseo = (c.aseo || 0) + parseFloat(x.monto);
+                                                                    else c.subtotal = (c.subtotal || 0) + parseFloat(x.monto);
+                                                                } else if (x.concepto.includes('Recargos')) c.recargos = parseFloat(x.monto);
+                                                                else if (x.concepto.includes('Actualización')) c.actualizacion = parseFloat(x.monto);
+                                                                else if (x.concepto.includes('Multa')) c.multa = parseFloat(x.monto);
+                                                                else if (x.concepto.includes('Ejecución') || x.concepto.includes('Gastos')) c.ejecucion = parseFloat(x.monto);
+                                                            });
+                                                            return (
+                                                                <tr key={a.anho} className="border-b border-gray-200 dark:border-gray-700">
+                                                                    <td className="py-1 pr-2 font-medium">{a.anho}</td>
+                                                                    <td className="py-1 px-1 text-right">${(c.subtotal || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 px-1 text-right">${(c.recargos || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 px-1 text-right">${(c.actualizacion || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 px-1 text-right">${(c.multa || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 px-1 text-right">${(c.ejecucion || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 px-1 text-right font-bold">${parseFloat(a.total || 0).toFixed(2)}</td>
+                                                                    <td className="py-1 pl-2 text-center">
+                                                                        <input type="checkbox" checked={selectedAnios.includes(a.anho)} onChange={() => toggleAnio(a.anho)} className="rounded border-gray-300 dark:border-gray-600" />
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {conceptos.length > 0 && total > 0 && (
+                            {anios.length > 0 && totalSeleccionado > 0 && (
                                 <div className="mt-6 border-t border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 pt-6">
                                     <div className="mt-4">
                                         <div className="flex items-center justify-between mb-2">
