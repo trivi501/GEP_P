@@ -249,8 +249,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                 <a href="/pagos" className="text-sm text-gray-600 dark:text-gray-400 hover:underline">&larr; Volver</a>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="lg:col-span-1 space-y-4" ref={searchRef}>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-4" ref={searchRef}>
                                     <div className="relative">
                                         <label className="block text-sm font-medium mb-1">Buscar por Cuenta o Clave Catastral</label>
                                         <input
@@ -291,7 +291,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                     )}
                                 </div>
 
-                                <div className="lg:col-span-1">
+                                <div>
                                     <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                         <h4 className="text-sm font-semibold mb-3">Descuentos</h4>
                                         <div className="space-y-2">
@@ -309,99 +309,103 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                         )}
                                     </div>
                                 </div>
-
                             </div>
 
+                            {anios.length > 0 && (
+                                <div className="mt-6">
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <h4 className="text-sm font-semibold mb-3">Años a pagar</h4>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
+                                                        <th className="text-left py-1 pr-2">Año</th>
+                                                        <th className="text-right py-1 px-1">Subtotal</th>
+                                                        <th className="text-right py-1 px-1">Recargos</th>
+                                                        <th className="text-right py-1 px-1">Actualiz.</th>
+                                                        <th className="text-right py-1 px-1">Multa</th>
+                                                        <th className="text-right py-1 px-1">Ejecución</th>
+                                                        <th className="text-right py-1 px-1">Total</th>
+                                                        <th className="text-center py-1 pl-2">Pagar</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {anios.map((a) => {
+                                                        const c = {};
+                                                        a.conceptos.forEach((x) => {
+                                                            if (x.concepto.includes('Predial') || x.concepto.includes('Rústico') || x.concepto.includes('Aseo')) {
+                                                                if (x.concepto.includes('Aseo')) c.aseo = (c.aseo || 0) + parseFloat(x.monto);
+                                                                else c.subtotal = (c.subtotal || 0) + parseFloat(x.monto);
+                                                            } else if (x.concepto.includes('Recargos')) c.recargos = parseFloat(x.monto);
+                                                            else if (x.concepto.includes('Actualización')) c.actualizacion = parseFloat(x.monto);
+                                                            else if (x.concepto.includes('Multa')) c.multa = parseFloat(x.monto);
+                                                            else if (x.concepto.includes('Ejecución') || x.concepto.includes('Gastos')) c.ejecucion = parseFloat(x.monto);
+                                                        });
+                                                        return (
+                                                            <tr key={a.anho} className="border-b border-gray-200 dark:border-gray-700">
+                                                                <td className="py-1 pr-2 font-medium">{a.anho}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.subtotal || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.recargos || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.actualizacion || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.multa || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.ejecucion || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right font-bold">${parseFloat(a.total || 0).toFixed(2)}</td>
+                                                                <td className="py-1 pl-2 text-center">
+                                                                    <input type="checkbox" checked={selectedAnios.includes(a.anho)} onChange={() => toggleAnio(a.anho)} className="rounded border-gray-300 dark:border-gray-600" />
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {anios.length > 0 && totalSeleccionado > 0 && (
-                                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div className="border-t border-gray-300 dark:border-gray-600 pt-6 lg:border-t-0 lg:pt-0">
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <h4 className="text-sm font-semibold mb-3">Pago</h4>
+                                <div className="mt-6">
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <h4 className="text-sm font-semibold mb-3">Pago</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-3">
                                                 <div>
                                                     <label className="block text-sm font-medium mb-1">Total a pagar</label>
                                                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">${totalConDescuento.toFixed(2)}</p>
                                                 </div>
-                                                <div>
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <label className="block text-sm font-medium">Formas de Pago</label>
-                                                        <button type="button" onClick={addFormaPagoRow} className="text-sm text-indigo-600 hover:text-indigo-900">+ Agregar</button>
-                                                    </div>
-                                                    {formasPagosData.map((row, i) => (
-                                                        <div key={i} className="flex gap-2 items-end mb-2">
-                                                            <div className="flex-1">
-                                                                <select value={row.forma_pago_id} onChange={(e) => updateFormaPagoRow(i, 'forma_pago_id', e.target.value)} className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
-                                                                    <option value="">Seleccionar...</option>
-                                                                    {formasPago.map((fp) => (<option key={fp.id} value={fp.id}>{fp.Descripción}</option>))}
-                                                                </select>
-                                                            </div>
-                                                            <div className="w-32">
-                                                                <input type="number" step="0.01" min="0" value={row.monto} onChange={(e) => updateFormaPagoRow(i, 'monto', e.target.value)} placeholder="Monto" className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm" />
-                                                            </div>
-                                                            {formasPagosData.length > 1 && (
-                                                                <button type="button" onClick={() => removeFormaPagoRow(i)} className="text-red-500 text-sm pb-1">X</button>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                    <div className="mt-1 text-sm">
-                                                        <span className="text-gray-600">Recibido: </span>
-                                                        <span className={suficiente ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>${sumaFormasPagos.toFixed(2)}</span>
-                                                        {suficiente && cambio > 0 && <span className="ml-2 text-green-600 text-xs">cambio: ${cambio.toFixed(2)}</span>}
-                                                    </div>
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="block text-sm font-medium">Formas de Pago</label>
+                                                    <button type="button" onClick={addFormaPagoRow} className="text-sm text-indigo-600 hover:text-indigo-900">+ Agregar</button>
                                                 </div>
-                                                <button onClick={abrirConfirmacion} disabled={loading || !formasValidas || !suficiente} className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                    {loading ? 'Procesando...' : 'Revisar y Pagar'}
-                                                </button>
+                                                {formasPagosData.map((row, i) => (
+                                                    <div key={i} className="flex gap-2 items-end mb-2">
+                                                        <div className="flex-1">
+                                                            <select value={row.forma_pago_id} onChange={(e) => updateFormaPagoRow(i, 'forma_pago_id', e.target.value)} className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                                                <option value="">Seleccionar...</option>
+                                                                {formasPago.map((fp) => (<option key={fp.id} value={fp.id}>{fp.Descripción}</option>))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="w-32">
+                                                            <input type="number" step="0.01" min="0" value={row.monto} onChange={(e) => updateFormaPagoRow(i, 'monto', e.target.value)} placeholder="Monto" className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm" />
+                                                        </div>
+                                                        {formasPagosData.length > 1 && (
+                                                            <button type="button" onClick={() => removeFormaPagoRow(i)} className="text-red-500 text-sm pb-1">X</button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                <div className="mt-1 text-sm">
+                                                    <span className="text-gray-600">Recibido: </span>
+                                                    <span className={suficiente ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>${sumaFormasPagos.toFixed(2)}</span>
+                                                    {suficiente && cambio > 0 && <span className="ml-2 text-green-600 text-xs">cambio: ${cambio.toFixed(2)}</span>}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <h4 className="text-sm font-semibold mb-3">Años a pagar</h4>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-xs">
-                                                    <thead>
-                                                        <tr className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
-                                                            <th className="text-left py-1 pr-2">Año</th>
-                                                            <th className="text-right py-1 px-1">Subtotal</th>
-                                                            <th className="text-right py-1 px-1">Recargos</th>
-                                                            <th className="text-right py-1 px-1">Actualiz.</th>
-                                                            <th className="text-right py-1 px-1">Multa</th>
-                                                            <th className="text-right py-1 px-1">Ejecución</th>
-                                                            <th className="text-right py-1 px-1">Total</th>
-                                                            <th className="text-center py-1 pl-2">Pagar</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {anios.map((a) => {
-                                                            const c = {};
-                                                            a.conceptos.forEach((x) => {
-                                                                if (x.concepto.includes('Predial') || x.concepto.includes('Rústico') || x.concepto.includes('Aseo')) {
-                                                                    if (x.concepto.includes('Aseo')) c.aseo = (c.aseo || 0) + parseFloat(x.monto);
-                                                                    else c.subtotal = (c.subtotal || 0) + parseFloat(x.monto);
-                                                                } else if (x.concepto.includes('Recargos')) c.recargos = parseFloat(x.monto);
-                                                                else if (x.concepto.includes('Actualización')) c.actualizacion = parseFloat(x.monto);
-                                                                else if (x.concepto.includes('Multa')) c.multa = parseFloat(x.monto);
-                                                                else if (x.concepto.includes('Ejecución') || x.concepto.includes('Gastos')) c.ejecucion = parseFloat(x.monto);
-                                                            });
-                                                            return (
-                                                                <tr key={a.anho} className="border-b border-gray-200 dark:border-gray-700">
-                                                                    <td className="py-1 pr-2 font-medium">{a.anho}</td>
-                                                                    <td className="py-1 px-1 text-right">${(c.subtotal || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 px-1 text-right">${(c.recargos || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 px-1 text-right">${(c.actualizacion || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 px-1 text-right">${(c.multa || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 px-1 text-right">${(c.ejecucion || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 px-1 text-right font-bold">${parseFloat(a.total || 0).toFixed(2)}</td>
-                                                                    <td className="py-1 pl-2 text-center">
-                                                                        <input type="checkbox" checked={selectedAnios.includes(a.anho)} onChange={() => toggleAnio(a.anho)} className="rounded border-gray-300 dark:border-gray-600" />
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                        <div className="mt-4">
+                                            <button onClick={abrirConfirmacion} disabled={loading || !formasValidas || !suficiente} className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                {loading ? 'Procesando...' : 'Revisar y Pagar'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
