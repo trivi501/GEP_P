@@ -542,9 +542,13 @@ class PagosController extends Controller
             $esRustico = ($validated['tipo_pago'] ?? '') === 'predial_rustico';
 
             $conceptCuentaMapping = $esRustico ? [
-                'Predial Rústico' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')
-                ),
+                'Predial Rústico' => fn($list, $concepto) => $list->first(fn($c) => {
+                    preg_match('/(\d{4})/', $concepto, $m);
+                    $anio = $m[1] ?? date('Y');
+                    return $anio < date('Y')
+                        ? (str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')) && (str_contains($c->descripcion_clean, 'ANTERIORES') || str_contains($c->descripcion_clean, 'REZAGO'))
+                        : (str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')) && str_contains($c->descripcion_clean, 'ACTUAL');
+                }),
                 'Gastos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
@@ -552,9 +556,13 @@ class PagosController extends Controller
                     stripos($c->descripcion_clean, 'DESCUENTO') !== false
                 ),
             ] : [
-                'Predial' => fn($list) => $list->first(fn($c) =>
-                    $c->descripcion_clean === 'PREDIAL URBANO AÑO ACTUAL'
-                ),
+                'Predial' => fn($list, $concepto) => $list->first(fn($c) => {
+                    preg_match('/(\d{4})/', $concepto, $m);
+                    $anio = $m[1] ?? date('Y');
+                    return $anio < date('Y')
+                        ? str_contains($c->descripcion_clean, 'ANTERIORES') || str_contains($c->descripcion_clean, 'REZAGO')
+                        : $c->descripcion_clean === 'PREDIAL URBANO AÑO ACTUAL';
+                }),
                 'Aseo' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'S.A.P.')
                 ),
@@ -581,7 +589,7 @@ class PagosController extends Controller
 
                 foreach ($conceptCuentaMapping as $key => $resolver) {
                     if (str_contains($concepto, $key)) {
-                        $match = $resolver($cuentasList);
+                        $match = $resolver($cuentasList, $concepto);
                         if ($match) { $cuentaId = $match->id; break; }
                     }
                 }
