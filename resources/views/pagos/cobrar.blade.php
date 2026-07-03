@@ -110,6 +110,8 @@
     <script>
         let selectedPredioId = null;
         let currentConceptos = [];
+        let currentAnios = [];
+        let selectedAnios = [];
         let contribuyenteData = {};
 
         const searchInput = document.getElementById('search');
@@ -171,6 +173,83 @@
             }
         });
 
+        function recalcTotal() {
+            let total = 0;
+            currentConceptos = [];
+            currentAnios.forEach(anio => {
+                if (selectedAnios.includes(anio.anho)) {
+                    anio.conceptos.forEach(c => currentConceptos.push(c));
+                    total += parseFloat(anio.total || 0);
+                }
+            });
+            totalDisplay.textContent = '$' + total.toFixed(2);
+        }
+
+        function renderAnios() {
+            conceptosBody.innerHTML = '';
+            if (!currentAnios.length) return;
+
+            const headerTr = document.createElement('tr');
+            headerTr.className = 'border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600';
+            headerTr.innerHTML = `
+                <td class="py-1 pr-2 text-xs font-bold">Año</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Subtotal</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Recargos</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Actualiz.</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Multa</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Ejecución</td>
+                <td class="py-1 px-2 text-right text-xs font-bold">Total</td>
+                <td class="py-1 pl-2 text-center text-xs font-bold">Pagar</td>
+            `;
+            conceptosBody.appendChild(headerTr);
+
+            currentAnios.forEach(anio => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-200 dark:border-gray-600';
+
+                const c = {};
+                anio.conceptos.forEach(x => {
+                    if (x.concepto.includes('Predial') || x.concepto.includes('Rústico')) c.subtotal = x.monto;
+                    else if (x.concepto.includes('Aseo')) c.aseo = x.monto;
+                    else if (x.concepto.includes('Recargos')) c.recargos = x.monto;
+                    else if (x.concepto.includes('Actualización')) c.actualizacion = x.monto;
+                    else if (x.concepto.includes('Multa')) c.multa = x.monto;
+                    else if (x.concepto.includes('Ejecución') || x.concepto.includes('Gastos')) c.ejecucion = x.monto;
+                });
+
+                const checked = selectedAnios.includes(anio.anho) ? 'checked' : '';
+
+                tr.innerHTML = `
+                    <td class="py-1 pr-2 font-medium">${anio.anho}</td>
+                    <td class="py-1 px-2 text-right">$${parseFloat(c.subtotal || 0).toFixed(2)}</td>
+                    <td class="py-1 px-2 text-right">$${parseFloat(c.recargos || 0).toFixed(2)}</td>
+                    <td class="py-1 px-2 text-right">$${parseFloat(c.actualizacion || 0).toFixed(2)}</td>
+                    <td class="py-1 px-2 text-right">$${parseFloat(c.multa || 0).toFixed(2)}</td>
+                    <td class="py-1 px-2 text-right">$${parseFloat(c.ejecucion || 0).toFixed(2)}</td>
+                    <td class="py-1 px-2 text-right font-bold">$${parseFloat(anio.total || 0).toFixed(2)}</td>
+                    <td class="py-1 pl-2 text-center">
+                        <input type="checkbox" class="anio-check rounded border-gray-300 dark:border-gray-600" data-anho="${anio.anho}" ${checked}>
+                    </td>
+                `;
+                conceptosBody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.anio-check').forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const anho = parseInt(this.dataset.anho);
+                    if (this.checked) {
+                        if (!selectedAnios.includes(anho)) selectedAnios.push(anho);
+                    } else {
+                        selectedAnios = selectedAnios.filter(a => a !== anho);
+                    }
+                    selectedAnios.sort((a, b) => a - b);
+                    recalcTotal();
+                });
+            });
+
+            recalcTotal();
+        }
+
         function selectPredio(p) {
             selectedPredioId = p.id;
             searchInput.value = p.clave_catastral + ' - ' + p.contribuyente;
@@ -195,28 +274,17 @@
                 .then(data => {
                     if (data.predio) {
                         currentConceptos = data.conceptos.filter(c => c.concepto !== 'TOTAL');
+                        currentAnios = data.anios || [];
+                        selectedAnios = currentAnios.map(a => a.anho);
                         contribuyenteData = {
                             id_contribuyente: data.predio.id_contribuyente,
                             rfc: data.predio.rfc || '—',
                             nombre: data.predio.contribuyente_nombre || data.predio.contribuyente || '—',
+                            es_rustico: data.predio.es_rustico || false,
                         };
 
-                        conceptosBody.innerHTML = '';
-                        let total = 0;
+                        renderAnios();
 
-                        data.conceptos.forEach(c => {
-                            const tr = document.createElement('tr');
-                            tr.className = 'border-b border-gray-200 dark:border-gray-600';
-                            const isTotal = c.concepto === 'TOTAL';
-                            tr.innerHTML = `
-                                <td class="py-1 pr-2 ${isTotal ? 'font-bold' : ''}">${c.concepto}</td>
-                                <td class="text-right py-1 pl-2 ${isTotal ? 'font-bold' : ''}">$${parseFloat(c.monto).toFixed(2)}</td>
-                            `;
-                            conceptosBody.appendChild(tr);
-                            total = data.total;
-                        });
-
-                        totalDisplay.textContent = '$' + parseFloat(total).toFixed(2);
                         calculoContainer.classList.remove('hidden');
                         pagoSection.classList.remove('hidden');
                         btnPagar.disabled = false;
@@ -238,7 +306,6 @@
             }
 
             const monto = currentConceptos.reduce((sum, c) => sum + parseFloat(c.monto || 0), 0);
-            const descuentoInput = document.querySelector('input[type="checkbox"]:checked');
             const descuento = 0;
 
             this.disabled = true;
@@ -251,10 +318,11 @@
                 descuento: descuento,
                 nombre: contribuyenteData.nombre,
                 rfc: contribuyenteData.rfc,
-                descripcion: 'Pago predial urbano',
+                descripcion: 'Pago predial ' + (contribuyenteData.es_rustico ? 'rústico' : 'urbano'),
                 forma_pago: formaPago.value,
-                tipo_pago: 'predial_urbano',
+                tipo_pago: contribuyenteData.es_rustico ? 'predial_rustico' : 'predial_urbano',
                 conceptos: currentConceptos,
+                anios_pagados: selectedAnios,
             };
 
             fetch('{{ route('pagos.guardar') }}', {

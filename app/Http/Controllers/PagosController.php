@@ -300,16 +300,7 @@ class PagosController extends Controller
 
         $total = 0;
         $conceptos = [];
-        $predial_ant = 0;
-        $aseoPublico_ant = 0;
-        $aseoPublico_act = 0;
-        $recargos_ant = 0;
-        $recargos_act = 0;
-        $actualizacion_ant = 0;
-        $actualizacion_act = 0;
-        $total_ant = 0;
-        $multa_total = 0;
-        $cobranza_total = 0;
+        $anios = [];
 
         $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
 
@@ -323,15 +314,7 @@ class PagosController extends Controller
             $anhoInicio = ($predio->año_ultimo_pago ?? now()->year) + 1;
             $anhoActual = now()->year;
             $primerAnioCalc = $anhoInicio;
-            $predialRustico = 0;
-            $predialRusticoAnt = 0;
-            $predialRusticoAct = 0;
-            $recargosRustico = 0;
-            $recargosRusticoAct = 0;
-            $actualizacionRustico = 0;
-            $actualizacionRusticoAct = 0;
-            $multaRustico = 0;
-            $cobranzaRustico = 0;
+            $anios = [];
 
             while ($anhoInicio <= $anhoActual) {
                 $umaAnual = \App\Models\CatUma::where('anio', $anhoInicio)->where('activo', 1)->first();
@@ -383,114 +366,52 @@ class PagosController extends Controller
                 }
 
                 $multaAnual = $anhoInicio < $anhoActual ? 1875 : 0;
+                $totalAnual = round($subtotal + $recargosAnual + $actualizacionAnual + $multaAnual + $cobranzaAnual, 2);
 
-                if ($anhoInicio < $anhoActual) {
-                    $predialRusticoAnt += $subtotal;
-                    $recargosRustico += $recargosAnual;
-                    $actualizacionRustico += $actualizacionAnual;
-                } else {
-                    $predialRusticoAct += $subtotal;
-                    $recargosRusticoAct += $recargosAnual;
-                    $actualizacionRusticoAct += $actualizacionAnual;
-                }
-                $predialRustico += $subtotal;
-                $multaRustico += $multaAnual;
-                $cobranzaRustico += $cobranzaAnual;
+                $anioConceptos = [];
+                $anioConceptos[] = ['concepto' => 'Predial Rústico ' . $anhoInicio, 'monto' => round($subtotal, 2)];
+                if ($recargosAnual > 0) $anioConceptos[] = ['concepto' => 'Recargos ' . $anhoInicio, 'monto' => round($recargosAnual, 2)];
+                if ($actualizacionAnual > 0) $anioConceptos[] = ['concepto' => 'Actualización ' . $anhoInicio, 'monto' => round($actualizacionAnual, 2)];
+                if ($multaAnual > 0) $anioConceptos[] = ['concepto' => 'Multa ' . $anhoInicio, 'monto' => round($multaAnual, 2)];
+                if ($cobranzaAnual > 0) $anioConceptos[] = ['concepto' => 'Gastos Ejecución ' . $anhoInicio, 'monto' => round($cobranzaAnual, 2)];
+
+                $anios[] = ['anho' => $anhoInicio, 'conceptos' => $anioConceptos, 'total' => $totalAnual];
+
+                $conceptos = array_merge($conceptos, $anioConceptos);
+                $total += $totalAnual;
                 $anhoInicio++;
             }
 
-            if ($predialRusticoAnt > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico Anterior', 'monto' => round($predialRusticoAnt, 2)];
-            }
-            if ($predialRusticoAct > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico Actual', 'monto' => round($predialRusticoAct, 2)];
-            }
-            if ($predialRusticoAnt == 0 && $predialRusticoAct == 0 && $predialRustico > 0) {
-                $conceptos[] = ['concepto' => 'Predial Rústico', 'monto' => round($predialRustico, 2)];
-            }
-            if ($recargosRustico > 0) {
-                $conceptos[] = ['concepto' => 'Recargos Anteriores', 'monto' => round($recargosRustico, 2)];
-            }
-            if ($recargosRusticoAct > 0) {
-                $conceptos[] = ['concepto' => 'Recargos Actual', 'monto' => round($recargosRusticoAct, 2)];
-            }
-            if ($actualizacionRustico > 0) {
-                $conceptos[] = ['concepto' => 'Actualización Anterior', 'monto' => round($actualizacionRustico, 2)];
-            }
-            if ($actualizacionRusticoAct > 0) {
-                $conceptos[] = ['concepto' => 'Actualización Actual', 'monto' => round($actualizacionRusticoAct, 2)];
-            }
-            if ($multaRustico > 0) {
-                $conceptos[] = ['concepto' => 'Multa', 'monto' => round($multaRustico, 2)];
-            }
-            if ($cobranzaRustico > 0) {
-                $conceptos[] = ['concepto' => 'Gastos de Ejecución Predial Urbano', 'monto' => round($cobranzaRustico, 2)];
-            }
-
-            $total = round($predialRustico + $recargosRustico + $recargosRusticoAct + $actualizacionRustico + $actualizacionRusticoAct + $multaRustico + $cobranzaRustico, 2);
+            $anios = array_values($anios);
         } elseif ($predio->datosUrbano) {
             try {
                 $calculosController = new CalculosPrediosController(app(CalculoPredialUrbanoService::class));
                 $calculosAnuales = $calculosController->getCalculosAnuales($predio);
-                
+                $anios = [];
+
                 foreach ($calculosAnuales as $calculo) {
-                    if($calculo['anho'] < date('Y')) {
-                        $predial_ant += $calculo['entero'];
-                        $aseoPublico_ant += $calculo['aseo_publico'] ?? 0;
-                        $recargos_ant += $calculo['recargos'] ?? 0;
-                        $actualizacion_ant += $calculo['actualizacion'] ?? 0;
-                        $total_ant += ($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0);
-                    }else {
-                        $aseoPublico_act += $calculo['aseo_publico'] ?? 0;
-                        $recargos_act += $calculo['recargos'] ?? 0;
-                        $actualizacion_act += $calculo['actualizacion'] ?? 0;
-                        $total += ($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0);
-                    }
-                    $multa_total += $calculo['multa'] ?? 0;
-                    $cobranza_total += $calculo['cobranza'] ?? 0;
-                }
-                
-                $ultimo = end($calculosAnuales);
-                $conceptos[] = ['concepto' => 'Predial Anterior', 'monto' => round($predial_ant, 2)];
-                $conceptos[] = ['concepto' => 'Impuesto Predial Actual', 'monto' => round($calculo['entero'], 2)];
+                    $anioConceptos = [];
+                    $anioConceptos[] = ['concepto' => 'Predial ' . $calculo['anho'], 'monto' => round($calculo['entero'] ?? 0, 2)];
+                    if (!empty($calculo['aseo_publico'])) $anioConceptos[] = ['concepto' => 'Aseo Público ' . $calculo['anho'], 'monto' => round($calculo['aseo_publico'], 2)];
+                    if (!empty($calculo['recargos'])) $anioConceptos[] = ['concepto' => 'Recargos ' . $calculo['anho'], 'monto' => round($calculo['recargos'], 2)];
+                    if (!empty($calculo['actualizacion'])) $anioConceptos[] = ['concepto' => 'Actualización ' . $calculo['anho'], 'monto' => round($calculo['actualizacion'], 2)];
+                    if (!empty($calculo['multa'])) $anioConceptos[] = ['concepto' => 'Multa ' . $calculo['anho'], 'monto' => round($calculo['multa'], 2)];
+                    if (!empty($calculo['cobranza'])) $anioConceptos[] = ['concepto' => 'Gastos Ejecución ' . $calculo['anho'], 'monto' => round($calculo['cobranza'], 2)];
 
-                if ($aseoPublico_ant > 0) {
-                    $conceptos[] = ['concepto' => 'Aseo Público Anterior', 'monto' => round($aseoPublico_ant, 2)];
-                }
-                if ($aseoPublico_act > 0) {
-                    $conceptos[] = ['concepto' => 'Aseo Público Actual', 'monto' => round($aseoPublico_act, 2)];
+                    $anioTotal = round(($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0) + ($calculo['multa'] ?? 0) + ($calculo['cobranza'] ?? 0) - ($calculo['descuento'] ?? 0), 2);
+
+                    $anios[] = ['anho' => $calculo['anho'], 'conceptos' => $anioConceptos, 'total' => $anioTotal];
+
+                    $conceptos = array_merge($conceptos, $anioConceptos);
+                    $total += $anioTotal;
                 }
 
-                if ($recargos_ant > 0) {
-                    $conceptos[] = ['concepto' => 'Recargos Anteriores', 'monto' => round($recargos_ant, 2)];
-                }
-                if ($recargos_act > 0) {
-                    $conceptos[] = ['concepto' => 'Recargos Actual', 'monto' => round($recargos_act, 2)];
-                }
-
-                if ($actualizacion_ant > 0) {
-                    $conceptos[] = ['concepto' => 'Actualización Anterior', 'monto' => round($actualizacion_ant, 2)];
-                }
-                if ($actualizacion_act > 0) {
-                    $conceptos[] = ['concepto' => 'Actualización Actual', 'monto' => round($actualizacion_act, 2)];
-                }
-
-                if ($multa_total > 0) {
-                    $conceptos[] = ['concepto' => 'Multa', 'monto' => round($multa_total, 2)];
-                }
-                if ($cobranza_total > 0) {
-                    $conceptos[] = ['concepto' => 'Gastos de Ejecución Predial Urbano', 'monto' => round($cobranza_total, 2)];
-                }
-
-                if (!empty($ultimo['descuento']) && $ultimo['descuento'] > 0) {
-                    $conceptos[] = ['concepto' => 'Descuento por Prono pago', 'monto' => round($ultimo['descuento'], 2)];
-                }
-
-                $total = round($total + $total_ant + $multa_total + $cobranza_total, 2);
+                $anios = array_values($anios);
             } catch (\Exception $e) {
                 $conceptos[] = ['concepto' => 'Error al calcular: ' . $e->getMessage(), 'monto' => 0];
             }
         } else {
+            $anios = [];
             $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
         }
@@ -503,16 +424,16 @@ class PagosController extends Controller
             $descuentoRecargos = 0;
 
             foreach ($conceptos as &$c) {
-                if ($c['concepto'] === 'Multa' && $descInfo['multas_pct'] > 0) {
-                    $descuentoMulta = round($c['monto'] * $descInfo['multas_pct'] / 100, 2);
+                if (str_contains($c['concepto'], 'Multa') && $descInfo['multas_pct'] > 0) {
+                    $descuentoMulta += round($c['monto'] * $descInfo['multas_pct'] / 100, 2);
                 }
-                if (in_array($c['concepto'], ['Actualización Anterior', 'Actualización Actual']) && $descInfo['actualizaciones_pct'] > 0) {
+                if (str_contains($c['concepto'], 'Actualización') && $descInfo['actualizaciones_pct'] > 0) {
                     $descuentoActualizacion += round($c['monto'] * $descInfo['actualizaciones_pct'] / 100, 2);
                 }
-                if ($c['concepto'] === 'Gastos de Ejecución Predial Urbano' && $descInfo['cobranza_pct'] > 0) {
-                    $descuentoCobranza = round($c['monto'] * $descInfo['cobranza_pct'] / 100, 2);
+                if ((str_contains($c['concepto'], 'Ejecución') || str_contains($c['concepto'], 'Gastos')) && $descInfo['cobranza_pct'] > 0) {
+                    $descuentoCobranza += round($c['monto'] * $descInfo['cobranza_pct'] / 100, 2);
                 }
-                if (in_array($c['concepto'], ['Recargos Anteriores', 'Recargos Actual']) && $descInfo['recargos_pct'] > 0) {
+                if (str_contains($c['concepto'], 'Recargos') && $descInfo['recargos_pct'] > 0) {
                     $descuentoRecargos += round($c['monto'] * $descInfo['recargos_pct'] / 100, 2);
                 }
             }
@@ -542,6 +463,7 @@ class PagosController extends Controller
                 'es_rustico' => $esRustico,
             ],
             'conceptos' => $conceptos,
+            'anios' => $anios,
             'total' => $total,
         ]);
     }
@@ -561,6 +483,8 @@ class PagosController extends Controller
             'conceptos' => 'required|array|min:1',
             'conceptos.*.concepto' => 'required|string',
             'conceptos.*.monto' => 'required|numeric',
+            'anios_pagados' => 'nullable|array',
+            'anios_pagados.*' => 'integer',
             'formas_pagos' => 'required|array|min:1',
             'formas_pagos.*.forma_pago_id' => 'required|integer',
             'formas_pagos.*.monto' => 'required|numeric|min:0.01',
@@ -618,50 +542,32 @@ class PagosController extends Controller
             $esRustico = ($validated['tipo_pago'] ?? '') === 'predial_rustico';
 
             $conceptCuentaMapping = $esRustico ? [
-                'Predial Rústico Actual' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'RÚSTICO') && str_contains($c->descripcion_clean, 'ACTUAL')
-                ),
-                'Predial Rústico Anterior' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'RÚSTICO') && str_contains($c->descripcion_clean, 'ANTERIORES')
-                ),
                 'Predial Rústico' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'RÚSTICO') || str_contains($c->descripcion_clean, 'RUSTICO')
                 ),
-                'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
+                'Gastos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
                 'Descuentos' => fn($list) => $list->first(fn($c) =>
                     stripos($c->descripcion_clean, 'DESCUENTO') !== false
                 ),
             ] : [
-                'Predial Anterior' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'ANTERIORES')
-                ),
-                'Impuesto Predial Actual' => fn($list) => $list->first(fn($c) =>
+                'Predial' => fn($list) => $list->first(fn($c) =>
                     $c->descripcion_clean === 'PREDIAL URBANO AÑO ACTUAL'
                 ),
-                'Aseo Público Anterior' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'S.A.P.') && str_contains($c->descripcion_clean, 'REZAGO')
+                'Aseo' => fn($list) => $list->first(fn($c) =>
+                    str_contains($c->descripcion_clean, 'S.A.P.')
                 ),
-                'Aseo Público Actual' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'S.A.P. - URBANO ACTUAL')
-                ),
-                'Recargos Anteriores' => fn($list) => $list->first(fn($c) =>
+                'Recargos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'RECARGOS PREDIAL URBANO')
                 ),
-                'Recargos Actual' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'RECARGOS PREDIAL URBANO')
-                ),
-                'Actualización Anterior' => fn($list) => $list->first(fn($c) =>
-                    str_contains($c->descripcion_clean, 'ACTUALIZACIONES PREDIAL URBANO')
-                ),
-                'Actualización Actual' => fn($list) => $list->first(fn($c) =>
+                'Actualización' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'ACTUALIZACIONES PREDIAL URBANO')
                 ),
                 'Multa' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'MULTA')
                 ),
-                'Gastos de Ejecución Predial Urbano' => fn($list) => $list->first(fn($c) =>
+                'Gastos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
                 'Descuentos' => fn($list) => $list->first(fn($c) =>
@@ -673,9 +579,11 @@ class PagosController extends Controller
                 $concepto = trim($c['concepto']);
                 $cuentaId = null;
 
-                if (isset($conceptCuentaMapping[$concepto])) {
-                    $match = $conceptCuentaMapping[$concepto]($cuentasList);
-                    if ($match) $cuentaId = $match->id;
+                foreach ($conceptCuentaMapping as $key => $resolver) {
+                    if (str_contains($concepto, $key)) {
+                        $match = $resolver($cuentasList);
+                        if ($match) { $cuentaId = $match->id; break; }
+                    }
                 }
 
                 CuentasPagos::create([
@@ -715,10 +623,12 @@ class PagosController extends Controller
                 ->where('activo', true)
                 ->update(['activo' => false]);
 
+            $anioPago = !empty($validated['anios_pagados']) ? max($validated['anios_pagados']) : date('Y');
+
             DB::table('tb_predio')
                 ->where('id_predio', $validated['id_predio'])
                 ->update([
-                    'año_ultimo_pago' => date('Y'),
+                    'año_ultimo_pago' => $anioPago,
                     'ultimo_bimestre_pago' => DB::raw('CEIL(MONTH(CURDATE()) / 2)'),
                 ]);
 
