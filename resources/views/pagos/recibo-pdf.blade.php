@@ -202,20 +202,56 @@
                             $grouped[$key]['total'] += $c->monto;
                         }
                         ksort($grouped);
+
+                        $ranges = [];
+                        $currentRange = null;
+                        foreach ($grouped as $grp) {
+                            if (!$grp['anio']) {
+                                $ranges[] = $grp;
+                                continue;
+                            }
+                            if ($currentRange === null) {
+                                $currentRange = ['start' => $grp['anio'], 'end' => $grp['anio'], 'groups' => [$grp], 'total' => $grp['total']];
+                            } elseif ($grp['anio'] == $currentRange['end'] + 1) {
+                                $currentRange['end'] = $grp['anio'];
+                                $currentRange['groups'][] = $grp;
+                                $currentRange['total'] += $grp['total'];
+                            } else {
+                                $ranges[] = $currentRange;
+                                $currentRange = ['start' => $grp['anio'], 'end' => $grp['anio'], 'groups' => [$grp], 'total' => $grp['total']];
+                            }
+                        }
+                        if ($currentRange !== null) $ranges[] = $currentRange;
                     @endphp
-                    @foreach($grouped as $grp)
-                        @if($grp['anio'])
-                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">Año {{ $grp['anio'] }}</td></tr>
-                        @endif
-                        @foreach($grp['items'] as $c)
+                    @foreach($ranges as $range)
+                        @if(isset($range['start']))
+                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">
+                            @if($range['start'] == $range['end'])
+                                Año {{ $range['start'] }}
+                            @elseif($range['end'] - $range['start'] == 1)
+                                {{ $range['start'] }} al {{ $range['end'] }}
+                            @else
+                                {{ $range['start'] }} - {{ $range['end'] }}
+                            @endif
+                        </td></tr>
+                        @foreach($range['groups'] as $grp)
+                            @foreach($grp['items'] as $c)
+                            <tr>
+                                <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                                <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                                <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                            </tr>
+                            @endforeach
+                        @endforeach
+                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $range['start'] == $range['end'] ? $range['start'] : $range['start'].' - '.$range['end'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($range['total'], 2) }}</td></tr>
+                        @else
+                        @foreach($range['items'] as $c)
                         <tr>
                             <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
                             <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
                             <td class="monto">${{ number_format($c->monto, 2) }}</td>
                         </tr>
                         @endforeach
-                        @if($grp['anio'])
-                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $grp['anio'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($grp['total'], 2) }}</td></tr>
                         @endif
                     @endforeach
                     <tr class="total-row">
@@ -302,19 +338,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($grouped as $grp)
-                        @if($grp['anio'])
-                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">Año {{ $grp['anio'] }}</td></tr>
-                        @endif
-                        @foreach($grp['items'] as $c)
+                    @foreach($ranges as $range)
+                        @if(isset($range['start']))
+                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">
+                            @if($range['start'] == $range['end'])
+                                Año {{ $range['start'] }}
+                            @elseif($range['end'] - $range['start'] == 1)
+                                {{ $range['start'] }} al {{ $range['end'] }}
+                            @else
+                                {{ $range['start'] }} - {{ $range['end'] }}
+                            @endif
+                        </td></tr>
+                        @foreach($range['groups'] as $grp)
+                            @foreach($grp['items'] as $c)
+                            <tr>
+                                <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                                <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                                <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                            </tr>
+                            @endforeach
+                        @endforeach
+                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $range['start'] == $range['end'] ? $range['start'] : $range['start'].' - '.$range['end'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($range['total'], 2) }}</td></tr>
+                        @else
+                        @foreach($range['items'] as $c)
                         <tr>
                             <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
                             <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
                             <td class="monto">${{ number_format($c->monto, 2) }}</td>
                         </tr>
                         @endforeach
-                        @if($grp['anio'])
-                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $grp['anio'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($grp['total'], 2) }}</td></tr>
                         @endif
                     @endforeach
                     <tr class="total-row">
