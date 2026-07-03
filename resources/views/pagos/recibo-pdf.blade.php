@@ -108,6 +108,22 @@
     @php
         $ultimoAno = $pago->incidencia?->año_ultimo_pago_anterior ? (int) $pago->incidencia->año_ultimo_pago_anterior : ($pago->predio?->año_ultimo_pago ? (int) $pago->predio->año_ultimo_pago : (int) date('Y') - 1);
         $anioActual = (int) date('Y');
+        $periodo = '';
+
+        $paidYears = [];
+        foreach ($pago->cuentasPagos as $c) {
+            if (preg_match('/(\d{4})/', $c->concepto, $m)) {
+                $paidYears[$m[1]] = true;
+            }
+        }
+        ksort($paidYears);
+        $paidYearsArr = array_keys($paidYears);
+        if (count($paidYearsArr) === 1) {
+            $periodo = $paidYearsArr[0];
+        } elseif (count($paidYearsArr) > 1) {
+            $periodo = $paidYearsArr[0] . ' - ' . end($paidYearsArr);
+        }
+
         $tipoPredioRecibo = mb_strtolower($pago->predio?->tipoPredio?->Tipo_predio ?? '');
         $esRusticoRecibo = str_contains($tipoPredioRecibo, 'rústico') || str_contains($tipoPredioRecibo, 'rustico') || str_contains($tipoPredioRecibo, 'mina');
     @endphp
@@ -147,7 +163,7 @@
                         <tr>
                             <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</b></td>
                             <td class="value" style="width:100px; font-size: 10pt;"><b>{{ $pago->predio?->Clave_predial ?? '—' }}</b></td>
-                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $ultimoAno + 1 == $anioActual ? $anioActual : ($ultimoAno + 1) . ' - ' . $anioActual }}</b></td>
+                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $periodo }}</b></td>
                         </tr>
                     </table>
                     
@@ -304,7 +320,7 @@
                         <tr>
                             <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->contribuyente?->cuenta ?? '—' }}</td>
                             <td class="value" style="width:100px; font-size: 10pt;">{{ $pago->predio?->Clave_predial ?? '—' }}</td>
-                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $ultimoAno + 1 == $anioActual ? $anioActual : ($ultimoAno + 1) . ' - ' . $anioActual }}</b></td>
+                            <td class="value" style="font-size: 8pt; width: 500px; text-align: right;"><b>{{ $periodo }}</b></td>
                         </tr>
                     </table>
                     

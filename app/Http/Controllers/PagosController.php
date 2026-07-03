@@ -587,8 +587,38 @@ class PagosController extends Controller
                 ),
             ];
 
+            $aggregated = [];
             foreach ($validated['conceptos'] as $c) {
                 $concepto = trim($c['concepto']);
+                preg_match('/(\d{4})/', $concepto, $m);
+                $anio = (int)($m[1] ?? date('Y'));
+                $esAnterior = $anio < (int)date('Y');
+                $tipo = preg_replace('/\s*\d{4}\s*/', '', trim($concepto));
+
+                if ($esAnterior) {
+                    $key = 'Anterior|' . $tipo;
+                    if (!isset($aggregated[$key])) $aggregated[$key] = ['name' => $tipo, 'monto' => 0, 'anios' => []];
+                    $aggregated[$key]['monto'] += $c['monto'];
+                    $aggregated[$key]['anios'][] = $anio;
+                } else {
+                    $key = 'Actual|' . $concepto;
+                    $aggregated[$key] = ['name' => $concepto, 'monto' => ($aggregated[$key]['monto'] ?? 0) + $c['monto']];
+                }
+            }
+
+            foreach ($aggregated as $key => $data) {
+                $isAnterior = str_starts_with($key, 'Anterior|');
+                if ($isAnterior) {
+                    $anios = $data['anios'];
+                    sort($anios);
+                    $nombreCon = $data['name'] . ' (' . $anios[0];
+                    if (count($anios) > 1) $nombreCon .= ' - ' . end($anios);
+                    $nombreCon .= ')';
+                } else {
+                    $nombreCon = $data['name'];
+                }
+                $concepto = $nombreCon;
+                $monto = $data['monto'];
                 $cuentaId = null;
 
                 foreach ($conceptCuentaMapping as $key => $resolver) {
@@ -601,10 +631,10 @@ class PagosController extends Controller
                 CuentasPagos::create([
                     'pago_id' => $pago->id,
                     'cuenta_id' => $cuentaId,
-                    'concepto' => $c['concepto'],
+                    'concepto' => $concepto,
                     'fecha_registro' => now(),
                     'cantidad' => 1,
-                    'monto' => $c['monto'],
+                    'monto' => $monto,
                     'concepto_id' => null,
                 ]);
             }
