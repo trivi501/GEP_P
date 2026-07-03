@@ -138,6 +138,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Pagos Generales
                                     </NavLink>
                                 )}
+                                {can('pagos-cobrar') && (
+                                    <NavLink href={route('pagos.cobrar')} active={route().current('pagos.cobrar')}>
+                                        Cobrar Predial
+                                    </NavLink>
+                                )}
                                 {can('caja-pago-index') && (
                                     <Dropdown>
                                         <Dropdown.Trigger>
@@ -316,6 +321,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('pagos.historial')} active={route().current('pagos.historial')}>
                                 Historial de Pagos
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('pagos.cobrar')} active={route().current('pagos.cobrar')}>
+                                Cobrar Predial
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('cuentas.index')} active={route().current('cuentas.*')}>
                                 Cuentas
