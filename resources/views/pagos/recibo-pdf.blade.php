@@ -189,12 +189,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($pago->cuentasPagos as $c)
-                    <tr>
-                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                        <td>{{ $c->concepto }}</td>
-                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                    </tr>
+                    @php
+                        $grouped = [];
+                        foreach($pago->cuentasPagos as $c) {
+                            $anio = null;
+                            if (preg_match('/(\d{4})/', $c->concepto, $m)) {
+                                $anio = $m[1];
+                            }
+                            $key = $anio ?? 'generales';
+                            if (!isset($grouped[$key])) $grouped[$key] = ['anio' => $anio, 'items' => [], 'total' => 0];
+                            $grouped[$key]['items'][] = $c;
+                            $grouped[$key]['total'] += $c->monto;
+                        }
+                        ksort($grouped);
+                    @endphp
+                    @foreach($grouped as $grp)
+                        @if($grp['anio'])
+                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">Año {{ $grp['anio'] }}</td></tr>
+                        @endif
+                        @foreach($grp['items'] as $c)
+                        <tr>
+                            <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                            <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                            <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                        </tr>
+                        @endforeach
+                        @if($grp['anio'])
+                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $grp['anio'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($grp['total'], 2) }}</td></tr>
+                        @endif
                     @endforeach
                     <tr class="total-row">
                         <td colspan="2">Total</td>
@@ -204,16 +226,15 @@
             </table>
         </div>
 
+        @if($pago->cuentasPagos->isEmpty())
 
-     
+        <div class="section-title">Descripción</div>
+        <p style="font-size:7pt;">{{ $pago->descripcion ?? '—' }}</p>
+        @else
 
-        <div class="footer_recibo_original">
-            <p style="font-size: 4pt; text-align: justify; margin: 0 10px;">
-                original POR ESTE CONDUCTO SE LE HACE DE SU CONOCIMIENTOQUE APARTIR DE LA FECHA CUENTA CON UN PLAZO DE 15 (DIAS)HABILES PARA INFORME AL DEPARTAMENTODENTRO DE ESTA MUNICIPALIDAD.SI EXISTE ALGUNA MODIFICACION EN LAS CONSTRUCCIONES Y CARACTERISTICAS DEL PREDIO QUE SE DETALLA EN EL ANVERSO DE ESTE DOCUMENTO APERCIBIENDOLO.LO QUE EN EL SUPUESRO DE HACER CASO OMISO A TAL REQUERIMINTO, ESTE MUNICIPIO EN SU USO DE SUS ATRIBUCIONES Y FACULTADES CONTENIDAS EN LOSN ART.1,2 FRAC ll y ll de 3 FRAC III 4,6,7,8 FRAC IV. 13 FRAC VI 22,24,25,38,44,45,47FRAC II Y III 50,56,57, FRAC VI DE LA LEY DE CATASTRO DEL ESTADO DE ZACATECAS PROCEDERA A LLEVAR A CABO DE MANERA OFICIOSA LA ACTUALIZACION CATASTRAL DE ACUERDO ALA INFORMACION EXISTENTE EN ESTE MUNICIPIO POR LO QUE EL IMPORTE DE EL PAGO CONSIGNADO EN EL ANVERSO DE ESTE RECIBO, PODRA SER MODIFICADO EN ATENCION AL RESULTADO DE ACTUALIZACION DE LA CEDULA CATASTRAL, QUEDANDO EXPEDITO EL DERECHO DEL MUNICIPIO DE GUADALUPE ZAC.PARA REQURIR EL COMBRO DEL IMPUESTO IMPORTE DEL DINERO QUE ARROJE, LO ANTERIOR FUNDAMENTADO EN LO DISPUESTO POR LOS ARTICULOS 131 FRAC I Y 147 FRAC II DEL CODIGO FISCAL DEL ESTADO DE ZACATECAS.
-            </p>
-        </div>
-    </div>
-    <div class="recibo-copia">
+        @endif
+
+        <div class="recibo-copia">
         <div class="recibo-header-copia">
             <table style="width: 100%;">
                 <tr>
@@ -281,12 +302,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($pago->cuentasPagos as $c)
-                    <tr>
-                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                        <td>{{ $c->concepto }}</td>
-                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                    </tr>
+                    @foreach($grouped as $grp)
+                        @if($grp['anio'])
+                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">Año {{ $grp['anio'] }}</td></tr>
+                        @endif
+                        @foreach($grp['items'] as $c)
+                        <tr>
+                            <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                            <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                            <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                        </tr>
+                        @endforeach
+                        @if($grp['anio'])
+                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $grp['anio'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($grp['total'], 2) }}</td></tr>
+                        @endif
                     @endforeach
                     <tr class="total-row">
                         <td colspan="2">Total</td>
