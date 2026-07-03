@@ -310,8 +310,52 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-1">
-                                    {anios.length > 0 && (
+                            </div>
+
+                            {anios.length > 0 && totalSeleccionado > 0 && (
+                                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="border-t border-gray-300 dark:border-gray-600 pt-6 lg:border-t-0 lg:pt-0">
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <h4 className="text-sm font-semibold mb-3">Pago</h4>
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Total a pagar</label>
+                                                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">${totalConDescuento.toFixed(2)}</p>
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <label className="block text-sm font-medium">Formas de Pago</label>
+                                                        <button type="button" onClick={addFormaPagoRow} className="text-sm text-indigo-600 hover:text-indigo-900">+ Agregar</button>
+                                                    </div>
+                                                    {formasPagosData.map((row, i) => (
+                                                        <div key={i} className="flex gap-2 items-end mb-2">
+                                                            <div className="flex-1">
+                                                                <select value={row.forma_pago_id} onChange={(e) => updateFormaPagoRow(i, 'forma_pago_id', e.target.value)} className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm">
+                                                                    <option value="">Seleccionar...</option>
+                                                                    {formasPago.map((fp) => (<option key={fp.id} value={fp.id}>{fp.Descripción}</option>))}
+                                                                </select>
+                                                            </div>
+                                                            <div className="w-32">
+                                                                <input type="number" step="0.01" min="0" value={row.monto} onChange={(e) => updateFormaPagoRow(i, 'monto', e.target.value)} placeholder="Monto" className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm" />
+                                                            </div>
+                                                            {formasPagosData.length > 1 && (
+                                                                <button type="button" onClick={() => removeFormaPagoRow(i)} className="text-red-500 text-sm pb-1">X</button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <div className="mt-1 text-sm">
+                                                        <span className="text-gray-600">Recibido: </span>
+                                                        <span className={suficiente ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>${sumaFormasPagos.toFixed(2)}</span>
+                                                        {suficiente && cambio > 0 && <span className="ml-2 text-green-600 text-xs">cambio: ${cambio.toFixed(2)}</span>}
+                                                    </div>
+                                                </div>
+                                                <button onClick={abrirConfirmacion} disabled={loading || !formasValidas || !suficiente} className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                    {loading ? 'Procesando...' : 'Revisar y Pagar'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
                                         <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                             <h4 className="text-sm font-semibold mb-3">Años a pagar</h4>
                                             <div className="overflow-x-auto">
@@ -358,94 +402,6 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                     </tbody>
                                                 </table>
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {anios.length > 0 && totalSeleccionado > 0 && (
-                                <div className="mt-6 border-t border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 pt-6">
-                                    <div className="mt-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-sm font-medium">Formas de Pago</label>
-                                            <button
-                                                type="button"
-                                                onClick={addFormaPagoRow}
-                                                className="text-sm text-indigo-600 hover:text-indigo-900"
-                                            >
-                                                + Agregar otra forma
-                                            </button>
-                                        </div>
-
-                                        {formasPagosData.map((row, i) => (
-                                            <div key={i} className="flex gap-3 items-end mb-2">
-                                                <div className="flex-1">
-                                                    <select
-                                                        value={row.forma_pago_id}
-                                                        onChange={(e) => updateFormaPagoRow(i, 'forma_pago_id', e.target.value)}
-                                                        className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
-                                                    >
-                                                        <option value="">Seleccionar...</option>
-                                                        {formasPago.map((fp) => (
-                                                            <option key={fp.id} value={fp.id}>{fp.Descripción}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                <div className="w-40">
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        value={row.monto}
-                                                        onChange={(e) => updateFormaPagoRow(i, 'monto', e.target.value)}
-                                                        placeholder="Monto"
-                                                        className="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
-                                                    />
-                                                </div>
-                                                {formasPagosData.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeFormaPagoRow(i)}
-                                                        className="text-red-500 hover:text-red-700 text-sm pb-1"
-                                                    >
-                                                        Quitar
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-
-                                        <div className="mt-1 text-sm">
-                                            <span className="text-gray-600 dark:text-gray-400">
-                                                Suma formas de pago:{' '}
-                                            </span>
-                                            <span className={suficiente ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                                                ${sumaFormasPagos.toFixed(2)}
-                                            </span>
-                                            {!suficiente && (
-                                                <span className="ml-2 text-red-500 text-xs">
-                                                    (debe ser ≥ ${totalConDescuento.toFixed(2)})
-                                                </span>
-                                            )}
-                                            {suficiente && cambio > 0 && (
-                                                <span className="ml-2 text-green-600 text-xs">
-                                                    cambio: ${cambio.toFixed(2)}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Total a pagar</label>
-                                            <p className="text-2xl font-bold text-green-600">${totalConDescuento.toFixed(2)}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <button
-                                                onClick={abrirConfirmacion}
-                                                disabled={loading || !formasValidas || !suficiente}
-                                                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {loading ? 'Procesando...' : 'Revisar y Pagar'}
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
