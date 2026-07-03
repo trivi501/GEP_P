@@ -61,9 +61,10 @@ class GenerateEstadoCuentaChunk implements ShouldQueue
         $totalPredios = 0;
 
         foreach ($predios as $predio) {
-            $esRustico = str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RÚSTICO')
-                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'RUSTICO')
-                || str_contains($predio->tipoPredio?->Tipo_predio ?? '', 'MINA');
+            $tipoLower = mb_strtolower($predio->tipoPredio?->Tipo_predio ?? '');
+            $esRustico = str_contains($tipoLower, 'rústico')
+                || str_contains($tipoLower, 'rustico')
+                || str_contains($tipoLower, 'mina');
 
             if ($esRustico) {
                 $calculos = $this->getCalculosRusticos($predio, $umas);
