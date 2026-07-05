@@ -112,8 +112,10 @@
 
         $paidYears = [];
         foreach ($pago->cuentasPagos as $c) {
-            if (preg_match('/(\d{4})/', $c->concepto, $m)) {
-                $paidYears[$m[1]] = true;
+            if (preg_match_all('/(\d{4})/', $c->concepto, $matches)) {
+                foreach ($matches[1] as $year) {
+                    $paidYears[$year] = true;
+                }
             }
         }
         ksort($paidYears);
