@@ -530,7 +530,7 @@ class PagosController extends Controller
                 'id_contribuyente' => $validated['id_contribuyente'],
                 'id_historial_caja' => $cajaAbierta->id,
                 'id_usuario' => auth()->id(),
-                'anio_pago' => date('Y'),
+                'anio_pago' => !empty($validated['anios_pagados']) ? max($validated['anios_pagados']) : date('Y'),
                 'im' => null,
                 'url_file' => null,
             ]);
