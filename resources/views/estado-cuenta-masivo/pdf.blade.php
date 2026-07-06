@@ -199,6 +199,10 @@
                             <th>UMA</th>
                             <th>Hectáreas</th>
                             <th>Subtotal</th>
+                            <th>Recargos</th>
+                            <th>Actualización</th>
+                            <th>Multa</th>
+                            <th>Cobranza</th>
                             <th>Total</th>
                         </tr>
                     </thead>
@@ -209,14 +213,26 @@
                             <td>${{ number_format($c['uma'], 2) }}</td>
                             <td>{{ number_format($c['hectareas'], 4) }}</td>
                             <td>${{ number_format($c['subtotal'], 2) }}</td>
-                            <td>${{ number_format($c['total'], 2) }}</td>
+                            <td>${{ number_format($c['recargos'] ?? 0, 2) }}</td>
+                            <td>${{ number_format($c['actualizacion'] ?? 0, 2) }}</td>
+                            <td>${{ number_format($c['multa'] ?? 0, 2) }}</td>
+                            <td>${{ number_format($c['cobranza'] ?? 0, 2) }}</td>
+                            <td><b>${{ number_format($c['total'], 2) }}</b></td>
                         </tr>
                         @endforeach
+                        @php
+                            $coll = collect($calculos);
+                            $subtotalPredio = $coll->sum('total');
+                        @endphp
                         <tr class="total-row">
                             <td><b>Total Predio</b></td>
                             <td></td>
                             <td></td>
-                            <td><b>${{ number_format($subtotalPredio, 2) }}</b></td>
+                            <td><b>${{ number_format($coll->sum('subtotal'), 2) }}</b></td>
+                            <td><b>${{ number_format($coll->sum(fn($r) => $r['recargos'] ?? 0), 2) }}</b></td>
+                            <td><b>${{ number_format($coll->sum(fn($r) => $r['actualizacion'] ?? 0), 2) }}</b></td>
+                            <td><b>${{ number_format($coll->sum(fn($r) => $r['multa'] ?? 0), 2) }}</b></td>
+                            <td><b>${{ number_format($coll->sum(fn($r) => $r['cobranza'] ?? 0), 2) }}</b></td>
                             <td><b>${{ number_format($subtotalPredio, 2) }}</b></td>
                         </tr>
                     </tbody>

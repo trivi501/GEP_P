@@ -138,9 +138,9 @@ class GenerateEstadoCuentaChunk implements ShouldQueue
         $hectareas = $predio->superficie ?? 0;
         $tipoPredio = $predio->tipoPredio?->Tipo_predio ?? '';
         $esMina = str_contains($tipoPredio, 'MINA');
-
         $anhoInicio = ($predio->año_ultimo_pago ?? now()->year) + 1;
         $anhoActual = now()->year;
+        $primerAnioCalc = $anhoInicio;
 
         $calculos = [];
         while ($anhoInicio <= $anhoActual) {
@@ -166,12 +166,49 @@ class GenerateEstadoCuentaChunk implements ShouldQueue
                 }
             }
 
+            $meses = 0;
+            if ($anhoInicio < $anhoActual) {
+                $meses = (12 - 3) + ($anhoActual - $anhoInicio - 1) * 12 + now()->month;
+            } elseif ($anhoInicio == $anhoActual && now()->month > 3) {
+                $meses = now()->month - 3;
+            }
+            $recargos = $subtotal * 0.027 * $meses;
+
+            $actualizacion = 0;
+            $inpc_in = \App\Models\Inpc::where('year', $anhoInicio)->where('month', 3)->first();
+            $inpc_fin = \App\Models\Inpc::orderBy('id', 'desc')->first();
+            if ($inpc_in && $inpc_fin) {
+                $factorActualizacion = max(1, $inpc_fin->value / $inpc_in->value) - 1;
+                $actualizacion = $factorActualizacion * $subtotal;
+            }
+
+            $cobranza = 0;
+            if ($predio->año_ultimo_pago && ($predio->año_ultimo_pago + 1) == $anhoActual) {
+                $cobranza = 0;
+            } elseif ($primerAnioCalc > ($anhoActual - 5)) {
+                if ($anhoInicio == $primerAnioCalc) {
+                    $cobranza = 678.84;
+                }
+            } else {
+                if ($anhoInicio == ($anhoActual - 5)) {
+                    $cobranza = 678.84;
+                }
+            }
+
+            $multa = $anhoInicio < $anhoActual ? 1875 : 0;
+
+            $total = $subtotal + $recargos + $actualizacion + $multa + $cobranza;
+
             $calculos[] = [
                 'anho' => $anhoInicio,
                 'uma' => $umaAnual,
                 'hectareas' => $hectareas,
                 'subtotal' => $subtotal,
-                'total' => $subtotal,
+                'recargos' => $recargos,
+                'actualizacion' => $actualizacion,
+                'multa' => $multa,
+                'cobranza' => $cobranza,
+                'total' => $total,
             ];
 
             $anhoInicio++;
