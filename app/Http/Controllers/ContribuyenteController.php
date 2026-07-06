@@ -118,7 +118,7 @@ class ContribuyenteController extends Controller
         $validated['fecha_alta'] = now();
         $validated['id_user_registra'] = auth()->id();
 
-        if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad')) {
+        if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad') || $request->filled('num_exterior') || $request->filled('num_interior') || $request->filled('codigo_postal')) {
             $domicilioId = (string) Str::uuid();
             Domicilio::create([
                 'id_domicilio' => $domicilioId,
@@ -213,7 +213,7 @@ class ContribuyenteController extends Controller
 
         $contribuyente->update($validated);
 
-        if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad')) {
+        if ($request->filled('id_pais') || $request->filled('colonia') || $request->filled('nombre_vialidad') || $request->filled('num_exterior') || $request->filled('num_interior') || $request->filled('codigo_postal')) {
             if ($contribuyente->domicilio) {
                 $contribuyente->domicilio->update([
                     'id_pais' => $validated['id_pais'] ?? 1,
