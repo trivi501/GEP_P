@@ -10,10 +10,21 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('roles', 'secretaria')->orderBy('name')->paginate(10);
-        return Inertia::render('Users/Index', compact('users'));
+        $filters = $request->only(['name', 'username', 'email', 'roles', 'secretaria']);
+
+        $users = User::with('roles', 'secretaria')
+            ->when($request->filled('name'), fn($q) => $q->where('name', 'like', '%' . $request->name . '%'))
+            ->when($request->filled('username'), fn($q) => $q->where('username', 'like', '%' . $request->username . '%'))
+            ->when($request->filled('email'), fn($q) => $q->where('email', 'like', '%' . $request->email . '%'))
+            ->when($request->filled('roles'), fn($q) => $q->whereHas('roles', fn($r) => $r->where('name', 'like', '%' . $request->roles . '%')))
+            ->when($request->filled('secretaria'), fn($q) => $q->whereHas('secretaria', fn($s) => $s->where('nombre', 'like', '%' . $request->secretaria . '%')))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Users/Index', compact('users', 'filters'));
     }
 
     public function create()
