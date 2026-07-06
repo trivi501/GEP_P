@@ -212,6 +212,10 @@
                             <td>${{ number_format($c['total'], 2) }}</td>
                         </tr>
                         @endforeach
+                        @php
+                            $coll = collect($calculos);
+                            $subtotalPredio = $coll->sum('total');
+                        @endphp
                         <tr class="total-row">
                             <td><b>Total Predio</b></td>
                             <td></td>
