@@ -391,7 +391,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                 </div>
                             )}
 
-                            {anios.length > 0 && totalSeleccionado > 0 && (
+                            {((anios.length > 0 && totalSeleccionado > 0) || (anios.length === 0 && conceptos.length > 0)) && (
                                 <div className="mt-6">
                                     <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                         <h4 className="text-sm font-semibold mb-3">Pago</h4>
