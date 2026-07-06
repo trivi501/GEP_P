@@ -154,20 +154,22 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         (sum, row) => sum + (parseFloat(row.monto) || 0), 0
     );
 
+    const itemsVisibles = anios.length > 0 ? conceptosSeleccionados : conceptos;
+    const totalVisible = anios.length > 0 ? totalSeleccionado : total;
     const descuentoMonto = selectedDescuento
-        ? conceptosSeleccionados.filter((c) => c.concepto.includes('Predial') && c.concepto.includes(String(new Date().getFullYear()))).reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
+        ? itemsVisibles.filter((c) => c.concepto.includes('Predial') && c.concepto.includes(String(new Date().getFullYear()))).reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
         : 0;
     const conceptosConDescuento = selectedDescuento && descuentoMonto > 0
-        ? [...conceptosSeleccionados, { concepto: 'Descuento', monto: -descuentoMonto }]
-        : conceptosSeleccionados;
-    const totalConDescuento = totalSeleccionado - descuentoMonto;
+        ? [...itemsVisibles, { concepto: 'Descuento', monto: -descuentoMonto }]
+        : itemsVisibles;
+    const totalConDescuento = totalVisible - descuentoMonto;
 
     const formasValidas = formasPagosData.every((row) => row.forma_pago_id && parseFloat(row.monto) > 0);
     const suficiente = sumaFormasPagos >= totalConDescuento - 0.01;
     const cambio = Math.max(0, sumaFormasPagos - totalConDescuento);
 
     const abrirConfirmacion = () => {
-        if (!selectedPredio || selectedAnios.length === 0) {
+        if (!selectedPredio || (anios.length > 0 ? selectedAnios.length === 0 : conceptos.length === 0)) {
             alert('Selecciona un predio y espera el cálculo.');
             return;
         }
@@ -199,7 +201,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             forma_pago: formasPagosData[0]?.forma_pago_id || '',
             tipo_pago: esRustico ? 'predial_rustico' : 'predial_urbano',
             conceptos: conceptosConDescuento,
-            anios_pagados: selectedAnios,
+            anios_pagados: anios.length > 0 ? selectedAnios : undefined,
             formas_pagos: formasPagosData.map((row) => ({
                 forma_pago_id: parseInt(row.forma_pago_id),
                 monto: parseFloat(row.monto),
@@ -311,7 +313,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                 </div>
                             </div>
 
-                            {anios.length > 0 && (
+                            {anios.length > 0 ? (
                                 <div className="mt-6">
                                     <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                         <h4 className="text-sm font-semibold mb-3">Años a pagar</h4>
@@ -359,6 +361,32 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                </div>
+                            ) : conceptos.length > 0 && (
+                                <div className="mt-6">
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <h4 className="text-sm font-semibold mb-3">Cálculo del Predial</h4>
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b border-gray-300 dark:border-gray-600">
+                                                    <th className="text-left py-1 pr-2">Concepto</th>
+                                                    <th className="text-right py-1 pl-2">Monto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {conceptosConDescuento.map((c, i) => (
+                                                    <tr key={i} className="border-b border-gray-200 dark:border-gray-700">
+                                                        <td className="py-1 pr-2">{c.concepto}</td>
+                                                        <td className={`text-right py-1 pl-2 ${c.monto < 0 ? 'text-red-500' : ''}`}>${parseFloat(c.monto).toFixed(2)}</td>
+                                                    </tr>
+                                                ))}
+                                                <tr>
+                                                    <td className="py-1 pr-2 font-bold">Total</td>
+                                                    <td className="text-right py-1 pl-2 font-bold">${totalConDescuento.toFixed(2)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             )}
