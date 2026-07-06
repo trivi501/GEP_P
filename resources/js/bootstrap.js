@@ -11,6 +11,16 @@ window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+// Configurar baseURL desde meta tag o URL actual
+const baseUrl = document.querySelector('meta[name="base-url"]')?.content || window.location.origin;
+window.axios.defaults.baseURL = baseUrl;
+
+// Configurar token CSRF desde cookie
+const csrfToken = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='));
+if (csrfToken) {
+    window.axios.defaults.headers.common['X-XSRF-TOKEN'] = decodeURIComponent(csrfToken.split('=')[1]);
+}
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
