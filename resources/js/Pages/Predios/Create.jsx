@@ -83,7 +83,7 @@ export default function Create({
             return;
         }
         try {
-            const res = await fetch(route('contribuyentes.search') + '?q=' + encodeURIComponent(q));
+            const res = await fetch(route('contribuyentes.search') + '?q=' + encodeURIComponent(q) + '&solo_catastro=1');
             const json = await res.json();
             setContribuyentes(json);
             setShowContribuyentes(true);

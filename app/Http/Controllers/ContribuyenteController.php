@@ -33,6 +33,7 @@ class ContribuyenteController extends Controller
                       ->orWhere('nombre_moral', 'like', '%' . $q . '%')
                       ->orWhere('cuenta', 'like', $q . '%');
             })
+            ->when($request->boolean('solo_catastro'), fn($query) => $query->where('id_tipo_contribuyente', 13))
             ->orderByRaw('CASE WHEN nombre_completo LIKE ? OR nombre_moral LIKE ? THEN 0 WHEN cuenta LIKE ? THEN 1 ELSE 2 END', [$q . '%', $q . '%', $q . '%'])
             ->orderBy('nombre_completo')
             ->limit(20)
