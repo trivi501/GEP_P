@@ -26,7 +26,7 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
 
     public function collection()
     {
-        $pagos = Pago::with(['cuentasPagos.cuenta', 'historialCaja.cajero.usuario'])
+        $pagos = Pago::with(['cuentasPagos.cuenta', 'historialCaja.cajero.usuario', 'predio'])
             ->whereBetween('fecha', [$this->fechaInicio . ' 00:00:00', $this->fechaFin . ' 23:59:59'])
             ->orderBy('fecha')
             ->get();
@@ -40,6 +40,7 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
                     'fecha' => $pago->fecha,
                     'nombre' => $pago->nombre,
                     'rfc' => $pago->rfc,
+                    'clave_catastral' => $pago->predio?->Clave_predial ?? '',
                     'tipo_pago' => $pago->tipo_pago,
                     'estatus' => $pago->estatus,
                     'cuenta_codigo' => $cuentaPago->cuenta?->cuenta ?? $cuentaPago->cuenta?->indetec,
@@ -64,7 +65,7 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
         return [
             ['Reporte de Pagos Generales por Cuenta - Período: ' . $fechaInicio . ' al ' . $fechaFin],
             [],
-            ['Folio', 'Fecha', 'Contribuyente', 'RFC', 'Tipo de Pago', 'Estatus', 'Cuenta', 'Descripción de Cuenta', 'Concepto', 'Cajero', 'Monto'],
+            ['Folio', 'Fecha', 'Contribuyente', 'RFC', 'Clave Catastral', 'Tipo de Pago', 'Estatus', 'Cuenta', 'Descripción de Cuenta', 'Concepto', 'Cajero', 'Monto'],
         ];
     }
 
@@ -75,6 +76,7 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
             $row->fecha ? \Carbon\Carbon::parse($row->fecha)->format('d/m/Y H:i') : '',
             $row->nombre,
             $row->rfc,
+            $row->clave_catastral,
             $row->tipo_pago,
             $row->estatus,
             $row->cuenta_codigo,
@@ -97,7 +99,7 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->mergeCells('A1:K1');
+                $sheet->mergeCells('A1:L1');
                 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
                 $sumMonto = 0;
@@ -108,8 +110,8 @@ class PagosGeneralesExport implements FromCollection, WithHeadings, WithMapping,
                 $totalRow = 4 + $this->data->count();
                 $sheet->setCellValue('A' . $totalRow, 'TOTAL');
                 $sheet->getStyle('A' . $totalRow)->getFont()->setBold(true);
-                $sheet->setCellValue('K' . $totalRow, '$' . number_format($sumMonto, 2));
-                $sheet->getStyle('K' . $totalRow)->getFont()->setBold(true);
+                $sheet->setCellValue('L' . $totalRow, '$' . number_format($sumMonto, 2));
+                $sheet->getStyle('L' . $totalRow)->getFont()->setBold(true);
             },
         ];
     }
