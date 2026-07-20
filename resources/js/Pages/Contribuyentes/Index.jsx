@@ -127,6 +127,7 @@ export default function Index({ contribuyentes, filters = {} }) {
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Cuenta</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Nombre</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">RFC</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Teléfono</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Activo</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
@@ -144,6 +145,9 @@ export default function Index({ contribuyentes, filters = {} }) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {contribuyente.rfc}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {contribuyente.tipo_contribuyente?.area_contribuyente ?? '—'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {contribuyente.telefono}
@@ -182,7 +186,7 @@ export default function Index({ contribuyentes, filters = {} }) {
                                         ) : (
                                             <tr>
                                                 <td
-                                                    colSpan="6"
+                                                    colSpan="7"
                                                     className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
                                                 >
                                                     No hay contribuyentes registrados.
