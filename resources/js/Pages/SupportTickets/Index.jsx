@@ -1,13 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ tickets, filters: initialFilters, users }) {
-    const page = usePage();
-    const permissions = Array.isArray(page.props.userPermissions) ? page.props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
-    const isAdmin = page.props.userRoles?.some(r => ['Super Admin', 'Admin'].includes(r));
+    const { can } = usePermissions();
 
     const [filters, setFilters] = useState(initialFilters ?? {});
 
@@ -59,7 +57,7 @@ export default function Index({ tickets, filters: initialFilters, users }) {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-medium">Mis Tickets</h3>
-                                {can('crear tickets') && (
+                                {can('tickets-create') && (
                                     <Link
                                         href={route('support-tickets.create')}
                                         className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-indigo-500"

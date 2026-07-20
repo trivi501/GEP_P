@@ -1,12 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ predios, prediosData, filters, cajaAbierta }) {
-    const page = usePage();
-    const permissions = Array.isArray(page.props.userPermissions) ? page.props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
+    const { can } = usePermissions();
     const [columnFilters, setColumnFilters] = useState(filters ?? {});
     const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, predio: null });
     const menuRef = useRef(null);

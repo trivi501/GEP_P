@@ -3,14 +3,13 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import NotificationBell from '@/Components/NotificationBell';
+import usePermissions from '@/Hooks/usePermissions';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    const isSuperAdmin = usePage().props.userRoles?.includes('Super Admin') || usePage().props.userRoles?.includes('Admin');
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
+    const { isSuperAdmin, can } = usePermissions();
     const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -133,7 +132,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Secretarías
                                     </NavLink>
                                 )}
-                                    {can('pagosGeneral') && (
+                                    {can('pagos-index') && (
                                     <NavLink href={route('pagos.pagos-generales')} active={route().current('pagos.pagos-generales')}>
                                         Pagos Generales
                                     </NavLink>
@@ -171,7 +170,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <Dropdown.Link href={route('multi-pagos.index')}>
                                              Multi Pagos Predial
                                          </Dropdown.Link>
-                                         {can('corte-caja-admin') && (
+                                         {can('cortes-index') && (
                                              <Dropdown.Link href={route('corte-cajas.index')}>
                                                  Cortes de Caja
                                              </Dropdown.Link>
@@ -214,7 +213,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </NavLink>
                                     )}
                                     
-                                {can('ver tickets') && (
+                                {can('tickets-index') && (
                                     <NavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
                                         Soporte
                                     </NavLink>
@@ -370,7 +369,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                             </div>
                         )}
-                        {can('ver tickets') && (
+                        {can('tickets-index') && (
                             <ResponsiveNavLink href={route('support-tickets.index')} active={route().current('support-tickets.*')}>
                                 Soporte
                             </ResponsiveNavLink>

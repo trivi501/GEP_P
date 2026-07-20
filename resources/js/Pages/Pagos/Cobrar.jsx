@@ -3,6 +3,8 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
+const round2 = (n) => Math.round((parseFloat(n) || 0) * 100) / 100;
+
 export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const [search, setSearch] = useState('');
     const [results, setResults] = useState([]);
@@ -136,6 +138,22 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
 
     const totalSeleccionado = anios.reduce((sum, a) => selectedAnios.includes(a.anho) ? sum + (parseFloat(a.total) || 0) : sum, 0);
 
+    const anioActual = new Date().getFullYear();
+
+    const descuentosPorCategoria = (() => {
+        const acc = { predial: 0, recargos: 0, actualizacion: 0, multa: 0, ejecucion: 0 };
+        anios.forEach((a) => {
+            if (!selectedAnios.includes(a.anho)) return;
+            const d = a.descuentos || {};
+            acc.predial += parseFloat(d.predial) || 0;
+            acc.recargos += parseFloat(d.recargos) || 0;
+            acc.actualizacion += parseFloat(d.actualizacion) || 0;
+            acc.multa += parseFloat(d.multa) || 0;
+            acc.ejecucion += parseFloat(d.ejecucion) || 0;
+        });
+        return acc;
+    })();
+
     const addFormaPagoRow = () => {
         setFormasPagosData((prev) => [...prev, { forma_pago_id: '', monto: '' }]);
     };
@@ -156,13 +174,26 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
 
     const itemsVisibles = anios.length > 0 ? conceptosSeleccionados : conceptos;
     const totalVisible = anios.length > 0 ? totalSeleccionado : total;
-    const descuentoMonto = selectedDescuento
-        ? itemsVisibles.filter((c) => c.concepto.includes('Predial') && c.concepto.includes(String(new Date().getFullYear()))).reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
+
+    const descuentoJubiladoMonto = selectedDescuento
+        ? itemsVisibles.filter((c) => c.concepto.includes('Predial') && c.concepto.includes(String(anioActual))).reduce((s, c) => s + parseFloat(c.monto), 0) * 0.10
         : 0;
-    const conceptosConDescuento = selectedDescuento && descuentoMonto > 0
-        ? [...itemsVisibles, { concepto: 'Descuento', monto: -descuentoMonto }]
+
+    const descuentosDesglosados = {
+        predial: round2(descuentosPorCategoria.predial + descuentoJubiladoMonto),
+        recargos: round2(descuentosPorCategoria.recargos),
+        actualizacion: round2(descuentosPorCategoria.actualizacion),
+        multa: round2(descuentosPorCategoria.multa),
+        ejecucion: round2(descuentosPorCategoria.ejecucion),
+    };
+
+    const totalDescuentos = Object.values(descuentosDesglosados).reduce((s, v) => s + v, 0);
+
+    const conceptosParaMostrar = totalDescuentos > 0
+        ? [...itemsVisibles, { concepto: 'Descuentos', monto: -totalDescuentos }]
         : itemsVisibles;
-    const totalConDescuento = totalVisible - descuentoMonto;
+
+    const totalConDescuento = totalVisible - totalDescuentos;
 
     const formasValidas = formasPagosData.every((row) => row.forma_pago_id && parseFloat(row.monto) > 0);
     const suficiente = sumaFormasPagos >= totalConDescuento - 0.01;
@@ -190,17 +221,22 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         setLoading(true);
         setError(null);
 
+        const descuentos = Object.entries(descuentosDesglosados)
+            .filter(([, monto]) => monto > 0)
+            .map(([tipo, monto]) => ({ tipo, monto }));
+
         const payload = {
             id_predio: selectedPredio.id,
             id_contribuyente: contribuyenteData.id_contribuyente,
             monto: totalConDescuento,
-            descuento: descuentoMonto,
+            descuento: totalDescuentos,
             nombre: contribuyenteData.nombre,
             rfc: contribuyenteData.rfc,
             descripcion: esRustico ? 'Pago predial rústico' : 'Pago predial urbano',
             forma_pago: formasPagosData[0]?.forma_pago_id || '',
             tipo_pago: esRustico ? 'predial_rustico' : 'predial_urbano',
-            conceptos: conceptosConDescuento,
+            conceptos: itemsVisibles,
+            descuentos,
             anios_pagados: anios.length > 0 ? selectedAnios : undefined,
             formas_pagos: formasPagosData.map((row) => ({
                 forma_pago_id: parseInt(row.forma_pago_id),
@@ -307,7 +343,29 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                             ))}
                                         </div>
                                         {selectedDescuento && (
-                                            <p className="mt-2 text-xs text-green-600 font-medium">10% desc. año actual: -${descuentoMonto.toFixed(2)}</p>
+                                            <p className="mt-2 text-xs text-green-600 font-medium">10% desc. subtotal año actual: -${descuentoJubiladoMonto.toFixed(2)}</p>
+                                        )}
+                                        {totalDescuentos > 0 && (
+                                            <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 text-xs space-y-1">
+                                                {descuentosDesglosados.predial > 0 && (
+                                                    <div className="flex justify-between"><span>Subtotal (pronto pago / jubilado, etc.)</span><span className="text-green-600">-${descuentosDesglosados.predial.toFixed(2)}</span></div>
+                                                )}
+                                                {descuentosDesglosados.recargos > 0 && (
+                                                    <div className="flex justify-between"><span>Recargos</span><span className="text-green-600">-${descuentosDesglosados.recargos.toFixed(2)}</span></div>
+                                                )}
+                                                {descuentosDesglosados.actualizacion > 0 && (
+                                                    <div className="flex justify-between"><span>Actualización</span><span className="text-green-600">-${descuentosDesglosados.actualizacion.toFixed(2)}</span></div>
+                                                )}
+                                                {descuentosDesglosados.multa > 0 && (
+                                                    <div className="flex justify-between"><span>Multa</span><span className="text-green-600">-${descuentosDesglosados.multa.toFixed(2)}</span></div>
+                                                )}
+                                                {descuentosDesglosados.ejecucion > 0 && (
+                                                    <div className="flex justify-between"><span>Gastos de Ejecución</span><span className="text-green-600">-${descuentosDesglosados.ejecucion.toFixed(2)}</span></div>
+                                                )}
+                                                <div className="flex justify-between font-semibold pt-1 border-t border-gray-200 dark:border-gray-600">
+                                                    <span>Total descuentos</span><span className="text-green-600">-${totalDescuentos.toFixed(2)}</span>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -328,6 +386,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                         <th className="text-right py-1 px-1">Multa</th>
                                                         <th className="text-right py-1 px-1">Ejecución</th>
                                                         <th className="text-right py-1 px-1">Total</th>
+                                                        <th className="text-right py-1 px-1">Descuento</th>
+                                                        <th className="text-right py-1 px-1">A Pagar</th>
                                                         <th className="text-center py-1 pl-2">Pagar</th>
                                                     </tr>
                                                 </thead>
@@ -343,6 +403,12 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                             else if (x.concepto.includes('Multa')) c.multa = parseFloat(x.monto);
                                                             else if (x.concepto.includes('Ejecución') || x.concepto.includes('Gastos')) c.ejecucion = parseFloat(x.monto);
                                                         });
+                                                        const d = a.descuentos || {};
+                                                        const jubiladoAnio = selectedDescuento && a.anho === anioActual
+                                                            ? (c.subtotal || 0) * 0.10
+                                                            : 0;
+                                                        const descuentoAnio = (parseFloat(d.predial) || 0) + jubiladoAnio + (parseFloat(d.recargos) || 0) + (parseFloat(d.actualizacion) || 0) + (parseFloat(d.multa) || 0) + (parseFloat(d.ejecucion) || 0);
+                                                        const aPagarAnio = (parseFloat(a.total) || 0) - descuentoAnio;
                                                         return (
                                                             <tr key={a.anho} className="border-b border-gray-200 dark:border-gray-700">
                                                                 <td className="py-1 pr-2 font-medium">{a.anho}</td>
@@ -352,6 +418,8 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                                 <td className="py-1 px-1 text-right">${(c.multa || 0).toFixed(2)}</td>
                                                                 <td className="py-1 px-1 text-right">${(c.ejecucion || 0).toFixed(2)}</td>
                                                                 <td className="py-1 px-1 text-right font-bold">${parseFloat(a.total || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right text-green-600">{descuentoAnio > 0 ? `-$${descuentoAnio.toFixed(2)}` : '—'}</td>
+                                                                <td className="py-1 px-1 text-right font-bold">${aPagarAnio.toFixed(2)}</td>
                                                                 <td className="py-1 pl-2 text-center">
                                                                     <input type="checkbox" checked={selectedAnios.includes(a.anho)} onChange={() => toggleAnio(a.anho)} className="rounded border-gray-300 dark:border-gray-600" />
                                                                 </td>
@@ -375,7 +443,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {conceptosConDescuento.map((c, i) => (
+                                                {conceptosParaMostrar.map((c, i) => (
                                                     <tr key={i} className="border-b border-gray-200 dark:border-gray-700">
                                                         <td className="py-1 pr-2">{c.concepto}</td>
                                                         <td className={`text-right py-1 pl-2 ${c.monto < 0 ? 'text-red-500' : ''}`}>${parseFloat(c.monto).toFixed(2)}</td>
@@ -472,10 +540,10 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                 <span className="text-gray-500">Total a pagar:</span>
                                 <span className="font-semibold">${totalConDescuento.toFixed(2)}</span>
                             </div>
-                            {descuentoMonto > 0 && (
+                            {totalDescuentos > 0 && (
                                 <div className="flex justify-between text-green-600">
-                                    <span>Descuento ({selectedDescuento}):</span>
-                                    <span className="font-bold">-${descuentoMonto.toFixed(2)}</span>
+                                    <span>Descuentos:</span>
+                                    <span className="font-bold">-${totalDescuentos.toFixed(2)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between">

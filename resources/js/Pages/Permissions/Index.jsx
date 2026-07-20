@@ -1,8 +1,28 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import Pagination from '@/Components/Pagination';
+import { useState } from 'react';
 
-export default function Index({ permissions }) {
+export default function Index({ permissions, filters }) {
+    const [search, setSearch] = useState(filters || { name: '', nombre_mostrar: '', categoria: '', guard_name: '' });
+
+    const handleFilter = (field, value) => {
+        setSearch({ ...search, [field]: value });
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get(route('permissions.index'), search, { preserveState: true, replace: true });
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch(e);
+        }
+    };
+
+    const inputClass = "block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-xs shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-2 py-1";
+
     return (
         <AuthenticatedLayout
             header={
@@ -48,6 +68,49 @@ export default function Index({ permissions }) {
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                                 Acciones
                                             </th>
+                                        </tr>
+                                        <tr className="border-t border-gray-200 dark:border-gray-600">
+                                            <th className="px-2 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={search.name ?? ''}
+                                                    onChange={(e) => handleFilter('name', e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    placeholder="Filtrar..."
+                                                    className={inputClass}
+                                                />
+                                            </th>
+                                            <th className="px-2 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={search.nombre_mostrar ?? ''}
+                                                    onChange={(e) => handleFilter('nombre_mostrar', e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    placeholder="Filtrar..."
+                                                    className={inputClass}
+                                                />
+                                            </th>
+                                            <th className="px-2 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={search.categoria ?? ''}
+                                                    onChange={(e) => handleFilter('categoria', e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    placeholder="Filtrar..."
+                                                    className={inputClass}
+                                                />
+                                            </th>
+                                            <th className="px-2 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={search.guard_name ?? ''}
+                                                    onChange={(e) => handleFilter('guard_name', e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    placeholder="Filtrar..."
+                                                    className={inputClass}
+                                                />
+                                            </th>
+                                            <th className="px-2 py-2"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">

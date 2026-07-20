@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link } from '@inertiajs/react';
 
 const allModules = [
     { name: 'Predios', href: 'predios.index', color: 'bg-blue-500', icon: '🏠', permiso: 'predios-index' },
@@ -14,13 +15,12 @@ const allModules = [
     { name: 'Caja General', href: 'pagos.caja-general', color: 'bg-lime-500', icon: '🏦', permiso: 'caja-pago-index' },
     { name: 'Secretarías', href: 'secretarias.index', color: 'bg-cyan-500', icon: '🏛️', permiso: 'secretarias-index' },
     { name: 'Roles', href: 'roles.index', color: 'bg-red-500', icon: '🔐', permiso: 'roles-index' },
-    { name: 'Permisos', href: 'permissions.index', color: 'bg-rose-500', icon: '⚙️', permiso: 'permissions-index' },
+    { name: 'Permisos', href: 'permissions.index', color: 'bg-rose-500', icon: '⚙️', permiso: 'permisos-index' },
     { name: 'Usuarios', href: 'users.index', color: 'bg-gray-600', icon: '👥', permiso: 'users-index' },
 ];
 
 export default function Dashboard() {
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (permiso) => !permiso || permissions.includes(permiso);
+    const { can } = usePermissions();
     const modules = allModules.filter(m => can(m.permiso));
     return (
         <AuthenticatedLayout

@@ -1,12 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ descuentos, filters, id_predio, existingDescuento }) {
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
+    const { can } = usePermissions();
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters?.search ?? '');
@@ -218,10 +218,10 @@ export default function Index({ descuentos, filters, id_predio, existingDescuent
                                                 </td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm">{d.user?.name ?? '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                                    {can('editar descuentos') && (
+                                                    {can('descuentos-edit') && (
                                                         <button onClick={() => openEdit(d)} className="text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
                                                     )}
-                                                    {can('eliminar descuentos') && (
+                                                    {can('descuentos-delete') && (
                                                         <button onClick={() => handleDelete(d)} className="text-red-600 hover:text-red-900">Eliminar</button>
                                                     )}
                                                 </td>

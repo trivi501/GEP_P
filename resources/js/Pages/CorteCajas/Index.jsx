@@ -1,12 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ cortes, historialCajasSinCorte }) {
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
+    const { can } = usePermissions();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);

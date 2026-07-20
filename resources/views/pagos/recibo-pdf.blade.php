@@ -208,70 +208,33 @@
                 </thead>
                 <tbody>
                     @php
-                        $grouped = [];
+                        $itemsRecibo = [];
+                        $subtotalRecibo = 0;
+                        $descuentoTotalRecibo = 0;
                         foreach($pago->cuentasPagos as $c) {
-                            $anio = null;
-                            if (preg_match('/(\d{4})/', $c->concepto, $m)) {
-                                $anio = $m[1];
-                            }
-                            $key = $anio ?? 'generales';
-                            if (!isset($grouped[$key])) $grouped[$key] = ['anio' => $anio, 'items' => [], 'total' => 0];
-                            $grouped[$key]['items'][] = $c;
-                            $grouped[$key]['total'] += $c->monto;
-                        }
-                        ksort($grouped);
-
-                        $ranges = [];
-                        $currentRange = null;
-                        foreach ($grouped as $grp) {
-                            if (!$grp['anio']) {
-                                $ranges[] = $grp;
+                            $esDescuento = stripos($c->concepto, 'Descuento') === 0 || stripos($c->cuenta?->descripcion ?? '', 'DESCUENTO') !== false;
+                            if ($esDescuento) {
+                                $descuentoTotalRecibo += $c->monto;
                                 continue;
                             }
-                            if ($currentRange === null) {
-                                $currentRange = ['start' => $grp['anio'], 'end' => $grp['anio'], 'groups' => [$grp], 'total' => $grp['total']];
-                            } elseif ($grp['anio'] == $currentRange['end'] + 1) {
-                                $currentRange['end'] = $grp['anio'];
-                                $currentRange['groups'][] = $grp;
-                                $currentRange['total'] += $grp['total'];
-                            } else {
-                                $ranges[] = $currentRange;
-                                $currentRange = ['start' => $grp['anio'], 'end' => $grp['anio'], 'groups' => [$grp], 'total' => $grp['total']];
-                            }
+                            $itemsRecibo[] = $c;
+                            $subtotalRecibo += $c->monto;
                         }
-                        if ($currentRange !== null) $ranges[] = $currentRange;
                     @endphp
-                    @foreach($ranges as $range)
-                        @if(isset($range['start']))
-                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">
-                            @if($range['start'] == $range['end'])
-                                Año {{ $range['start'] }}
-                            @elseif($range['end'] - $range['start'] == 1)
-                                {{ $range['start'] }} al {{ $range['end'] }}
-                            @else
-                                {{ $range['start'] }} - {{ $range['end'] }}
-                            @endif
-                        </td></tr>
-                        @foreach($range['groups'] as $grp)
-                            @foreach($grp['items'] as $c)
-                            <tr>
-                                <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                                <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
-                                <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                            </tr>
-                            @endforeach
-                        @endforeach
-                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $range['start'] == $range['end'] ? $range['start'] : $range['start'].' - '.$range['end'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($range['total'], 2) }}</td></tr>
-                        @else
-                        @foreach($range['items'] as $c)
-                        <tr>
-                            <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                            <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
-                            <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                        </tr>
-                        @endforeach
-                        @endif
+                    @foreach($itemsRecibo as $c)
+                    <tr>
+                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    </tr>
                     @endforeach
+                    <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal:</td><td class="monto" style="font-weight:bold;">${{ number_format($subtotalRecibo, 2) }}</td></tr>
+                    @if($descuentoTotalRecibo != 0)
+                    <tr>
+                        <td colspan="2" style="font-weight:bold;">Descuentos</td>
+                        <td class="monto" style="font-weight:bold;">-${{ number_format(abs($descuentoTotalRecibo), 2) }}</td>
+                    </tr>
+                    @endif
                     <tr class="total-row">
                         <td colspan="2">Total</td>
                         <td class="monto">${{ number_format($pago->monto, 2) }}</td>
@@ -356,37 +319,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($ranges as $range)
-                        @if(isset($range['start']))
-                        <tr><td colspan="3" style="background:#f0f0f0;padding:1px 2px;font-weight:bold;font-size:6pt;">
-                            @if($range['start'] == $range['end'])
-                                Año {{ $range['start'] }}
-                            @elseif($range['end'] - $range['start'] == 1)
-                                {{ $range['start'] }} al {{ $range['end'] }}
-                            @else
-                                {{ $range['start'] }} - {{ $range['end'] }}
-                            @endif
-                        </td></tr>
-                        @foreach($range['groups'] as $grp)
-                            @foreach($grp['items'] as $c)
-                            <tr>
-                                <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                                <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
-                                <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                            </tr>
-                            @endforeach
-                        @endforeach
-                        <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal {{ $range['start'] == $range['end'] ? $range['start'] : $range['start'].' - '.$range['end'] }}:</td><td class="monto" style="font-weight:bold;">${{ number_format($range['total'], 2) }}</td></tr>
-                        @else
-                        @foreach($range['items'] as $c)
-                        <tr>
-                            <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
-                            <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
-                            <td class="monto">${{ number_format($c->monto, 2) }}</td>
-                        </tr>
-                        @endforeach
-                        @endif
+                    @foreach($itemsRecibo as $c)
+                    <tr>
+                        <td>{{ $c->cuenta?->indetec ?? '—' }}</td>
+                        <td>{{ $c->cuenta?->descripcion ?? $c->concepto }}</td>
+                        <td class="monto">${{ number_format($c->monto, 2) }}</td>
+                    </tr>
                     @endforeach
+                    <tr><td colspan="2" style="text-align:right;font-weight:bold;font-size:6.5pt;">Subtotal:</td><td class="monto" style="font-weight:bold;">${{ number_format($subtotalRecibo, 2) }}</td></tr>
+                    @if($descuentoTotalRecibo != 0)
+                    <tr>
+                        <td colspan="2" style="font-weight:bold;">Descuentos</td>
+                        <td class="monto" style="font-weight:bold;">-${{ number_format(abs($descuentoTotalRecibo), 2) }}</td>
+                    </tr>
+                    @endif
                     <tr class="total-row">
                         <td colspan="2">Total</td>
                         <td class="monto">${{ number_format($pago->monto, 2) }}</td>

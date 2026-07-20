@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
 const historicoFieldLabels = {
@@ -48,8 +49,7 @@ function InfoField({ label, children }) {
 }
 
 export default function Show({ predio }) {
-    const page = usePage();
-    const can = (permiso) => Array.isArray(page.props.userPermissions) && page.props.userPermissions.includes(permiso);
+    const { can } = usePermissions();
     const urbano = predio.datos_urbano;
     const historico = predio.historico ?? [];
     const [histPage, setHistPage] = useState(1);

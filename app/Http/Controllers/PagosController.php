@@ -11,10 +11,12 @@ use App\Models\OrdenPago;
 use App\Models\CuentasPagos;
 use App\Models\FormasPagosCada;
 use App\Services\CalculoPredialUrbanoService;
+use App\Exports\PagosGeneralesExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PagosController extends Controller
 {
@@ -302,6 +304,8 @@ class PagosController extends Controller
         $conceptos = [];
         $anios = [];
 
+        $descInfo = $this->getDescuentosPredio($predio->id_predio);
+
         $esRustico = $predio->datosRustico || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'RÚSTICO') || str_contains(mb_strtoupper($predio->tipoPredio?->Tipo_predio ?? ''), 'MINA');
 
         if ($esRustico) {
@@ -375,7 +379,15 @@ class PagosController extends Controller
                 if ($multaAnual > 0) $anioConceptos[] = ['concepto' => 'Multa ' . $anhoInicio, 'monto' => round($multaAnual, 2)];
                 if ($cobranzaAnual > 0) $anioConceptos[] = ['concepto' => 'Gastos Ejecución ' . $anhoInicio, 'monto' => round($cobranzaAnual, 2)];
 
-                $anios[] = ['anho' => $anhoInicio, 'conceptos' => $anioConceptos, 'total' => $totalAnual];
+                $anioDescuentos = [
+                    'predial' => 0,
+                    'recargos' => $descInfo['recargos_pct'] > 0 ? round($recargosAnual * $descInfo['recargos_pct'] / 100, 2) : 0,
+                    'actualizacion' => $descInfo['actualizaciones_pct'] > 0 ? round($actualizacionAnual * $descInfo['actualizaciones_pct'] / 100, 2) : 0,
+                    'multa' => $descInfo['multas_pct'] > 0 ? round($multaAnual * $descInfo['multas_pct'] / 100, 2) : 0,
+                    'ejecucion' => $descInfo['cobranza_pct'] > 0 ? round($cobranzaAnual * $descInfo['cobranza_pct'] / 100, 2) : 0,
+                ];
+
+                $anios[] = ['anho' => $anhoInicio, 'conceptos' => $anioConceptos, 'total' => $totalAnual, 'descuentos' => $anioDescuentos];
 
                 $conceptos = array_merge($conceptos, $anioConceptos);
                 $total += $totalAnual;
@@ -398,9 +410,17 @@ class PagosController extends Controller
                     if (!empty($calculo['multa'])) $anioConceptos[] = ['concepto' => 'Multa ' . $calculo['anho'], 'monto' => round($calculo['multa'], 2)];
                     if (!empty($calculo['cobranza'])) $anioConceptos[] = ['concepto' => 'Gastos Ejecución ' . $calculo['anho'], 'monto' => round($calculo['cobranza'], 2)];
 
-                    $anioTotal = round(($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0) + ($calculo['multa'] ?? 0) + ($calculo['cobranza'] ?? 0) - ($calculo['descuento'] ?? 0), 2);
+                    $anioTotal = round(($calculo['entero'] ?? 0) + ($calculo['aseo_publico'] ?? 0) + ($calculo['recargos'] ?? 0) + ($calculo['actualizacion'] ?? 0) + ($calculo['multa'] ?? 0) + ($calculo['cobranza'] ?? 0), 2);
 
-                    $anios[] = ['anho' => $calculo['anho'], 'conceptos' => $anioConceptos, 'total' => $anioTotal];
+                    $anioDescuentos = [
+                        'predial' => round($calculo['descuento'] ?? 0, 2),
+                        'recargos' => (!empty($calculo['recargos']) && $descInfo['recargos_pct'] > 0) ? round($calculo['recargos'] * $descInfo['recargos_pct'] / 100, 2) : 0,
+                        'actualizacion' => (!empty($calculo['actualizacion']) && $descInfo['actualizaciones_pct'] > 0) ? round($calculo['actualizacion'] * $descInfo['actualizaciones_pct'] / 100, 2) : 0,
+                        'multa' => (!empty($calculo['multa']) && $descInfo['multas_pct'] > 0) ? round($calculo['multa'] * $descInfo['multas_pct'] / 100, 2) : 0,
+                        'ejecucion' => (!empty($calculo['cobranza']) && $descInfo['cobranza_pct'] > 0) ? round($calculo['cobranza'] * $descInfo['cobranza_pct'] / 100, 2) : 0,
+                    ];
+
+                    $anios[] = ['anho' => $calculo['anho'], 'conceptos' => $anioConceptos, 'total' => $anioTotal, 'descuentos' => $anioDescuentos];
 
                     $conceptos = array_merge($conceptos, $anioConceptos);
                     $total += $anioTotal;
@@ -414,36 +434,6 @@ class PagosController extends Controller
             $anios = [];
             $conceptos[] = ['concepto' => 'Sin datos', 'monto' => 0];
             $conceptos[] = ['concepto' => 'Sin cálculo disponible', 'monto' => 0];
-        }
-
-        $descInfo = $this->getDescuentosPredio($predio->id_predio);
-        if ($descInfo['aplica']) {
-            $descuentoMulta = 0;
-            $descuentoActualizacion = 0;
-            $descuentoCobranza = 0;
-            $descuentoRecargos = 0;
-
-            foreach ($conceptos as &$c) {
-                if (str_contains($c['concepto'], 'Multa') && $descInfo['multas_pct'] > 0) {
-                    $descuentoMulta += round($c['monto'] * $descInfo['multas_pct'] / 100, 2);
-                }
-                if (str_contains($c['concepto'], 'Actualización') && $descInfo['actualizaciones_pct'] > 0) {
-                    $descuentoActualizacion += round($c['monto'] * $descInfo['actualizaciones_pct'] / 100, 2);
-                }
-                if ((str_contains($c['concepto'], 'Ejecución') || str_contains($c['concepto'], 'Gastos')) && $descInfo['cobranza_pct'] > 0) {
-                    $descuentoCobranza += round($c['monto'] * $descInfo['cobranza_pct'] / 100, 2);
-                }
-                if (str_contains($c['concepto'], 'Recargos') && $descInfo['recargos_pct'] > 0) {
-                    $descuentoRecargos += round($c['monto'] * $descInfo['recargos_pct'] / 100, 2);
-                }
-            }
-            unset($c);
-
-            $totalDescuento = $descuentoMulta + $descuentoActualizacion + $descuentoCobranza + $descuentoRecargos;
-            if ($totalDescuento > 0) {
-                $conceptos[] = ['concepto' => 'Descuentos', 'monto' => -$totalDescuento];
-                $total = round($total - $totalDescuento, 2);
-            }
         }
 
         return response()->json([
@@ -483,6 +473,9 @@ class PagosController extends Controller
             'conceptos' => 'required|array|min:1',
             'conceptos.*.concepto' => 'required|string',
             'conceptos.*.monto' => 'required|numeric',
+            'descuentos' => 'nullable|array',
+            'descuentos.*.tipo' => 'required_with:descuentos|string|in:predial,recargos,actualizacion,multa,ejecucion',
+            'descuentos.*.monto' => 'required_with:descuentos|numeric|min:0',
             'anios_pagados' => 'nullable|array',
             'anios_pagados.*' => 'integer',
             'formas_pagos' => 'required|array|min:1',
@@ -515,9 +508,11 @@ class PagosController extends Controller
             $ultimoFolio = Pago::max('id') ?? 0;
             $folio = 'PAG-' . str_pad($ultimoFolio + 1, 6, '0', STR_PAD_LEFT);
 
+            $totalDescuentos = round(collect($validated['descuentos'] ?? [])->sum('monto'), 2);
+
             $pago = Pago::create([
                 'monto' => $validated['monto'],
-                'descuento' => $validated['descuento'] ?? 0,
+                'descuento' => $totalDescuentos,
                 'folio' => $folio,
                 'fecha' => now(),
                 'estatus' => 'pagado',
@@ -554,9 +549,6 @@ class PagosController extends Controller
                 'Gastos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
-                'Descuentos' => fn($list) => $list->first(fn($c) =>
-                    stripos($c->descripcion_clean, 'DESCUENTO') !== false
-                ),
             ] : [
                 'Predial' => function($list, $concepto) {
                     return $list->first(function($c) use ($concepto) {
@@ -582,9 +574,32 @@ class PagosController extends Controller
                 'Gastos' => fn($list) => $list->first(fn($c) =>
                     str_contains($c->descripcion_clean, 'COBRANZA') || str_contains($c->descripcion_clean, 'EJECUCIÓN') || str_contains($c->descripcion_clean, 'EJECUCION')
                 ),
-                'Descuentos' => fn($list) => $list->first(fn($c) =>
-                    stripos($c->descripcion_clean, 'DESCUENTO') !== false
+            ];
+
+            $descuentoCuentaResolvers = [
+                'predial' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && stripos($c->descripcion_clean, 'PREDIAL') !== false
                 ),
+                'recargos' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && stripos($c->descripcion_clean, 'RECARGO') !== false
+                ),
+                'actualizacion' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && stripos($c->descripcion_clean, 'ACTUALIZ') !== false
+                ),
+                'multa' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && stripos($c->descripcion_clean, 'MULTA') !== false
+                ),
+                'ejecucion' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && (stripos($c->descripcion_clean, 'EJECUC') !== false || stripos($c->descripcion_clean, 'COBRANZA') !== false)
+                ),
+            ];
+
+            $descuentoLabels = [
+                'predial' => 'Descuento Subtotal Predial',
+                'recargos' => 'Descuento Recargos',
+                'actualizacion' => 'Descuento Actualización',
+                'multa' => 'Descuento Multas',
+                'ejecucion' => 'Descuento Gastos de Ejecución',
             ];
 
             $aggregated = [];
@@ -635,6 +650,23 @@ class PagosController extends Controller
                     'fecha_registro' => now(),
                     'cantidad' => 1,
                     'monto' => $monto,
+                    'concepto_id' => null,
+                ]);
+            }
+
+            foreach ($validated['descuentos'] ?? [] as $d) {
+                $montoDescuento = round((float) $d['monto'], 2);
+                if ($montoDescuento <= 0) continue;
+
+                $match = ($descuentoCuentaResolvers[$d['tipo']])($cuentasList);
+
+                CuentasPagos::create([
+                    'pago_id' => $pago->id,
+                    'cuenta_id' => $match->id ?? null,
+                    'concepto' => $descuentoLabels[$d['tipo']],
+                    'fecha_registro' => now(),
+                    'cantidad' => 1,
+                    'monto' => -$montoDescuento,
                     'concepto_id' => null,
                 ]);
             }
@@ -1057,6 +1089,19 @@ class PagosController extends Controller
             ->paginate(15);
 
         return Inertia::render('Pagos/PagosGenerales', compact('pagos', 'filters'));
+    }
+
+    public function exportarPagosGeneralesExcel(Request $request)
+    {
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+        ]);
+
+        return Excel::download(
+            new PagosGeneralesExport($request->fecha_inicio, $request->fecha_fin),
+            'reporte-pagos-generales-' . $request->fecha_inicio . '-al-' . $request->fecha_fin . '.xlsx'
+        );
     }
 
     private function generarQrBase64(string $url): string

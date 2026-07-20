@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function Index({ ordenes, filters: initialFilters }) {
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (permiso) => permissions.includes(permiso);
+    const { can } = usePermissions();
     const [filters, setFilters] = useState(initialFilters ?? {});
 
     const setFilter = (key, value) => {

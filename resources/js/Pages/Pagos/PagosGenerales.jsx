@@ -1,13 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import usePermissions from '@/Hooks/usePermissions';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import Pagination from '@/Components/Pagination';
 
 export default function PagosGenerales({ pagos, filters: initialFilters }) {
+    const { can } = usePermissions();
     const [cancelModal, setCancelModal] = useState(null);
     const [canceling, setCanceling] = useState(false);
     const [localPagos, setLocalPagos] = useState(pagos);
     const [filters, setFilters] = useState(initialFilters ?? {});
+    const [fechaInicio, setFechaInicio] = useState('');
+    const [fechaFin, setFechaFin] = useState('');
 
     const setFilter = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -25,6 +29,16 @@ export default function PagosGenerales({ pagos, filters: initialFilters }) {
     };
 
     const hasFilters = Object.values(filters).some(Boolean);
+
+    const exportarExcel = () => {
+        if (!fechaInicio || !fechaFin) return;
+
+        const url = route('pagos.pagos-generales.exportar-excel', {
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+        });
+        window.open(url, '_blank');
+    };
 
     const handleCancel = async () => {
         if (!cancelModal) return;
@@ -79,6 +93,39 @@ export default function PagosGenerales({ pagos, filters: initialFilters }) {
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-medium">Todos los Pagos Realizados</h3>
                             </div>
+
+                            {can('ExportarPagos') && (
+                                <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Fecha Inicio:
+                                        <input
+                                            type="date"
+                                            value={fechaInicio}
+                                            onChange={(e) => setFechaInicio(e.target.value)}
+                                            className="ml-2 rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                        />
+                                    </label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Fecha Fin:
+                                        <input
+                                            type="date"
+                                            value={fechaFin}
+                                            onChange={(e) => setFechaFin(e.target.value)}
+                                            className="ml-2 rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                        />
+                                    </label>
+                                    <button
+                                        onClick={exportarExcel}
+                                        disabled={!fechaInicio || !fechaFin}
+                                        className="inline-flex items-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-green-500 focus:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 active:bg-green-700 disabled:opacity-50"
+                                    >
+                                        Exportar Excel por Cuenta
+                                    </button>
+                                    <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                                        *Exporta un renglón por cada cuenta de cada pago en el rango seleccionado
+                                    </span>
+                                </div>
+                            )}
 
                             <form onSubmit={handleSearch} className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

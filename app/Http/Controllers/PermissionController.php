@@ -8,10 +8,21 @@ use Illuminate\Http\Request;
 
 class PermissionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::orderBy('categoria')->orderBy('name')->paginate(10);
-        return Inertia::render('Permissions/Index', compact('permissions'));
+        $filters = $request->only(['name', 'nombre_mostrar', 'categoria', 'guard_name']);
+
+        $permissions = Permission::query()
+            ->when($request->filled('name'), fn($q) => $q->where('name', 'like', '%' . $request->name . '%'))
+            ->when($request->filled('nombre_mostrar'), fn($q) => $q->where('nombre_mostrar', 'like', '%' . $request->nombre_mostrar . '%'))
+            ->when($request->filled('categoria'), fn($q) => $q->where('categoria', 'like', '%' . $request->categoria . '%'))
+            ->when($request->filled('guard_name'), fn($q) => $q->where('guard_name', 'like', '%' . $request->guard_name . '%'))
+            ->orderBy('categoria')
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Permissions/Index', compact('permissions', 'filters'));
     }
 
     public function create()

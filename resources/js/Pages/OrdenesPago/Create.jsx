@@ -2,11 +2,11 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import usePermissions from '@/Hooks/usePermissions';
+import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) {
-    const permissions = Array.isArray(usePage().props.userPermissions) ? usePage().props.userPermissions : [];
-    const can = (p) => permissions.includes(p);
+    const { can } = usePermissions();
     const userSecretaria = secretarias.find(s => s.id === userSecretariaId);
     const { data, setData, post, processing, errors } = useForm({
         nombre: '',
@@ -213,7 +213,7 @@ export default function Create({ cuentas, secretarias, userSecretariaId, hoy }) 
                                                             max="100"
                                                             value={cuenta.descuento}
                                                             onChange={(e) => updateCuenta(index, 'descuento', e.target.value)}
-                                                            disabled={!can('editar-descuentos')}
+                                                            disabled={!can('descuentos-edit')}
                                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         />
                                                     </div>
