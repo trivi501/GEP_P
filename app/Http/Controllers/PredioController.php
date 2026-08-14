@@ -197,15 +197,13 @@ class PredioController extends Controller
         $estadosRenta = EstadoRenta::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $estadosImpuesto = EstadoImpuesto::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $titulosPropiedad = TituloPropiedad::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        $colonias = CatColonia::where('Activo', 1)->orderBy('COLONIA')->get();
-        $calles = Calle::where('Activo', 1)->orderBy('CALLE')->get();
         $orientaciones = CatOrientacion::where('activo', 1)->orderBy('id_orientacion')->get();
         $zonasUrbana = CatZonaPredio::where('activo', 1)->orderBy('descripcion')->get();
         $formasPredio = CatFormaPredio::where('activo', 1)->orderBy('descripcion')->get();
         $usosPredioUrbano = CatUsoPredioUrbano::where('activo', 1)->orderBy('descripcion')->get();
         $estadosFisicos = CatEstadoFisicoPredio::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $pavimentos = CatPavimento::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        return Inertia::render('Predios/Create', compact('tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
+        return Inertia::render('Predios/Create', compact('tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos'));
     }
 
     public function store(Request $request)
@@ -333,14 +331,12 @@ class PredioController extends Controller
 
     public function edit(Predio $predio)
     {
-        $predio->load('contribuyente', 'clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano', 'nivelesConstruidos.tipoConstruccion', 'nivelesConstruidos.usoConstruccion');
+        $predio->load('contribuyente', 'clavePredial', 'medidasYColindancias', 'observaciones', 'datosUrbano', 'nivelesConstruidos.tipoConstruccion', 'nivelesConstruidos.usoConstruccion', 'calle', 'colonia');
         $tiposPredio = TipoPredio::where('activo', 1)->orderBy('Tipo_predio')->get();
         $regimenesPropiedad = RegimenPropiedad::where('activo', 1)->orderBy('REGIMEN')->get();
         $estadosRenta = EstadoRenta::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $estadosImpuesto = EstadoImpuesto::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $titulosPropiedad = TituloPropiedad::where('activo', 1)->orderBy('DESCRIPCION')->get();
-        $colonias = CatColonia::where('Activo', 1)->orderBy('COLONIA')->get();
-        $calles = Calle::where('Activo', 1)->orderBy('CALLE')->get();
         $orientaciones = CatOrientacion::where('activo', 1)->orderBy('id_orientacion')->get();
         $zonasUrbana = CatZonaPredio::where('activo', 1)->orderBy('descripcion')->get();
         $formasPredio = CatFormaPredio::where('activo', 1)->orderBy('descripcion')->get();
@@ -349,7 +345,7 @@ class PredioController extends Controller
         $pavimentos = CatPavimento::where('activo', 1)->orderBy('DESCRIPCION')->get();
         $tiposConstruccion = CatTipoConstruccion::where('activo', 1)->orderBy('descripcion')->get();
         $usosConstruccion = CatUsoConstruccion::where('activo', 1)->orderBy('descripcion')->get();
-        return Inertia::render('Predios/Edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'colonias', 'calles', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos', 'tiposConstruccion', 'usosConstruccion'));
+        return Inertia::render('Predios/Edit', compact('predio', 'tiposPredio', 'regimenesPropiedad', 'estadosRenta', 'estadosImpuesto', 'titulosPropiedad', 'orientaciones', 'zonasUrbana', 'formasPredio', 'usosPredioUrbano', 'estadosFisicos', 'pavimentos', 'tiposConstruccion', 'usosConstruccion'));
     }
 
     public function update(Request $request, Predio $predio)

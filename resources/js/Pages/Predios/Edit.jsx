@@ -13,8 +13,6 @@ export default function Edit({
     estadosRenta,
     estadosImpuesto,
     titulosPropiedad,
-    colonias,
-    calles,
     orientaciones,
     zonasUrbana,
     formasPredio,
@@ -34,7 +32,9 @@ export default function Edit({
             ? predio.contribuyente.nombre_completo + ' (' + predio.contribuyente.cuenta + ')'
             : '',
         id_calle: predio.id_calle ?? '',
+        calle_search: predio.calle?.CALLE ?? '',
         id_colonia: predio.id_colonia ?? '',
+        colonia_search: predio.colonia?.COLONIA ?? '',
         Numero_exterior: predio.Numero_exterior ?? '',
         Numero_interior: predio.Numero_interior ?? '',
         ubicacion: predio.ubicacion ?? '',
@@ -87,6 +87,10 @@ export default function Edit({
 
     const [contribuyentes, setContribuyentes] = useState([]);
     const [showContribuyentes, setShowContribuyentes] = useState(false);
+    const [callesResults, setCallesResults] = useState([]);
+    const [showCalles, setShowCalles] = useState(false);
+    const [coloniasResults, setColoniasResults] = useState([]);
+    const [showColonias, setShowColonias] = useState(false);
 
     const searchContribuyente = async (q) => {
         setData('contribuyente_search', q);
@@ -109,6 +113,52 @@ export default function Edit({
         setData('id_contribuyente', c.id_contribuyente);
         setData('contribuyente_search', c.nombre_completo + ' (' + c.cuenta + ')');
         setShowContribuyentes(false);
+    };
+
+    const searchCalle = async (q) => {
+        setData('calle_search', q);
+        if (q.length < 2) {
+            setCallesResults([]);
+            setShowCalles(false);
+            return;
+        }
+        try {
+            const res = await fetch(route('predios.calle-search') + '?q=' + encodeURIComponent(q));
+            const json = await res.json();
+            setCallesResults(json);
+            setShowCalles(true);
+        } catch {
+            setCallesResults([]);
+        }
+    };
+
+    const searchColonia = async (q) => {
+        setData('colonia_search', q);
+        if (q.length < 2) {
+            setColoniasResults([]);
+            setShowColonias(false);
+            return;
+        }
+        try {
+            const res = await fetch(route('predios.colonia-search') + '?q=' + encodeURIComponent(q));
+            const json = await res.json();
+            setColoniasResults(json);
+            setShowColonias(true);
+        } catch {
+            setColoniasResults([]);
+        }
+    };
+
+    const selectCalle = (c) => {
+        setData('id_calle', c.id_calle);
+        setData('calle_search', c.CALLE);
+        setShowCalles(false);
+    };
+
+    const selectColonia = (c) => {
+        setData('id_colonia', c.id_colonia);
+        setData('colonia_search', c.COLONIA);
+        setShowColonias(false);
     };
 
     const addMedida = () => {
@@ -225,41 +275,61 @@ export default function Edit({
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <InputLabel htmlFor="id_calle" value="Calle" />
-                                        <select
-                                            id="id_calle"
-                                            name="id_calle"
-                                            value={data.id_calle}
-                                            onChange={(e) => setData('id_calle', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        >
-                                            <option value="">Seleccione una calle</option>
-                                            {calles.map((c) => (
-                                                <option key={c.id_calle} value={c.id_calle}>
-                                                    {c.CALLE}
-                                                </option>
-                                            ))}
-                                        </select>
+                                    <div className="relative">
+                                        <InputLabel htmlFor="calle_search" value="Calle" />
+                                        <TextInput
+                                            id="calle_search"
+                                            type="text"
+                                            name="calle_search"
+                                            value={data.calle_search}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => searchCalle(e.target.value)}
+                                            placeholder="Buscar calle..."
+                                            onFocus={() => data.calle_search.length >= 2 && setShowCalles(true)}
+                                            onBlur={() => setTimeout(() => setShowCalles(false), 200)}
+                                        />
+                                        {showCalles && callesResults.length > 0 && (
+                                            <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 shadow-lg">
+                                                {callesResults.map((c) => (
+                                                    <li
+                                                        key={c.id_calle}
+                                                        onClick={() => selectCalle(c)}
+                                                        className="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-600"
+                                                    >
+                                                        {c.CALLE}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                         <InputError message={errors.id_calle} className="mt-2" />
                                     </div>
 
-                                    <div>
-                                        <InputLabel htmlFor="id_colonia" value="Colonia" />
-                                        <select
-                                            id="id_colonia"
-                                            name="id_colonia"
-                                            value={data.id_colonia}
-                                            onChange={(e) => setData('id_colonia', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        >
-                                            <option value="">Seleccione una colonia</option>
-                                            {colonias.map((c) => (
-                                                <option key={c.id_colonia} value={c.id_colonia}>
-                                                    {c.COLONIA}
-                                                </option>
-                                            ))}
-                                        </select>
+                                    <div className="relative">
+                                        <InputLabel htmlFor="colonia_search" value="Colonia" />
+                                        <TextInput
+                                            id="colonia_search"
+                                            type="text"
+                                            name="colonia_search"
+                                            value={data.colonia_search}
+                                            className="mt-1 block w-full"
+                                            onChange={(e) => searchColonia(e.target.value)}
+                                            placeholder="Buscar colonia..."
+                                            onFocus={() => data.colonia_search.length >= 2 && setShowColonias(true)}
+                                            onBlur={() => setTimeout(() => setShowColonias(false), 200)}
+                                        />
+                                        {showColonias && coloniasResults.length > 0 && (
+                                            <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 shadow-lg">
+                                                {coloniasResults.map((c) => (
+                                                    <li
+                                                        key={c.id_colonia}
+                                                        onClick={() => selectColonia(c)}
+                                                        className="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-gray-600"
+                                                    >
+                                                        {c.COLONIA}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                         <InputError message={errors.id_colonia} className="mt-2" />
                                     </div>
 

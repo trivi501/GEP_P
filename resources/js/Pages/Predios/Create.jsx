@@ -12,8 +12,6 @@ export default function Create({
     estadosRenta,
     estadosImpuesto,
     titulosPropiedad,
-    colonias,
-    calles,
     orientaciones,
     zonasUrbana,
     formasPredio,
