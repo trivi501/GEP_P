@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClavePredialController;
+use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\ContribuyenteController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PredioController;
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('pagos/caja-general/{pago}/cancelar', [PagosController::class, 'cajaGeneralCancelar'])->name('pagos.caja-general.cancelar');
     Route::get('pagos/pagos-generales', [PagosController::class, 'pagosGenerales'])->name('pagos.pagos-generales');
     Route::get('pagos/pagos-generales/exportar-excel', [PagosController::class, 'exportarPagosGeneralesExcel'])->middleware('permission:ExportarPagos')->name('pagos.pagos-generales.exportar-excel');
+    Route::get('facturacion', [FacturacionController::class, 'index'])->name('facturacion.index');
+    Route::get('facturacion/listar', [FacturacionController::class, 'listar'])->name('facturacion.listar');
+    Route::get('facturacion/{folio}/datos', [FacturacionController::class, 'datos'])->name('facturacion.datos');
     Route::get('calculos-predios', [CalculosPrediosController::class, 'index'])->name('calculos-predios.index');
     Route::get('calculos-predios/pdf', [CalculosPrediosController::class, 'pdf'])->name('calculos-predios.pdf');
     Route::get('calculos-predios/pdf-rustico', [CalculosPrediosController::class, 'pdfRustico'])->name('calculos-predios.pdf-rustico');

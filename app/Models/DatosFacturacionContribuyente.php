@@ -33,4 +33,9 @@ class DatosFacturacionContribuyente extends Model
     {
         return $this->belongsTo(Domicilio::class, 'id_domicilio_facturacion', 'id_domicilio');
     }
+
+    public function regimenFiscal()
+    {
+        return $this->belongsTo(RegimenFiscal::class, 'id_f4_c_regimenfiscal', 'id');
+    }
 }
