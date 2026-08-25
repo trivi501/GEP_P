@@ -141,7 +141,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
     const anioActual = new Date().getFullYear();
 
     const descuentosPorCategoria = (() => {
-        const acc = { predial: 0, recargos: 0, actualizacion: 0, multa: 0, ejecucion: 0 };
+        const acc = { predial: 0, recargos: 0, actualizacion: 0, multa: 0, ejecucion: 0, aseo_publico: 0 };
         anios.forEach((a) => {
             if (!selectedAnios.includes(a.anho)) return;
             const d = a.descuentos || {};
@@ -150,6 +150,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
             acc.actualizacion += parseFloat(d.actualizacion) || 0;
             acc.multa += parseFloat(d.multa) || 0;
             acc.ejecucion += parseFloat(d.ejecucion) || 0;
+            acc.aseo_publico += parseFloat(d.aseo_publico) || 0;
         });
         return acc;
     })();
@@ -185,6 +186,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
         actualizacion: round2(descuentosPorCategoria.actualizacion),
         multa: round2(descuentosPorCategoria.multa),
         ejecucion: round2(descuentosPorCategoria.ejecucion),
+        aseo_publico: round2(descuentosPorCategoria.aseo_publico),
     };
 
     const totalDescuentos = Object.values(descuentosDesglosados).reduce((s, v) => s + v, 0);
@@ -362,6 +364,9 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                 {descuentosDesglosados.ejecucion > 0 && (
                                                     <div className="flex justify-between"><span>Gastos de Ejecución</span><span className="text-green-600">-${descuentosDesglosados.ejecucion.toFixed(2)}</span></div>
                                                 )}
+                                                {descuentosDesglosados.aseo_publico > 0 && (
+                                                    <div className="flex justify-between"><span>Aseo Público (A.P.)</span><span className="text-green-600">-${descuentosDesglosados.aseo_publico.toFixed(2)}</span></div>
+                                                )}
                                                 <div className="flex justify-between font-semibold pt-1 border-t border-gray-200 dark:border-gray-600">
                                                     <span>Total descuentos</span><span className="text-green-600">-${totalDescuentos.toFixed(2)}</span>
                                                 </div>
@@ -381,6 +386,7 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                     <tr className="border-b border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600">
                                                         <th className="text-left py-1 pr-2">Año</th>
                                                         <th className="text-right py-1 px-1">Subtotal</th>
+                                                        <th className="text-right py-1 px-1">A.P.</th>
                                                         <th className="text-right py-1 px-1">Recargos</th>
                                                         <th className="text-right py-1 px-1">Actualiz.</th>
                                                         <th className="text-right py-1 px-1">Multa</th>
@@ -407,12 +413,13 @@ export default function Cobrar({ cajaAbierta, formasPago, predioId }) {
                                                         const jubiladoAnio = selectedDescuento && a.anho === anioActual
                                                             ? (c.subtotal || 0) * 0.10
                                                             : 0;
-                                                        const descuentoAnio = (parseFloat(d.predial) || 0) + jubiladoAnio + (parseFloat(d.recargos) || 0) + (parseFloat(d.actualizacion) || 0) + (parseFloat(d.multa) || 0) + (parseFloat(d.ejecucion) || 0);
+                                                        const descuentoAnio = (parseFloat(d.predial) || 0) + jubiladoAnio + (parseFloat(d.recargos) || 0) + (parseFloat(d.actualizacion) || 0) + (parseFloat(d.multa) || 0) + (parseFloat(d.ejecucion) || 0) + (parseFloat(d.aseo_publico) || 0);
                                                         const aPagarAnio = (parseFloat(a.total) || 0) - descuentoAnio;
                                                         return (
                                                             <tr key={a.anho} className="border-b border-gray-200 dark:border-gray-700">
                                                                 <td className="py-1 pr-2 font-medium">{a.anho}</td>
                                                                 <td className="py-1 px-1 text-right">${(c.subtotal || 0).toFixed(2)}</td>
+                                                                <td className="py-1 px-1 text-right">${(c.aseo || 0).toFixed(2)}</td>
                                                                 <td className="py-1 px-1 text-right">${(c.recargos || 0).toFixed(2)}</td>
                                                                 <td className="py-1 px-1 text-right">${(c.actualizacion || 0).toFixed(2)}</td>
                                                                 <td className="py-1 px-1 text-right">${(c.multa || 0).toFixed(2)}</td>

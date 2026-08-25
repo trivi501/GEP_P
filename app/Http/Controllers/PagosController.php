@@ -37,10 +37,12 @@ class PagosController extends Controller
                 'actualizaciones_pct' => 0,
                 'cobranza_pct' => 0,
                 'recargos_pct' => 0,
+                'aseo_publico_pct' => 0,
                 'descuento_multas' => 0,
                 'descuento_actualizaciones' => 0,
                 'descuento_cobranza' => 0,
                 'descuento_recargos' => 0,
+                'descuento_aseo_publico' => 0,
                 'total_descuento' => 0,
             ];
         }
@@ -51,10 +53,12 @@ class PagosController extends Controller
             'actualizaciones_pct' => (float) $descuento->actualizaciones,
             'cobranza_pct' => (float) $descuento->gastos_cobranza,
             'recargos_pct' => (float) $descuento->recargos,
+            'aseo_publico_pct' => (float) $descuento->aseo_publico,
             'descuento_multas' => 0,
             'descuento_actualizaciones' => 0,
             'descuento_cobranza' => 0,
             'descuento_recargos' => 0,
+            'descuento_aseo_publico' => 0,
             'total_descuento' => 0,
         ];
     }
@@ -418,6 +422,7 @@ class PagosController extends Controller
                         'actualizacion' => (!empty($calculo['actualizacion']) && $descInfo['actualizaciones_pct'] > 0) ? round($calculo['actualizacion'] * $descInfo['actualizaciones_pct'] / 100, 2) : 0,
                         'multa' => (!empty($calculo['multa']) && $descInfo['multas_pct'] > 0) ? round($calculo['multa'] * $descInfo['multas_pct'] / 100, 2) : 0,
                         'ejecucion' => (!empty($calculo['cobranza']) && $descInfo['cobranza_pct'] > 0) ? round($calculo['cobranza'] * $descInfo['cobranza_pct'] / 100, 2) : 0,
+                        'aseo_publico' => (!empty($calculo['aseo_publico']) && $descInfo['aseo_publico_pct'] > 0) ? round($calculo['aseo_publico'] * $descInfo['aseo_publico_pct'] / 100, 2) : 0,
                     ];
 
                     $anios[] = ['anho' => $calculo['anho'], 'conceptos' => $anioConceptos, 'total' => $anioTotal, 'descuentos' => $anioDescuentos];
@@ -474,7 +479,7 @@ class PagosController extends Controller
             'conceptos.*.concepto' => 'required|string',
             'conceptos.*.monto' => 'required|numeric',
             'descuentos' => 'nullable|array',
-            'descuentos.*.tipo' => 'required_with:descuentos|string|in:predial,recargos,actualizacion,multa,ejecucion',
+            'descuentos.*.tipo' => 'required_with:descuentos|string|in:predial,recargos,actualizacion,multa,ejecucion,aseo_publico',
             'descuentos.*.monto' => 'required_with:descuentos|numeric|min:0',
             'anios_pagados' => 'nullable|array',
             'anios_pagados.*' => 'integer',
@@ -592,6 +597,9 @@ class PagosController extends Controller
                 'ejecucion' => fn($list) => $list->first(fn($c) =>
                     stripos($c->descripcion_clean, 'DESCUENTO') !== false && (stripos($c->descripcion_clean, 'EJECUC') !== false || stripos($c->descripcion_clean, 'COBRANZA') !== false)
                 ),
+                'aseo_publico' => fn($list) => $list->first(fn($c) =>
+                    stripos($c->descripcion_clean, 'DESCUENTO') !== false && stripos($c->descripcion_clean, 'SAP') !== false
+                ),
             ];
 
             $descuentoLabels = [
@@ -600,6 +608,7 @@ class PagosController extends Controller
                 'actualizacion' => 'Descuento Actualización',
                 'multa' => 'Descuento Multas',
                 'ejecucion' => 'Descuento Gastos de Ejecución',
+                'aseo_publico' => 'Descuento SAP',
             ];
 
             $aggregated = [];
