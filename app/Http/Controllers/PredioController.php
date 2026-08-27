@@ -350,7 +350,7 @@ class PredioController extends Controller
 
     public function update(Request $request, Predio $predio)
     {
-        if ($predio->id_estaus_cobro_predial === 7) {
+        if ($predio->id_estaus_cobro_predial === 7 && (int) $request->input('id_estaus_cobro_predial') === 7) {
             return redirect()->back()->with('error', 'El predio tiene nota marginal. Contacte al administrador.');
         }
         $validated = $request->validate([
