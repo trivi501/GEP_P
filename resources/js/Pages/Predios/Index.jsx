@@ -103,11 +103,11 @@ const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus =
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Cuenta</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Contribuyente</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Colonia</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Zona</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Ubicación Predio</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Año Último Pago</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Superficie</th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Terreno</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Construcción</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estatus</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
@@ -153,6 +153,7 @@ const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus =
                                                     className={inputClass}
                                                 />
                                             </th>
+                                            <th className="px-2 py-2"></th>
                                             <th className="px-2 py-2">
                                                 <input
                                                     type="text"
@@ -193,7 +194,6 @@ const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus =
                                                     className={`${inputClass} text-right`}
                                                 />
                                             </th>
-                                            <th className="px-2 py-2"></th>
                                             <th className="px-2 py-2">
                                                 <input
                                                     type="text"
@@ -225,6 +225,9 @@ const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus =
                                                         {predio.ubicacion}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {predio.zona}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                         {predio.ubicacionPredio}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -237,10 +240,7 @@ const puedeImprimir = (predio) => predio.id_estatus === 1 || predio.id_estatus =
                                                         {parseFloat(predio.superficie).toLocaleString('es-MX', { minimumFractionDigits: 2 }) + ' m²'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
-                                                        ${parseFloat(predio.terreno).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
-                                                        ${parseFloat(predio.construccion).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                                                        {parseFloat(predio.construccion).toLocaleString('es-MX', { minimumFractionDigits: 2 }) + ' m²'}
                                                     </td>
                                                     <td className="whitespace-nowrap px-2 py-4 text-center text-sm font-medium">
                                                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${esNormal(predio) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

@@ -411,10 +411,14 @@ export default function Edit({
                                                 type="number"
                                                 name="construccion"
                                                 value={data.construccion}
-                                                className="mt-1 block w-full"
+                                                className="mt-1 block w-full disabled:bg-gray-100 dark:disabled:bg-gray-800"
                                                 onChange={(e) => setData('construccion', e.target.value)}
                                                 step="0.0001"
+                                                disabled={data.Baldio}
                                             />
+                                            {data.Baldio && (
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">No aplica: el predio está marcado como baldío.</p>
+                                            )}
                                             <InputError message={errors.construccion} className="mt-2" />
                                         </div>
 
@@ -686,7 +690,10 @@ export default function Edit({
                                                 <input
                                                     type="checkbox"
                                                     checked={data.Baldio}
-                                                    onChange={(e) => setData('Baldio', e.target.checked)}
+                                                    onChange={(e) => {
+                                                        const checked = e.target.checked;
+                                                        setData(prev => ({ ...prev, Baldio: checked, construccion: checked ? '' : prev.construccion }));
+                                                    }}
                                                     className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                                 />
                                                 <span className="text-sm font-medium text-gray-700">Baldío</span>

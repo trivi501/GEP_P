@@ -95,7 +95,7 @@ class PredioController extends Controller
                 'col.COLONIA as colonia_nombre',
                 'calle.CALLE as calle_nombre',
                 'estado_imp.DESCRIPCION as estado_descripcion',
-                'urbano.valor_catastral_terreno as urbano_terreno',
+                'zona.descripcion as zona_descripcion',
             ])
             ->leftJoin('tb_contribuyentes as contrib', 'tb_predio.id_contribuyente', '=', 'contrib.id_contribuyente')
             ->leftJoin('cat_tipo_predio as tipo', 'tb_predio.id_tipo_predio', '=', 'tipo.id_tipo_predio')
@@ -103,6 +103,7 @@ class PredioController extends Controller
             ->leftJoin('cat_calle as calle', 'tb_predio.id_calle', '=', 'calle.id_calle')
             ->leftJoin('cat_estado_impuesto as estado_imp', 'tb_predio.id_estaus_cobro_predial', '=', 'estado_imp.id_estaus_cobro_predial')
             ->leftJoin('tb_datos_predio_urbano as urbano', 'tb_predio.id_predio', '=', 'urbano.id_predio')
+            ->leftJoin('cat_zona_predio as zona', 'urbano.id_zona_urbana', '=', 'zona.id_zona_urbana')
             ->when($request->filled('Clave_predial'), fn($q) => $q->where('tb_predio.Clave_predial', 'like', '%' . $request->Clave_predial . '%'))
             ->when($request->filled('ubicacion'), fn($q) => $q->where('tb_predio.ubicacion', 'like', '%' . $request->ubicacion . '%'))
             ->when($request->filled('contribuyente'), fn($q) => $q->where('contrib.nombre_completo', 'like', '%' . $request->contribuyente . '%'))
@@ -152,6 +153,7 @@ class PredioController extends Controller
             'cuenta' => $p->contrib_cuenta ?? '—',
             'contribuyente' => $p->contrib_nombre ?? '—',
             'colonia' => $p->colonia_nombre ?? '—',
+            'zona' => $p->zona_descripcion ?? '—',
             'tipo_predio' => $p->tipo_predio_nombre ?? '—',
             'estado' => $p->estado_descripcion ?? '—',
             'id_estatus' => $p->id_estaus_cobro_predial,
@@ -160,7 +162,6 @@ class PredioController extends Controller
             'ultimo_bimestre_pago' => $p->ultimo_bimestre_pago ?? '—',
             'superficie' => (float) $p->superficie,
             'ubicacionPredio' => trim(($p->calle_nombre ?? '') . ' #' . ($p->Numero_exterior ?? '') . ($p->Numero_interior ? ' Int ' . $p->Numero_interior : '') . ', ' . ($p->colonia_nombre ?? '')),
-            'terreno' => (float) ($p->urbano_terreno ?? $p->valor_catastral ?? 0),
             'construccion' => (float) ($p->construccion ?? 0),
         ];
 
@@ -252,6 +253,10 @@ class PredioController extends Controller
             'valor_catastral_terreno' => 'nullable|numeric',
             'valor_catastral_construido' => 'nullable|numeric',
         ]);
+
+        if ($request->boolean('Baldio')) {
+            $validated['construccion'] = 0;
+        }
 
         $validated['id_predio'] = (string) Str::uuid();
         $validated['id_zona_catastral'] = $validated['id_zona_catastral'] ?? 1;
@@ -397,6 +402,10 @@ class PredioController extends Controller
             'valor_catastral_terreno' => 'nullable|numeric',
             'valor_catastral_construido' => 'nullable|numeric',
         ]);
+
+        if ($request->boolean('Baldio')) {
+            $validated['construccion'] = 0;
+        }
 
         $old = $predio->toArray();
         $validated['id_colonia'] = $validated['id_colonia'] ?? $predio->id_colonia;
