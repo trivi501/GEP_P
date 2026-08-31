@@ -28,6 +28,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PredioController extends Controller
 {
@@ -258,6 +259,12 @@ class PredioController extends Controller
             $validated['construccion'] = 0;
         }
 
+        if ((float) ($validated['construccion'] ?? 0) > 0 && trim($validated['observacion'] ?? '') === '') {
+            throw ValidationException::withMessages([
+                'observacion' => 'Debe escribir una observación cuando el predio tiene superficie construida.',
+            ]);
+        }
+
         $validated['id_predio'] = (string) Str::uuid();
         $validated['id_zona_catastral'] = $validated['id_zona_catastral'] ?? 1;
         $validated['id_clave_predial'] = $validated['id_clave_predial'] ?? (string) Str::uuid();
@@ -407,6 +414,19 @@ class PredioController extends Controller
             $validated['construccion'] = 0;
         }
 
+        $obsAnterior = $predio->observaciones()->latest('fecha_registro')->value('observacion');
+
+        $construccionAnterior = (float) $predio->construccion;
+        $construccionNueva = (float) ($validated['construccion'] ?? 0);
+        if (abs($construccionNueva - $construccionAnterior) > 0.0001) {
+            $obsNueva = trim($validated['observacion'] ?? '');
+            if ($obsNueva === '' || $obsNueva === trim((string) $obsAnterior)) {
+                throw ValidationException::withMessages([
+                    'observacion' => 'Debe escribir una nueva observación explicando el cambio en la superficie construida.',
+                ]);
+            }
+        }
+
         $old = $predio->toArray();
         $validated['id_colonia'] = $validated['id_colonia'] ?? $predio->id_colonia;
         $validated['id_estado_renta'] = $validated['id_estado_renta'] ?? $predio->id_estado_renta;
@@ -438,7 +458,6 @@ class PredioController extends Controller
         }
 
         if (!empty($validated['observacion'])) {
-            $obsAnterior = $predio->observaciones()->latest('fecha_registro')->value('observacion');
             if ($obsAnterior !== $validated['observacion']) {
                 ObservacionesPredio::create([
                     'id_observacion' => (string) Str::uuid(),
