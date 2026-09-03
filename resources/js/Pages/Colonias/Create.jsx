@@ -7,7 +7,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import SearchSelect from '@/Components/SearchSelect';
 
 export default function Create({ poblaciones, zonasPredio }) {
-    const { data, setData, post, processing, errors } = useForm({ COLONIA: '', id_poblacion: '', id_cat_zona_predio: '', Activo: true });
+    const { data, setData, post, processing, errors } = useForm({ COLONIA: '', codigo_postal: '', id_poblacion: '', id_cat_zona_predio: '', Activo: true });
 
     const submit = (e) => { e.preventDefault(); post(route('colonias.store')); };
 
@@ -23,6 +23,11 @@ export default function Create({ poblaciones, zonasPredio }) {
                                     <InputLabel htmlFor="COLONIA" value="Nombre de la Colonia" />
                                     <input id="COLONIA" type="text" value={data.COLONIA} onChange={(e) => setData('COLONIA', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required />
                                     <InputError message={errors.COLONIA} className="mt-2" />
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="codigo_postal" value="Código Postal" />
+                                    <input id="codigo_postal" type="text" maxLength={5} value={data.codigo_postal} onChange={(e) => setData('codigo_postal', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                    <InputError message={errors.codigo_postal} className="mt-2" />
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div>

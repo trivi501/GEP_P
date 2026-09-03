@@ -36,6 +36,7 @@ class CatColoniaController extends Controller
     {
         $validated = $request->validate([
             'COLONIA' => 'required|string|max:120',
+            'codigo_postal' => 'nullable|string|max:5',
             'id_poblacion' => 'nullable|integer',
             'id_cat_zona_predio' => 'nullable|integer',
             'Activo' => 'nullable|boolean',
@@ -68,6 +69,7 @@ class CatColoniaController extends Controller
     {
         $validated = $request->validate([
             'COLONIA' => 'required|string|max:120',
+            'codigo_postal' => 'nullable|string|max:5',
             'id_poblacion' => 'nullable|integer',
             'id_cat_zona_predio' => 'nullable|integer',
             'Activo' => 'nullable|boolean',

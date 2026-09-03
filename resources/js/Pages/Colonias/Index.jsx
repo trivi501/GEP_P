@@ -40,6 +40,7 @@ export default function Index({ colonias }) {
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">ID</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Colonia</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">C.P.</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Activo</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Acciones</th>
                                         </tr>
@@ -49,6 +50,7 @@ export default function Index({ colonias }) {
                                             <tr key={colonia.id_colonia} className="hover:bg-gray-50 dark:bg-gray-700">
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{colonia.id_colonia}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{colonia.COLONIA}</td>
+                                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{colonia.codigo_postal ?? '—'}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-center text-sm">{colonia.Activo ? <span className="text-green-600">Sí</span> : <span className="text-red-600">No</span>}</td>
                                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                                     <Link href={route('colonias.show', colonia.id_colonia)} className="text-indigo-600 hover:text-indigo-900">Ver</Link>
@@ -56,7 +58,7 @@ export default function Index({ colonias }) {
                                                 </td>
                                             </tr>
                                         )) : (
-                                            <tr><td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">No hay colonias registradas.</td></tr>
+                                            <tr><td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">No hay colonias registradas.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
