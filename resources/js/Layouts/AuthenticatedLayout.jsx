@@ -142,11 +142,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Pagos Generales
                                     </NavLink>
                                 )}
-                                {can('pagos-index') && (
-                                    <NavLink href={route('facturacion.index')} active={route().current('facturacion.*')}>
-                                        Facturación
-                                    </NavLink>
-                                )}
                                 {can('pagos-cobrar') && (
                                     <NavLink href={route('pagos.cobrar')} active={route().current('pagos.cobrar')}>
                                         Cobrar Predial
