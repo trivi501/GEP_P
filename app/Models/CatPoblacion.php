@@ -12,4 +12,9 @@ class CatPoblacion extends Model
     public $timestamps = false;
 
     protected $fillable = ['id_poblacion', 'POBLACION', 'id_usuario', 'fecha_alta', 'Activo', 'numero'];
+
+    public function getRouteKeyName()
+    {
+        return 'id_poblacion';
+    }
 }

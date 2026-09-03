@@ -119,6 +119,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 Calles
                                             </Dropdown.Link>
                                             )}
+                                            {can('poblaciones-index') && (
+                                            <Dropdown.Link href={route('poblaciones.index')}>
+                                                Poblaciones
+                                            </Dropdown.Link>
+                                            )}
                                         </Dropdown.Content>
                                     </Dropdown>
                                 )}
@@ -337,6 +342,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('calles.index')} active={route().current('calles.*')}>
                                 Calles
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('poblaciones.index')} active={route().current('poblaciones.*')}>
+                                Poblaciones
                             </ResponsiveNavLink>
                             <ResponsiveNavLink href={route('ordenes-pago.index')} active={route().current('ordenes-pago.*')}>
                                 Órdenes de Pago
