@@ -35,6 +35,10 @@ class EstadoCuentaMasivoController extends Controller
             'estadoImpuesto', 'datosUrbano.zonaUrbana',
             'nivelesConstruidos.tipoConstruccion',
             'nivelesConstruidos.usoConstruccion',
+            'descuentos' => fn($q) => $q->where('activo', true)
+                ->where(function ($q) {
+                    $q->whereNull('fecha_expiracion')->orWhere('fecha_expiracion', '>=', now()->toDateString());
+                }),
         ])
             ->whereIn('id_contribuyente', $contribuyentes->pluck('id_contribuyente'))
             ->get()
@@ -51,6 +55,7 @@ class EstadoCuentaMasivoController extends Controller
                 'superficie' => (float) $p->superficie,
                 'terreno' => (float) ($p->datosUrbano?->valor_catastral_terreno ?? $p->valor_catastral ?? 0),
                 'construccion' => (float) ($p->construccion ?? 0),
+                'tiene_descuento' => $p->descuentos->isNotEmpty(),
             ]);
 
         return response()->json([

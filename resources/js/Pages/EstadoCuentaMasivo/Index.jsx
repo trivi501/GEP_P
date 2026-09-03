@@ -23,7 +23,11 @@ export default function Index() {
             });
             const data = await res.json();
             setContribuyentes(data.contribuyentes ?? []);
-            setPredios(data.predios ?? []);
+            const nuevosPredios = data.predios ?? [];
+            setPredios(nuevosPredios);
+            const preseleccion = {};
+            nuevosPredios.forEach((p) => { if (p.tiene_descuento) preseleccion[p.id] = true; });
+            setSelected(preseleccion);
         } catch (err) {
             console.error(err);
         } finally {
@@ -167,6 +171,7 @@ export default function Index() {
                                                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
                                                     <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Año Último Pago</th>
                                                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Superficie</th>
+                                                    <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Descuento</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
@@ -204,6 +209,15 @@ export default function Index() {
                                                         </td>
                                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
                                                             {parseFloat(predio.superficie).toLocaleString('es-MX', { minimumFractionDigits: 2 })} m²
+                                                        </td>
+                                                        <td className="whitespace-nowrap px-6 py-4 text-center text-sm">
+                                                            {predio.tiene_descuento ? (
+                                                                <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+                                                                    Sí
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400 dark:text-gray-500">—</span>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))}

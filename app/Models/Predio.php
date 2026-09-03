@@ -116,6 +116,11 @@ class Predio extends Model
         return $this->hasMany(NivelConstruidoPredioUrbano::class, 'id_predio', 'id_predio');
     }
 
+    public function descuentos()
+    {
+        return $this->hasMany(Descuento::class, 'idPredio', 'id_predio');
+    }
+
     public function getUbicacionCompletaAttribute()
     {
         $parts = [];
