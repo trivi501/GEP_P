@@ -18,6 +18,7 @@ use App\Http\Controllers\EstadoCuentaMasivoController;
 use App\Http\Controllers\MultiPagosController;
 use App\Http\Controllers\CorteCajaController;
 use App\Http\Controllers\DescuentosController;
+use App\Http\Controllers\DescuentosMasivosController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -116,6 +117,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('descuentos', [DescuentosController::class, 'store'])->name('descuentos.store');
     Route::put('descuentos/{descuento}', [DescuentosController::class, 'update'])->name('descuentos.update');
     Route::delete('descuentos/{descuento}', [DescuentosController::class, 'destroy'])->name('descuentos.destroy');
+
+    Route::get('descuentos-masivos', [DescuentosMasivosController::class, 'index'])->name('descuentos-masivos.index');
+    Route::post('descuentos-masivos/search', [DescuentosMasivosController::class, 'search'])->name('descuentos-masivos.search');
+    Route::post('descuentos-masivos/aplicar', [DescuentosMasivosController::class, 'aplicar'])->name('descuentos-masivos.aplicar');
 
     Route::get('support-tickets', [SupportTicketController::class, 'index'])->name('support-tickets.index');
     Route::get('support-tickets/create', [SupportTicketController::class, 'create'])->name('support-tickets.create');

@@ -104,6 +104,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 Descuentos
                                             </Dropdown.Link>
                                             )}
+                                            {can('crear-descuentos') && (
+                                            <Dropdown.Link href={route('descuentos-masivos.index')}>
+                                                Descuentos Masivos
+                                            </Dropdown.Link>
+                                            )}
                                             {can('colonias-index') && (
                                             <Dropdown.Link href={route('colonias.index')}>
                                                 Colonias

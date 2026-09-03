@@ -105,6 +105,7 @@ class PredioController extends Controller
             ->leftJoin('cat_estado_impuesto as estado_imp', 'tb_predio.id_estaus_cobro_predial', '=', 'estado_imp.id_estaus_cobro_predial')
             ->leftJoin('tb_datos_predio_urbano as urbano', 'tb_predio.id_predio', '=', 'urbano.id_predio')
             ->leftJoin('cat_zona_predio as zona', 'urbano.id_zona_urbana', '=', 'zona.id_zona_urbana')
+            ->where('tb_predio.Clave_predial', 'not like', 'B%')
             ->when($request->filled('Clave_predial'), fn($q) => $q->where('tb_predio.Clave_predial', 'like', '%' . $request->Clave_predial . '%'))
             ->when($request->filled('ubicacion'), fn($q) => $q->where('tb_predio.ubicacion', 'like', '%' . $request->ubicacion . '%'))
             ->when($request->filled('contribuyente'), fn($q) => $q->where('contrib.nombre_completo', 'like', '%' . $request->contribuyente . '%'))
